@@ -6,7 +6,7 @@ from google.oauth2 import service_account
 st.set_page_config(page_title="Simulateur U19 Datafoot", layout="wide")
 
 # Debug : afficher les secrets disponibles
-st.write("Secrets disponibles :", st.secrets._dict.keys())
+st.write("Secrets disponibles :", list(st.secrets.keys()))
 
 # Connexion à BigQuery via secrets Streamlit
 credentials = service_account.Credentials.from_service_account_info(
