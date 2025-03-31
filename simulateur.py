@@ -5,7 +5,7 @@ from google.oauth2 import service_account
 
 # Connexion à BigQuery via fichier JSON (uploadé dans Streamlit Cloud)
 credentials = service_account.Credentials.from_service_account_file(
-    "datafoot-448514-2bc7cb1c09db.json"
+    "datafoot-448514-97821fa8833c.json"
 )
 client = bigquery.Client(credentials=credentials, project=credentials.project_id)
 
