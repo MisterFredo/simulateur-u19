@@ -65,4 +65,4 @@ for champ in championnats:
         df_comparaison = pd.concat([df_reel.reset_index(drop=True), df_sim.reset_index(drop=True)], axis=1)
         st.dataframe(df_comparaison, use_container_width=True)
 
-st.caption("💡 Comparaison entre le classement à date (matchs terminés uniquement) et la projection avec tous les matchs (simulé).")
+st.caption("\ud83d\udca1 Comparaison entre le classement à date (matchs terminés uniquement) et la projection avec tous les matchs (simulé).")
