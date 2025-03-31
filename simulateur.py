@@ -4,8 +4,11 @@ from google.cloud import bigquery
 from google.oauth2 import service_account
 
 # Connexion BigQuery via secrets
-credentials = service_account.Credentials.from_service_account_info(
-    st.secrets["gcp_service_account"]
+from google.oauth2 import service_account
+
+# Charge la clé JSON directement depuis le fichier
+credentials = service_account.Credentials.from_service_account_file(
+    "secrets/credentials.json"
 )
 client = bigquery.Client(credentials=credentials, project=credentials.project_id)
 
