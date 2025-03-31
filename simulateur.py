@@ -1,17 +1,14 @@
 import streamlit as st
 import pandas as pd
+import json
 from google.cloud import bigquery
 from google.oauth2 import service_account
 
 st.set_page_config(page_title="Simulateur U19 Datafoot", layout="wide")
 
-# Debug : afficher les secrets disponibles
-st.write("Secrets disponibles :", list(st.secrets.keys()))
-
-# Connexion à BigQuery via secrets Streamlit
-credentials = service_account.Credentials.from_service_account_info(
-    st.secrets["gcp_service_account"]
-)
+# Connexion à BigQuery via JSON brut stocké dans les secrets
+service_account_info = json.loads(st.secrets["gcp_service_account"])
+credentials = service_account.Credentials.from_service_account_info(service_account_info)
 client = bigquery.Client(credentials=credentials, project=credentials.project_id)
 
 st.title("🌟 Simulateur relégation U19 - Datafoot")
