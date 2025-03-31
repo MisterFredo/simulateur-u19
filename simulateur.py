@@ -3,12 +3,9 @@ import pandas as pd
 from google.cloud import bigquery
 from google.oauth2 import service_account
 
-# Connexion BigQuery via secrets
-from google.oauth2 import service_account
-
-# Charge la clé JSON directement depuis le fichier
-credentials = service_account.Credentials.from_service_account_file(
-    "secrets/credentials.json"
+# Connexion à BigQuery via secrets Streamlit
+credentials = service_account.Credentials.from_service_account_info(
+    st.secrets["gcp_service_account"]
 )
 client = bigquery.Client(credentials=credentials, project=credentials.project_id)
 
@@ -24,7 +21,6 @@ def get_classements(date):
     query = f"""
     SELECT *
     FROM `datafoot-448514.DATAFOOT.VIEW_CLASSEMENT_DYNAMIQUE_U19_2025`
-    WHERE DATE <= DATE('{date}')
     ORDER BY POULE, RANG
     """
     return client.query(query).to_dataframe()
