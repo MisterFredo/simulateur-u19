@@ -42,7 +42,23 @@ def get_11e_classement():
     """
     return client.query(query).to_dataframe()
 
-st.subheader("Classement spécifique des 11e")
-st.dataframe(get_11e_classement(), use_container_width=True)
+col1, col2 = st.columns(2)
+
+with col1:
+    st.subheader(f"📅 Classement des 11e au {date_limite.strftime('%d/%m/%Y')}")
+    st.dataframe(get_11e_classement(), use_container_width=True)
+
+with col2:
+    @st.cache_data(show_spinner=False)
+    def get_11e_classement_simule():
+        query = """
+        SELECT *
+        FROM `datafoot-448514.DATAFOOT.VIEW_CLASSEMENT_11E_SIMULE_U19_2025`
+        ORDER BY POINTS_OBTENUS ASC, MOYENNE_POINTS_PAR_MATCH ASC
+        """
+        return client.query(query).to_dataframe()
+    
+    st.subheader("🔮 Classement des 11e après simulation")
+    st.dataframe(get_11e_classement_simule(), use_container_width=True)
 
 st.caption("Made with ❤️ by Datafoot")
