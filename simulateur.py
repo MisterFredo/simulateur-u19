@@ -3,9 +3,9 @@ import pandas as pd
 from google.cloud import bigquery
 from google.oauth2 import service_account
 
-# Connexion à BigQuery via secrets Streamlit
-credentials = service_account.Credentials.from_service_account_info(
-    st.secrets["gcp_service_account"]
+# Connexion à BigQuery via fichier JSON (uploadé dans Streamlit Cloud)
+credentials = service_account.Credentials.from_service_account_file(
+    "datafoot-448514-2bc7cb1c09db.json"
 )
 client = bigquery.Client(credentials=credentials, project=credentials.project_id)
 
