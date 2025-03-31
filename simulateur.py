@@ -1,12 +1,12 @@
 import streamlit as st
 import pandas as pd
-import json
 from google.cloud import bigquery
 from google.oauth2 import service_account
+import json
 
 st.set_page_config(page_title="Simulateur U19 Datafoot", layout="wide")
 
-# Connexion à BigQuery via JSON brut stocké dans les secrets
+# Connexion à BigQuery via secrets Streamlit
 service_account_info = json.loads(st.secrets["gcp_service_account"])
 credentials = service_account.Credentials.from_service_account_info(service_account_info)
 client = bigquery.Client(credentials=credentials, project=credentials.project_id)
@@ -32,7 +32,7 @@ for poule in sorted(classement_df["POULE"].unique()):
     st.markdown(f"### Poule {poule}")
     st.dataframe(classement_df[classement_df["POULE"] == poule][["RANG", "NOM_EQUIPE", "POINTS"]].reset_index(drop=True), use_container_width=True)
 
-# Classement des 11e contre 6-10
+# Classement des 11e contre 6-10 (à date)
 @st.cache_data(show_spinner=False)
 def get_11e_classement():
     query = """
@@ -42,23 +42,20 @@ def get_11e_classement():
     """
     return client.query(query).to_dataframe()
 
-col1, col2 = st.columns(2)
+st.subheader("Classement spécifique des 11e à date")
+st.dataframe(get_11e_classement(), use_container_width=True)
 
-with col1:
-    st.subheader(f"📅 Classement des 11e au {date_limite.strftime('%d/%m/%Y')}")
-    st.dataframe(get_11e_classement(), use_container_width=True)
+# Classement des 11e après simulation
+@st.cache_data(show_spinner=False)
+def get_11e_simule():
+    query = """
+    SELECT *
+    FROM `datafoot-448514.DATAFOOT.VIEW_CLASSEMENT_11E_SIMULE_U19_2025`
+    ORDER BY POINTS_OBTENUS ASC, MOYENNE_POINTS_PAR_MATCH ASC
+    """
+    return client.query(query).to_dataframe()
 
-with col2:
-    @st.cache_data(show_spinner=False)
-    def get_11e_classement_simule():
-        query = """
-        SELECT *
-        FROM `datafoot-448514.DATAFOOT.VIEW_CLASSEMENT_11E_SIMULE_U19_2025`
-        ORDER BY POINTS_OBTENUS ASC, MOYENNE_POINTS_PAR_MATCH ASC
-        """
-        return client.query(query).to_dataframe()
-    
-    st.subheader("🔮 Classement des 11e après simulation")
-    st.dataframe(get_11e_classement_simule(), use_container_width=True)
+st.subheader("Classement spécifique des 11e après simulation")
+st.dataframe(get_11e_simule(), use_container_width=True)
 
 st.caption("Made with ❤️ by Datafoot")
