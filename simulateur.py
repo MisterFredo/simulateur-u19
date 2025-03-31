@@ -12,61 +12,55 @@ credentials = service_account.Credentials.from_service_account_info(
 )
 client = bigquery.Client(credentials=credentials, project=credentials.project_id)
 
-# Choix des dates
+# Choix de la date
 st.title("⚽ Simulateur de classement - Datafoot")
-col1, col2 = st.columns(2)
-with col1:
-    date_debut = st.date_input("Date de début", value=pd.to_datetime("2024-08-01"))
-with col2:
-    date_fin = st.date_input("Date de fin (simulation)", value=pd.to_datetime("2025-03-31"))
+date_limite = st.date_input("Date limite des matchs pris en compte", value=pd.to_datetime("2025-03-31"))
 
-# Requête dynamique : classement réel (matchs terminés)
+# Classement réel : uniquement les matchs terminés
 @st.cache_data(show_spinner=False)
-def get_classement_reel(date_debut, date_fin):
+def get_classement_reel(date):
     query = f"""
         SELECT *
         FROM `datafoot-448514.DATAFOOT.VIEW_CLASSEMENT_REEL_2025`
-        WHERE DATE_MATCH BETWEEN DATE('{date_debut}') AND DATE('{date_fin}')
+        WHERE DATE <= DATE('{date}')
         ORDER BY ID_CHAMPIONNAT, POULE, RANG
     """
     return client.query(query).to_dataframe()
 
-# Requête dynamique : classement simulé (tous les matchs)
+# Classement dynamique : tous les matchs datés
 @st.cache_data(show_spinner=False)
-def get_classement_simule(date_debut, date_fin):
+def get_classement_dynamique(date):
     query = f"""
         SELECT *
         FROM `datafoot-448514.DATAFOOT.VIEW_CLASSEMENT_DYNAMIQUE`
-        WHERE DATE_MATCH BETWEEN DATE('{date_debut}') AND DATE('{date_fin}')
+        WHERE DATE <= DATE('{date}')
         ORDER BY ID_CHAMPIONNAT, POULE, RANG
     """
     return client.query(query).to_dataframe()
 
-# Récupération des classements
-classement_reel = get_classement_reel(date_debut, date_fin)
-classement_simule = get_classement_simule(date_debut, date_fin)
+# Chargement des classements
+classement_reel = get_classement_reel(date_limite)
+classement_dynamique = get_classement_dynamique(date_limite)
 
-# Comparaison des deux classements
-st.header("📊 Comparaison des classements entre deux dates")
+# Comparaison
+st.header("📊 Comparaison des classements à la date choisie")
 
-championnats = classement_reel["ID_CHAMPIONNAT"].unique()
-for champ in championnats:
+for champ in classement_reel["ID_CHAMPIONNAT"].unique():
     sous_reel = classement_reel[classement_reel["ID_CHAMPIONNAT"] == champ]
-    sous_sim = classement_simule[classement_simule["ID_CHAMPIONNAT"] == champ]
-    poules = sous_reel["POULE"].unique()
+    sous_dyn = classement_dynamique[classement_dynamique["ID_CHAMPIONNAT"] == champ]
 
-    for poule in poules:
+    for poule in sous_reel["POULE"].unique():
         st.subheader(f"Championnat {champ} - Poule {poule}")
 
         df_reel = sous_reel[sous_reel["POULE"] == poule][["RANG", "NOM_EQUIPE", "POINTS"]].rename(columns={
             "RANG": "RANG_RÉEL", "NOM_EQUIPE": "ÉQUIPE_RÉEL", "POINTS": "POINTS_RÉEL"
         })
 
-        df_sim = sous_sim[sous_sim["POULE"] == poule][["RANG", "NOM_EQUIPE", "POINTS"]].rename(columns={
-            "RANG": "RANG_SIMULÉ", "NOM_EQUIPE": "ÉQUIPE_SIMULÉ", "POINTS": "POINTS_SIMULÉ"
+        df_dyn = sous_dyn[sous_dyn["POULE"] == poule][["RANG", "NOM_EQUIPE", "POINTS"]].rename(columns={
+            "RANG": "RANG_DYNAMIQUE", "NOM_EQUIPE": "ÉQUIPE_DYNAMIQUE", "POINTS": "POINTS_DYNAMIQUE"
         })
 
-        df_comparaison = pd.concat([df_reel.reset_index(drop=True), df_sim.reset_index(drop=True)], axis=1)
+        df_comparaison = pd.concat([df_reel.reset_index(drop=True), df_dyn.reset_index(drop=True)], axis=1)
         st.dataframe(df_comparaison, use_container_width=True)
 
-st.caption("💡 Classement réel = uniquement les matchs terminés. Classement simulé = tous les matchs entre les deux dates.")
+st.caption("📝 Classement réel = uniquement les matchs terminés. Classement dynamique = tous les matchs avec une date.")
