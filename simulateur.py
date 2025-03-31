@@ -12,38 +12,42 @@ credentials = service_account.Credentials.from_service_account_info(
 )
 client = bigquery.Client(credentials=credentials, project=credentials.project_id)
 
-# Choix de la date
+# Choix des dates
 st.title("⚽ Simulateur de classement - Datafoot")
-date_limite = st.date_input("Date de simulation", value=pd.to_datetime("2025-03-31"))
+col1, col2 = st.columns(2)
+with col1:
+    date_debut = st.date_input("Date de début", value=pd.to_datetime("2024-08-01"))
+with col2:
+    date_fin = st.date_input("Date de fin (simulation)", value=pd.to_datetime("2025-03-31"))
 
-# Requête dynamique : classement réel
+# Requête dynamique : classement réel (matchs terminés)
 @st.cache_data(show_spinner=False)
-def get_classement_reel(date):
+def get_classement_reel(date_debut, date_fin):
     query = f"""
         SELECT *
         FROM `datafoot-448514.DATAFOOT.VIEW_CLASSEMENT_REEL_2025`
-        WHERE DATE_CALCUL = DATE('{date}')
+        WHERE DATE_MATCH BETWEEN DATE('{date_debut}') AND DATE('{date_fin}')
         ORDER BY ID_CHAMPIONNAT, POULE, RANG
     """
     return client.query(query).to_dataframe()
 
-# Requête dynamique : classement simulé
+# Requête dynamique : classement simulé (tous les matchs)
 @st.cache_data(show_spinner=False)
-def get_classement_simule(date):
+def get_classement_simule(date_debut, date_fin):
     query = f"""
         SELECT *
         FROM `datafoot-448514.DATAFOOT.VIEW_CLASSEMENT_DYNAMIQUE`
-        WHERE DATE_CALCUL = DATE('{date}')
+        WHERE DATE_MATCH BETWEEN DATE('{date_debut}') AND DATE('{date_fin}')
         ORDER BY ID_CHAMPIONNAT, POULE, RANG
     """
     return client.query(query).to_dataframe()
 
 # Récupération des classements
-classement_reel = get_classement_reel(date_limite)
-classement_simule = get_classement_simule(date_limite)
+classement_reel = get_classement_reel(date_debut, date_fin)
+classement_simule = get_classement_simule(date_debut, date_fin)
 
 # Comparaison des deux classements
-st.header("📊 Comparaison des classements à la date choisie")
+st.header("📊 Comparaison des classements entre deux dates")
 
 championnats = classement_reel["ID_CHAMPIONNAT"].unique()
 for champ in championnats:
@@ -65,4 +69,4 @@ for champ in championnats:
         df_comparaison = pd.concat([df_reel.reset_index(drop=True), df_sim.reset_index(drop=True)], axis=1)
         st.dataframe(df_comparaison, use_container_width=True)
 
-st.caption("💡 Comparaison entre le classement à date (matchs terminés uniquement) et la projection avec tous les matchs (simulé).")
+st.caption("💡 Classement réel = uniquement les matchs terminés. Classement simulé = tous les matchs entre les deux dates.")
