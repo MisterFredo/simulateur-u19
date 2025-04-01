@@ -56,6 +56,10 @@ def get_classement_simule(id_championnat, date):
     """
     return client.query(query).to_dataframe()
 
+st.write("Données classement réel :", classement_reel)
+st.write("Données classement simulé :", classement_simule)
+
+
 # Affichage
 st.title("🌟 Simulateur de classement - Datafoot")
 st.caption("Compare les classements réels (matchs terminés) et simulés (tous les matchs joués + non joués)")
