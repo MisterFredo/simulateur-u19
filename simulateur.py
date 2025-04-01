@@ -6,87 +6,75 @@ from google.oauth2 import service_account
 # Configuration de la page
 st.set_page_config(page_title="Simulateur Datafoot", layout="wide")
 
-# Connexion à BigQuery via secrets
+# Connexion BigQuery
 credentials = service_account.Credentials.from_service_account_info(
     st.secrets["gcp_service_account"]
 )
 client = bigquery.Client(credentials=credentials, project=credentials.project_id)
 
-# Chargement des championnats pour la sélection
+# Chargement des championnats
 @st.cache_data(show_spinner=False)
-def get_championnats():
+def load_championnats():
     query = """
         SELECT ID_CHAMPIONNAT, NOM_CHAMPIONNAT, CATEGORIE, NIVEAU
         FROM `datafoot-448514.DATAFOOT.DATAFOOT_CHAMPIONNAT`
-        ORDER BY CATEGORIE, NIVEAU, NOM_CHAMPIONNAT
+        ORDER BY CATEGORIE, NIVEAU
     """
     return client.query(query).to_dataframe()
 
-championnats_df = get_championnats()
-champ_nom_to_id = dict(zip(
-    championnats_df.apply(lambda row: f"{row['CATEGORIE']} - {row['NIVEAU']} - {row['NOM_CHAMPIONNAT']}", axis=1),
-    championnats_df["ID_CHAMPIONNAT"]
-))
+championnats_df = load_championnats()
 
-# Sélections utilisateur
-st.sidebar.title("⚙️ Paramètres de simulation")
-champ_select = st.sidebar.selectbox("Choisissez un championnat", list(champ_nom_to_id.keys()))
-date_limite = st.sidebar.date_input("Date de simulation", value=pd.to_datetime("2025-03-31"))
-champ_id = champ_nom_to_id[champ_select]
+# Interface utilisateur
+st.sidebar.title("🔢 Filtres")
+champ_select = st.sidebar.selectbox(
+    "Choisissez un championnat",
+    options=championnats_df["ID_CHAMPIONNAT"],
+    format_func=lambda x: championnats_df[championnats_df["ID_CHAMPIONNAT"] == x]["NOM_CHAMPIONNAT"].values[0]
+)
+date_select = st.sidebar.date_input("Date de simulation", value=pd.to_datetime("2025-03-31"))
 
-# Récupération du classement réel
+# Requêtes BigQuery
 @st.cache_data(show_spinner=False)
-def get_classement_reel(champ_id, date):
+def get_classement_reel(id_champ, date):
     query = f"""
         SELECT *
         FROM `datafoot-448514.DATAFOOT.VIEW_CLASSEMENT_REEL_2025`
-        WHERE ID_CHAMPIONNAT = {champ_id}
+        WHERE ID_CHAMPIONNAT = {id_champ}
           AND DATE_CALCUL <= DATE('{date}')
         ORDER BY POULE, RANG
     """
     st.code(query)
-    df = client.query(query).to_dataframe()
-    st.write("📦 Dimensions du classement réel :", df.shape)
-    st.dataframe(df.head())
-    return df
+    return client.query(query).to_dataframe()
 
-# Récupération du classement simulé
 @st.cache_data(show_spinner=False)
-def get_classement_simule(champ_id, date):
+def get_classement_simule(id_champ, date):
     query = f"""
         SELECT *
         FROM `datafoot-448514.DATAFOOT.VIEW_CLASSEMENT_DYNAMIQUE`
-        WHERE ID_CHAMPIONNAT = {champ_id}
+        WHERE ID_CHAMPIONNAT = {id_champ}
           AND DATE_CALCUL <= DATE('{date}')
         ORDER BY POULE, RANG
     """
     st.code(query)
-    df = client.query(query).to_dataframe()
-    st.write("📦 Dimensions du classement simulé :", df.shape)
-    st.dataframe(df.head())
-    return df
+    return client.query(query).to_dataframe()
 
 # Récupération des données
-st.title("📊 Comparaison des classements - Datafoot")
-classement_reel = get_classement_reel(champ_id, date_limite)
-classement_simule = get_classement_simule(champ_id, date_limite)
+classement_reel = get_classement_reel(champ_select, date_select)
+classement_simule = get_classement_simule(champ_select, date_select)
 
-if not classement_reel.empty and not classement_simule.empty:
-    poules = classement_reel["POULE"].unique()
-    for poule in poules:
-        st.subheader(f"Poule {poule}")
+# Affichage
+st.title("🌿 Classements à la date choisie")
 
-        df_reel = classement_reel[classement_reel["POULE"] == poule][["RANG", "NOM_EQUIPE", "POINTS"]].rename(columns={
-            "RANG": "RANG_RÉEL", "NOM_EQUIPE": "ÉQUIPE_RÉEL", "POINTS": "POINTS_RÉEL"
-        })
-
-        df_sim = classement_simule[classement_simule["POULE"] == poule][["RANG", "NOM_EQUIPE", "POINTS"]].rename(columns={
-            "RANG": "RANG_SIMULÉ", "NOM_EQUIPE": "ÉQUIPE_SIMULÉ", "POINTS": "POINTS_SIMULÉ"
-        })
-
-        df_comparaison = pd.concat([df_reel.reset_index(drop=True), df_sim.reset_index(drop=True)], axis=1)
-        st.dataframe(df_comparaison, use_container_width=True)
+if not classement_reel.empty:
+    st.subheader("📊 Classement réel (matchs terminés uniquement)")
+    st.dataframe(classement_reel, use_container_width=True)
+    st.caption(f"🛅 Dimensions du classement réel : {classement_reel.shape}")
 else:
-    st.warning("Aucun classement disponible pour la date et le championnat sélectionnés.")
+    st.warning("Aucun classement réel disponible à cette date.")
 
-st.caption("💡 Comparaison entre le classement à date (matchs terminés uniquement) et la projection avec tous les matchs (simulé).")
+if not classement_simule.empty:
+    st.subheader("🎯 Classement simulé (avec tous les matchs)")
+    st.dataframe(classement_simule, use_container_width=True)
+    st.caption(f"🛅 Dimensions du classement simulé : {classement_simule.shape}")
+else:
+    st.warning("Aucun classement simulé disponible à cette date.")
