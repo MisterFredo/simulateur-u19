@@ -126,9 +126,11 @@ if "simulated_scores" in st.session_state:
         df_simules = df_valid.set_index("ID_MATCH")
         matchs_termines = matchs_termines.set_index("ID_MATCH")
 
-        matchs_combines = matchs_termines.combine_first(df_simules)
-        matchs_simulation_add = df_simules[~df_simules.index.isin(matchs_termines.index)]
-        matchs_complets = pd.concat([matchs_combines, matchs_simulation_add]).reset_index()
+        # Supprime les matchs simulés des réels pour éviter doublon
+        matchs_reels_sans_doublon = matchs_termines[~matchs_termines.index.isin(df_simules.index)]
+
+        # Combine les deux : scores simulés + les autres matchs réels
+        matchs_complets = pd.concat([matchs_reels_sans_doublon, df_simules]).reset_index()
 
         # Recalcul du classement sur matchs_complets
         dom = matchs_complets.rename(columns={
