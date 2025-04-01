@@ -175,6 +175,62 @@ if champ_id == 6 and not classement_df.empty:
 
     df_comparatif = pd.DataFrame(comparatif_11e).sort_values("PTS_CONFRONT_6_10")
     df_comparatif["RANG"] = df_comparatif["PTS_CONFRONT_6_10"].rank(method="min")
+
+    # Bloc spécial classement des 2e - U17 National (ID 7)
+if champ_id == 7 and not classement_df.empty:
+    st.markdown("### 🥈 Comparatif des 2e (règle U17 National)")
+
+    df_2e = classement_df[classement_df["CLASSEMENT"] == 2]
+    comparatif_2e = []
+
+    for _, row in df_2e.iterrows():
+        poule = row["POULE"]
+        equipe_2e = row["NOM_EQUIPE"]
+
+        top_5 = classement_df[
+            (classement_df["POULE"] == poule) &
+            (classement_df["CLASSEMENT"].between(1, 5))
+        ]["NOM_EQUIPE"].tolist()
+
+        # Extraire les confrontations contre les 5 premiers
+        @st.cache_data(show_spinner=False)
+        def get_matchs_poule(champ_id, poule):
+            query = f"""
+                SELECT EQUIPE_DOM, EQUIPE_EXT, NB_BUT_DOM, NB_BUT_EXT
+                FROM `datafoot-448514.DATAFOOT.DATAFOOT_MATCH_2025`
+                WHERE ID_CHAMPIONNAT = {champ_id}
+                  AND POULE = '{poule}'
+                  AND STATUT = 'TERMINE'
+            """
+            return client.query(query).to_dataframe()
+
+        matchs_poule = get_matchs_poule(champ_id, poule)
+
+        confrontations = matchs_poule[
+            ((matchs_poule["EQUIPE_DOM"] == equipe_2e) & (matchs_poule["EQUIPE_EXT"].isin(top_5))) |
+            ((matchs_poule["EQUIPE_EXT"] == equipe_2e) & (matchs_poule["EQUIPE_DOM"].isin(top_5)))
+        ]
+
+        pts = 0
+        for _, m in confrontations.iterrows():
+            if m["EQUIPE_DOM"] == equipe_2e:
+                if m["NB_BUT_DOM"] > m["NB_BUT_EXT"]: pts += 3
+                elif m["NB_BUT_DOM"] == m["NB_BUT_EXT"]: pts += 1
+            elif m["EQUIPE_EXT"] == equipe_2e:
+                if m["NB_BUT_EXT"] > m["NB_BUT_DOM"]: pts += 3
+                elif m["NB_BUT_EXT"] == m["NB_BUT_DOM"]: pts += 1
+
+        comparatif_2e.append({
+            "POULE": poule,
+            "EQUIPE": equipe_2e,
+            "PTS_CONFRONT_TOP5": pts
+        })
+
+    df_2e_comp = pd.DataFrame(comparatif_2e).sort_values("PTS_CONFRONT_TOP5", ascending=False)
+    df_2e_comp["RANG"] = df_2e_comp["PTS_CONFRONT_TOP5"].rank(method="min", ascending=False)
+
+    st.dataframe(df_2e_comp, use_container_width=True)
+
     
     st.dataframe(df_comparatif, use_container_width=True)
 
