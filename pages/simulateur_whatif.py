@@ -136,7 +136,7 @@ if "simulated_scores" in st.session_state:
         ext = matchs_complets.rename(columns={"EQUIPE_EXT": "NOM_EQUIPE", "NB_BUT_EXT": "BUTS_POUR", "NB_BUT_DOM": "BUTS_CONTRE"})
         ext["POINTS"] = ext.apply(lambda r: 3 if r.BUTS_POUR > r.BUTS_CONTRE else (1 if r.BUTS_POUR == r.BUTS_CONTRE else 0), axis=1)
 
-        full = pd.concat([dom, ext])["POULE", "NOM_EQUIPE", "BUTS_POUR", "BUTS_CONTRE", "POINTS"]
+        full = pd.concat([dom, ext])[["POULE", "NOM_EQUIPE", "BUTS_POUR", "BUTS_CONTRE", "POINTS"]]
         classement = full.groupby(["POULE", "NOM_EQUIPE"]).agg(
             MJ=("POINTS", "count"),
             G=("POINTS", lambda x: (x == 3).sum()),
