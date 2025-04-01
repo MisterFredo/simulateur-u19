@@ -175,7 +175,7 @@ if champ_id == 6 and not classement_df.empty:
 
     df_comparatif = pd.DataFrame(comparatif_11e).sort_values("PTS_CONFRONT_6_10")
     df_comparatif["RANG"] = df_comparatif["PTS_CONFRONT_6_10"].rank(method="min")
-    st.write("📊 Tableau comparatif :", df_comparatif)
+    
     st.dataframe(df_comparatif, use_container_width=True)
 
 st.caption("💡 Classement calculé à partir des matchs terminés uniquement, selon la date sélectionnée.")
