@@ -39,7 +39,10 @@ champ_id = champ_options[champ_options["NOM_CHAMPIONNAT"] == selected_nom]["ID_C
 
 date_limite = st.sidebar.date_input("Date de simulation", value=pd.to_datetime("2025-03-31"))
 
-# Requête du classement réel
+# Nouveau sélecteur : vue à utiliser
+mode_vue = st.sidebar.radio("Source du classement", ["Classement réel (vérifié)", "Classement par date (vue calculée)"])
+
+# Requête du classement
 @st.cache_data(show_spinner=False)
 def get_classement_reel(id_championnat, date):
     query = f"""
@@ -51,20 +54,39 @@ def get_classement_reel(id_championnat, date):
     """
     return client.query(query).to_dataframe()
 
-classement_reel = get_classement_reel(champ_id, date_limite)
+@st.cache_data(show_spinner=False)
+def get_classement_par_date(id_championnat, date):
+    query = f"""
+        SELECT *
+        FROM `datafoot-448514.DATAFOOT.VIEW_CLASSEMENT_PAR_DATE`
+        WHERE ID_CHAMPIONNAT = {id_championnat}
+          AND DATE <= DATE('{date}')
+        ORDER BY POULE, CLASSEMENT
+    """
+    return client.query(query).to_dataframe()
+
+# Chargement des données
+if mode_vue == "Classement réel (vérifié)":
+    classement_df = get_classement_reel(champ_id, date_limite)
+    classement_label = "RANG"
+else:
+    classement_df = get_classement_par_date(champ_id, date_limite)
+    classement_label = "CLASSEMENT"
 
 # Affichage
-st.title("🏆 Classement RÉEL - Datafoot")
+st.title("🏆 Classement - Datafoot")
 st.markdown(f"### {selected_nom} ({selected_categorie} - {selected_niveau}) au {date_limite.strftime('%d/%m/%Y')}")
 
-if classement_reel.empty:
+if classement_df.empty:
     st.warning("Aucun classement disponible pour ces critères.")
 else:
-    for poule in sorted(classement_reel["POULE"].unique()):
+    for poule in sorted(classement_df["POULE"].unique()):
         st.subheader(f"Poule {poule}")
-        df = classement_reel[classement_reel["POULE"] == poule][
-            ["RANG", "NOM_EQUIPE", "POINTS", "BUTS_POUR", "BUTS_CONTRE", "DIFF", "MATCHS_JOUES"]
-        ]
+        df = classement_df[classement_df["POULE"] == poule][[
+            classement_label, "NOM_EQUIPE", "PTS", "BP", "BC", "DIFF", "MJ"
+        ]].rename(columns={
+            "PTS": "POINTS", "BP": "BUTS_POUR", "BC": "BUTS_CONTRE", "MJ": "MATCHS_JOUES"
+        })
         st.dataframe(df, use_container_width=True)
 
-st.caption("💡 Classement calculé à partir des matchs terminés uniquement, à la date choisie.")
+st.caption("💡 Données basées sur la vue sélectionnée (matchs terminés uniquement pour le moment).")
