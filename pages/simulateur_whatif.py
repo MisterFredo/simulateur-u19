@@ -196,7 +196,6 @@ if "simulated_scores" in st.session_state:
             df_comparatif = pd.DataFrame(comparatif_11e).sort_values("PTS_CONFRONT_6_10")
             df_comparatif["RANG"] = df_comparatif["PTS_CONFRONT_6_10"].rank(method="min")
 
-            st.write("📊 Tableau comparatif :", df_comparatif)
             st.dataframe(df_comparatif, use_container_width=True)
 
         for poule in sorted(classement["POULE"].unique()):
