@@ -41,7 +41,7 @@ date_limite = st.sidebar.date_input("Date de simulation", value=pd.to_datetime("
 
 # Récupération du classement via la vue à jour
 @st.cache_data(show_spinner=False)
-classement_df = get_classement_dynamique(champ_id, date_limite):
+classement_df = get_classement_dynamique(champ_id, date_limite)
     query = f"""
         WITH matchs_termine AS (
           SELECT *
