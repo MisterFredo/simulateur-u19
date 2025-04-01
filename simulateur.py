@@ -38,7 +38,7 @@ def get_classement_reel(date, id_championnat):
         SELECT MAX(DATE_CALCUL) AS DERNIERE_DATE
         FROM `datafoot-448514.DATAFOOT.VIEW_CLASSEMENT_REEL_2025`
         WHERE DATE_CALCUL <= DATE('{date}')
-          AND ID_CHAMPIONNAT = '{id_championnat}'
+          AND ID_CHAMPIONNAT = {id_championnat}
     """
     result = client.query(query_date).to_dataframe()
     if result.empty or pd.isna(result.iloc[0]["DERNIERE_DATE"]):
