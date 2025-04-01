@@ -117,7 +117,7 @@ if "simulated_scores" in st.session_state:
         full = pd.concat([dom[["POULE", "NOM_EQUIPE", "BUTS_POUR", "BUTS_CONTRE", "POINTS"]],
                           ext[["POULE", "NOM_EQUIPE", "BUTS_POUR", "BUTS_CONTRE", "POINTS"]]])
 
-        # Agrégation du classement
+                # Agrégation du classement
         classement = full.groupby(["POULE", "NOM_EQUIPE"]).agg(
             MJ=("POINTS", "count"),
             G=("POINTS", lambda x: (x == 3).sum()),
@@ -125,15 +125,20 @@ if "simulated_scores" in st.session_state:
             P=("POINTS", lambda x: (x == 0).sum()),
             BP=("BUTS_POUR", "sum"),
             BC=("BUTS_CONTRE", "sum"),
-            DIFF=("POINTS", lambda x: 0),  # sera recalculé
             PTS=("POINTS", "sum")
         ).reset_index()
 
+        # Calcul de la différence de buts
         classement["DIFF"] = classement["BP"] - classement["BC"]
+
+        # Tri par classement dans chaque poule
         classement = classement.sort_values(
-    by=["POULE", "PTS", "DIFF", "BP"], ascending=[True, False, False, False]
-)
-classement["CLASSEMENT"] = classement.groupby("POULE").cumcount() + 1
+            by=["POULE", "PTS", "DIFF", "BP"], ascending=[True, False, False, False]
+        )
+
+        # Attribution des rangs
+        classement["CLASSEMENT"] = classement.groupby("POULE").cumcount() + 1
+
 
         # Affichage
         for poule in sorted(classement["POULE"].unique()):
