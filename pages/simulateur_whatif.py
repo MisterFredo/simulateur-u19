@@ -169,6 +169,47 @@ if "simulated_scores" in st.session_state:
 
         classement["CLASSEMENT"] = classement.groupby("POULE").cumcount() + 1
 
+        # Bloc spécial classement 11e U19 National (règle spécifique)
+if champ_id == 6 and not classement.empty:
+    st.markdown("### 🚨 Classement spécial des 11e (règle U19 National)")
+    df_11e = classement[classement["CLASSEMENT"] == 11]
+    comparatif_11e = []
+
+    for _, row in df_11e.iterrows():
+        poule = row["POULE"]
+        equipe_11e = row["NOM_EQUIPE"]
+        equipes_6a10 = classement[
+            (classement["POULE"] == poule) &
+            (classement["CLASSEMENT"].between(6, 10))
+        ]["NOM_EQUIPE"].tolist()
+
+        confrontations = matchs_complets[
+            ((matchs_complets["EQUIPE_DOM"] == equipe_11e) & (matchs_complets["EQUIPE_EXT"].isin(equipes_6a10))) |
+            ((matchs_complets["EQUIPE_EXT"] == equipe_11e) & (matchs_complets["EQUIPE_DOM"].isin(equipes_6a10)))
+        ]
+
+        pts = 0
+        for _, m in confrontations.iterrows():
+            if m["EQUIPE_DOM"] == equipe_11e:
+                if m["NB_BUT_DOM"] > m["NB_BUT_EXT"]: pts += 3
+                elif m["NB_BUT_DOM"] == m["NB_BUT_EXT"]: pts += 1
+            elif m["EQUIPE_EXT"] == equipe_11e:
+                if m["NB_BUT_EXT"] > m["NB_BUT_DOM"]: pts += 3
+                elif m["NB_BUT_EXT"] == m["NB_BUT_DOM"]: pts += 1
+
+        comparatif_11e.append({
+            "POULE": poule,
+            "EQUIPE": equipe_11e,
+            "PTS_CONFRONT_6_10": pts
+        })
+
+    df_comparatif = pd.DataFrame(comparatif_11e).sort_values("PTS_CONFRONT_6_10")
+    df_comparatif["RANG"] = df_comparatif["PTS_CONFRONT_6_10"].rank(method="min")
+
+    st.write("📊 Tableau comparatif :", df_comparatif)
+    st.dataframe(df_comparatif, use_container_width=True)
+
+
         # Affichage
         for poule in sorted(classement["POULE"].unique()):
             st.subheader(f"Poule {poule}")
