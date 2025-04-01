@@ -114,9 +114,18 @@ def get_classement_dynamique(champ_id, date_limite):
 # 👇 Appel de la fonction avec les filtres actuels
 classement_df = get_classement_dynamique(champ_id, date_limite)
 
+# Détection des poules disponibles
+poules_disponibles = sorted(classement_df["POULE"].dropna().unique()) if not classement_df.empty else []
+if len(poules_disponibles) > 1:
+    selected_poule = st.sidebar.selectbox("Poule", ["Toutes les poules"] + poules_disponibles)
+else:
+    selected_poule = poules_disponibles[0] if poules_disponibles else "Toutes les poules"
+
+if selected_poule != "Toutes les poules":
+    classement_df = classement_df[classement_df["POULE"] == selected_poule]
+
 # Affichage
-title = "🏆 Classement - Datafoot"
-st.title(title)
+st.title("🏆 Classement - Datafoot")
 st.markdown(f"### {selected_nom} ({selected_categorie} - {selected_niveau}) au {date_limite.strftime('%d/%m/%Y')}")
 
 if classement_df.empty:
@@ -176,11 +185,12 @@ if champ_id == 6 and not classement_df.empty:
 
     df_comparatif = pd.DataFrame(comparatif_11e).sort_values("PTS_CONFRONT_6_10")
     df_comparatif["RANG"] = df_comparatif["PTS_CONFRONT_6_10"].rank(method="min")
+    st.write("📊 Tableau comparatif :", df_comparatif)
     st.dataframe(df_comparatif, use_container_width=True)
 
 # Bloc spécial classement des 2e - U17 National (ID 7)
 if champ_id == 7 and not classement_df.empty:
-    st.markdown("### 🥌 Comparatif des 2e (règle U17 National)")
+    st.markdown("### 🥈 Comparatif des 2e (règle U17 National)")
 
     df_2e = classement_df[classement_df["CLASSEMENT"] == 2]
     comparatif_2e = []
