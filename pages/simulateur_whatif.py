@@ -170,7 +170,7 @@ if "simulated_scores" in st.session_state:
         classement["CLASSEMENT"] = classement.groupby("POULE").cumcount() + 1
 
         # Bloc spécial classement 11e U19 National (règle spécifique)
-if champ_id == 6 and not classement.empty:
+    if champ_id == 6 and not classement.empty:
     st.markdown("### 🚨 Classement spécial des 11e (règle U19 National)")
     df_11e = classement[classement["CLASSEMENT"] == 11]
     comparatif_11e = []
