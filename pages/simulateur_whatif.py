@@ -71,4 +71,22 @@ if matchs_simulables.empty:
     st.info("Aucun match à afficher pour cette configuration.")
 else:
     st.markdown("### Matchs simulables")
-    st.dataframe(matchs_simulables, use_container_width=True)
+
+    # Copie modifiable du DataFrame
+    df_simulation = matchs_simulables.copy()
+
+    # Zone d'édition des scores
+    edited_df = st.data_editor(
+        df_simulation[[
+            "ID_MATCH", "JOURNEE", "POULE", "DATE",
+            "EQUIPE_DOM", "NB_BUT_DOM", "EQUIPE_EXT", "NB_BUT_EXT", "STATUT"
+        ]],
+        num_rows="dynamic",
+        use_container_width=True,
+        key="simulation_scores"
+    )
+
+    # Bouton pour recalculer
+    if st.button("🔁 Recalculer le classement avec ces scores simulés"):
+        st.session_state["simulated_scores"] = edited_df
+        st.success("Scores pris en compte. On peut maintenant recalculer le classement.")
