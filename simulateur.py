@@ -130,4 +130,51 @@ else:
         })
         st.dataframe(df, use_container_width=True)
 
+# Bloc spécial classement 11e U19 National
+if champ_id == 6 and not classement_df.empty:
+    st.markdown("### 🚨 Classement spécial des 11èmes (règle U19 National)")
+    df_11e = classement_df[classement_df["CLASSEMENT"] == 11]
+    comparatif_11e = []
+
+    @st.cache_data(show_spinner=False)
+    def get_matchs_u19(champ_id, date_limite):
+        query = f"""
+            SELECT *
+            FROM `datafoot-448514.DATAFOOT.DATAFOOT_MATCH_2025`
+            WHERE STATUT = 'TERMINE'
+              AND ID_CHAMPIONNAT = {champ_id}
+              AND DATE <= DATE('{date_limite}')
+        """
+        return client.query(query).to_dataframe()
+
+    matchs_u19 = get_matchs_u19(champ_id, date_limite)
+
+    for _, row in df_11e.iterrows():
+        poule = row["POULE"]
+        equipe_11e = row["NOM_EQUIPE"]
+        equipes_6a10 = classement_df[
+            (classement_df["POULE"] == poule) &
+            (classement_df["CLASSEMENT"].between(6, 10))
+        ]["NOM_EQUIPE"].tolist()
+
+        confrontations = matchs_u19[
+            ((matchs_u19["EQUIPE_DOM"] == equipe_11e) & (matchs_u19["EQUIPE_EXT"].isin(equipes_6a10))) |
+            ((matchs_u19["EQUIPE_EXT"] == equipe_11e) & (matchs_u19["EQUIPE_DOM"].isin(equipes_6a10)))
+        ]
+
+        pts = 0
+        for _, m in confrontations.iterrows():
+            if m["EQUIPE_DOM"] == equipe_11e:
+                if m["NB_BUT_DOM"] > m["NB_BUT_EXT"]: pts += 3
+                elif m["NB_BUT_DOM"] == m["NB_BUT_EXT"]: pts += 1
+            elif m["EQUIPE_EXT"] == equipe_11e:
+                if m["NB_BUT_EXT"] > m["NB_BUT_DOM"]: pts += 3
+                elif m["NB_BUT_EXT"] == m["NB_BUT_DOM"]: pts += 1
+
+        comparatif_11e.append({"POULE": poule, "EQUIPE": equipe_11e, "PTS_CONFRONT_6_10": pts})
+
+    df_comparatif = pd.DataFrame(comparatif_11e).sort_values("PTS_CONFRONT_6_10")
+    df_comparatif["RANG"] = df_comparatif["PTS_CONFRONT_6_10"].rank(method="min")
+    st.dataframe(df_comparatif, use_container_width=True)
+
 st.caption("💡 Classement calculé à partir des matchs terminés uniquement, selon la date sélectionnée.")
