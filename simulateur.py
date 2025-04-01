@@ -12,7 +12,7 @@ credentials = service_account.Credentials.from_service_account_info(
 )
 client = bigquery.Client(credentials=credentials, project=credentials.project_id)
 
-# Chargement des métadonnées des championnats
+# Chargement des championnats
 @st.cache_data(show_spinner=False)
 def load_championnats():
     query = """
@@ -24,53 +24,47 @@ def load_championnats():
 
 championnats_df = load_championnats()
 
-# Interface utilisateur : sélection du championnat et de la date
-titre_col, date_col = st.columns([2, 1])
+# Barre latérale
+st.sidebar.header("🔍 Filtres de sélection")
+categorie = st.sidebar.selectbox("Catégorie", sorted(championnats_df["CATEGORIE"].unique()))
+niveau = st.sidebar.selectbox("Niveau", sorted(championnats_df[championnats_df["CATEGORIE"] == categorie]["NIVEAU"].unique()))
+championnats_filtrés = championnats_df[(championnats_df["CATEGORIE"] == categorie) & (championnats_df["NIVEAU"] == niveau)]
+champ_nom = st.sidebar.selectbox("Championnat", championnats_filtrés["NOM_CHAMPIONNAT"])
+id_championnat = championnats_filtrés[championnats_filtrés["NOM_CHAMPIONNAT"] == champ_nom]["ID_CHAMPIONNAT"].iloc[0]
 
-with titre_col:
-    selected_nom = st.selectbox("Sélectionnez un championnat", championnats_df["NOM_CHAMPIONNAT"])
-    selected_row = championnats_df[championnats_df["NOM_CHAMPIONNAT"] == selected_nom].iloc[0]
-    id_championnat = selected_row["ID_CHAMPIONNAT"]
+date_limite = st.sidebar.date_input("📅 Date de simulation", value=pd.to_datetime("2025-03-31"))
 
-with date_col:
-    date_limite = st.date_input("Date de simulation", value=pd.to_datetime("2025-03-31"))
+# Titre principal
+st.title(f"📊 Classements au {date_limite.strftime('%d/%m/%Y')} pour {champ_nom}")
 
-# Requêtes pour les classements
+# Requête classement réel
 @st.cache_data(show_spinner=False)
-def get_classement_reel(id_championnat, date):
+def get_classement_reel(id_champ, date):
     query = f"""
         SELECT *
         FROM `datafoot-448514.DATAFOOT.VIEW_CLASSEMENT_REEL_2025`
-        WHERE ID_CHAMPIONNAT = {id_championnat}
-          AND DATE_CALCUL = DATE('{date}')
+        WHERE ID_CHAMPIONNAT = {id_champ} AND DATE_CALCUL = DATE('{date}')
         ORDER BY POULE, RANG
     """
     return client.query(query).to_dataframe()
 
+# Requête classement simulé
 @st.cache_data(show_spinner=False)
-def get_classement_simule(id_championnat, date):
+def get_classement_simule(id_champ, date):
     query = f"""
         SELECT *
         FROM `datafoot-448514.DATAFOOT.VIEW_CLASSEMENT_DYNAMIQUE`
-        WHERE ID_CHAMPIONNAT = {id_championnat}
-          AND DATE_CALCUL = DATE('{date}')
+        WHERE ID_CHAMPIONNAT = {id_champ} AND DATE_CALCUL = DATE('{date}')
         ORDER BY POULE, RANG
     """
     return client.query(query).to_dataframe()
-
-# Affichage
-st.title("⚽ Simulateur de classement - Datafoot")
 
 classement_reel = get_classement_reel(id_championnat, date_limite)
 classement_simule = get_classement_simule(id_championnat, date_limite)
 
-if classement_reel.empty or classement_simule.empty:
-    st.warning("Aucun résultat pour cette combinaison championnat/date.")
-else:
-    st.header("📊 Comparaison des classements à la date choisie")
-    poules = classement_reel["POULE"].unique()
-
-    for poule in poules:
+# Affichage comparé par poule
+if not classement_reel.empty and not classement_simule.empty:
+    for poule in sorted(classement_reel["POULE"].unique()):
         st.subheader(f"Poule {poule}")
 
         df_reel = classement_reel[classement_reel["POULE"] == poule][["RANG", "NOM_EQUIPE", "POINTS"]].rename(columns={
@@ -83,5 +77,7 @@ else:
 
         df_comparaison = pd.concat([df_reel.reset_index(drop=True), df_sim.reset_index(drop=True)], axis=1)
         st.dataframe(df_comparaison, use_container_width=True)
+else:
+    st.warning("Aucune donnée disponible pour ce championnat à cette date.")
 
-st.caption("💡 Comparaison entre le classement à date (matchs terminés uniquement) et la projection avec tous les matchs (simulé).")
+st.caption("💡 Classement réel : matchs terminés uniquement — Classement simulé : projection avec tous les matchs.")
