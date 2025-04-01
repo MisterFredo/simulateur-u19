@@ -37,6 +37,7 @@ champ_options = championnats_df[
 selected_nom = st.sidebar.selectbox("Championnat", champ_options["NOM_CHAMPIONNAT"])
 champ_id = champ_options[champ_options["NOM_CHAMPIONNAT"] == selected_nom]["ID_CHAMPIONNAT"].values[0]
 
+# Date limite de simulation
 date_limite = st.sidebar.date_input("Date de simulation", value=pd.to_datetime("2025-03-31"))
 
 # Récupération du classement via la vue à jour
@@ -111,15 +112,17 @@ def get_classement_dynamique(champ_id, date_limite):
     """
     return client.query(query).to_dataframe()
 
-# 👇 Appel de la fonction avec les filtres actuels
+# Chargement du classement
 classement_df = get_classement_dynamique(champ_id, date_limite)
 
 # Détection des poules disponibles
 poules_disponibles = sorted(classement_df["POULE"].dropna().unique()) if not classement_df.empty else []
 if len(poules_disponibles) > 1:
     selected_poule = st.sidebar.selectbox("Poule", ["Toutes les poules"] + poules_disponibles)
+elif poules_disponibles:
+    selected_poule = poules_disponibles[0]
 else:
-    selected_poule = poules_disponibles[0] if poules_disponibles else "Toutes les poules"
+    selected_poule = "Toutes les poules"
 
 if selected_poule != "Toutes les poules":
     classement_df = classement_df[classement_df["POULE"] == selected_poule]
