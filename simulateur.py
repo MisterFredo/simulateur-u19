@@ -115,7 +115,8 @@ def get_classement_dynamique(champ_id, date_limite):
 classement_df = get_classement_dynamique(champ_id, date_limite)
 
 # Affichage
-st.title("🏆 Classement - Datafoot")
+title = "🏆 Classement - Datafoot"
+st.title(title)
 st.markdown(f"### {selected_nom} ({selected_categorie} - {selected_niveau}) au {date_limite.strftime('%d/%m/%Y')}")
 
 if classement_df.empty:
@@ -175,10 +176,11 @@ if champ_id == 6 and not classement_df.empty:
 
     df_comparatif = pd.DataFrame(comparatif_11e).sort_values("PTS_CONFRONT_6_10")
     df_comparatif["RANG"] = df_comparatif["PTS_CONFRONT_6_10"].rank(method="min")
+    st.dataframe(df_comparatif, use_container_width=True)
 
-    # Bloc spécial classement des 2e - U17 National (ID 7)
+# Bloc spécial classement des 2e - U17 National (ID 7)
 if champ_id == 7 and not classement_df.empty:
-    st.markdown("### 🥈 Comparatif des 2e (règle U17 National)")
+    st.markdown("### 🥌 Comparatif des 2e (règle U17 National)")
 
     df_2e = classement_df[classement_df["CLASSEMENT"] == 2]
     comparatif_2e = []
@@ -192,7 +194,6 @@ if champ_id == 7 and not classement_df.empty:
             (classement_df["CLASSEMENT"].between(1, 5))
         ]["NOM_EQUIPE"].tolist()
 
-        # Extraire les confrontations contre les 5 premiers
         @st.cache_data(show_spinner=False)
         def get_matchs_poule(champ_id, poule):
             query = f"""
@@ -228,9 +229,6 @@ if champ_id == 7 and not classement_df.empty:
 
     df_2e_comp = pd.DataFrame(comparatif_2e).sort_values("PTS_CONFRONT_TOP5", ascending=False)
     df_2e_comp["RANG"] = df_2e_comp["PTS_CONFRONT_TOP5"].rank(method="min", ascending=False)
-
-
-    
-    st.dataframe(df_comparatif, use_container_width=True)
+    st.dataframe(df_2e_comp, use_container_width=True)
 
 st.caption("💡 Classement calculé à partir des matchs terminés uniquement, selon la date sélectionnée.")
