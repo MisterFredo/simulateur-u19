@@ -41,13 +41,13 @@ date_limite = st.sidebar.date_input("Date de simulation", value=pd.to_datetime("
 
 # Récupération du classement via la vue à jour
 @st.cache_data(show_spinner=False)
-classement_df = get_classement_dynamique(champ_id, date_limite)
+def get_classement_dynamique(champ_id, date_limite):
     query = f"""
         WITH matchs_termine AS (
           SELECT *
           FROM `datafoot-448514.DATAFOOT.DATAFOOT_MATCH_2025`
           WHERE STATUT = 'TERMINE'
-            AND ID_CHAMPIONNAT = {id_championnat}
+            AND ID_CHAMPIONNAT = {champ_id}
             AND DATE <= DATE('{date_limite}')
         ),
 
@@ -111,6 +111,8 @@ classement_df = get_classement_dynamique(champ_id, date_limite)
     """
     return client.query(query).to_dataframe()
 
+# 👇 Appel de la fonction avec les filtres actuels
+classement_df = get_classement_dynamique(champ_id, date_limite)
 
 # Affichage
 st.title("🏆 Classement - Datafoot")
