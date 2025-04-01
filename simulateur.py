@@ -4,7 +4,7 @@ from google.cloud import bigquery
 from google.oauth2 import service_account
 
 # Configuration de la page
-st.set_page_config(page_title="Classement RÉEL - Datafoot", layout="wide")
+st.set_page_config(page_title="Classement - Datafoot", layout="wide")
 
 # Connexion à BigQuery via secrets
 credentials = service_account.Credentials.from_service_account_info(
@@ -12,7 +12,7 @@ credentials = service_account.Credentials.from_service_account_info(
 )
 client = bigquery.Client(credentials=credentials, project=credentials.project_id)
 
-# Requête des championnats
+# Chargement des championnats
 @st.cache_data(show_spinner=False)
 def load_championnats():
     query = """
@@ -39,21 +39,7 @@ champ_id = champ_options[champ_options["NOM_CHAMPIONNAT"] == selected_nom]["ID_C
 
 date_limite = st.sidebar.date_input("Date de simulation", value=pd.to_datetime("2025-03-31"))
 
-# Nouveau sélecteur : vue à utiliser
-mode_vue = st.sidebar.radio("Source du classement", ["Classement réel (vérifié)", "Classement par date (vue calculée)"])
-
-# Requête du classement
-@st.cache_data(show_spinner=False)
-def get_classement_reel(id_championnat, date):
-    query = f"""
-        SELECT *
-        FROM `datafoot-448514.DATAFOOT.VIEW_CLASSEMENT_REEL_2025`
-        WHERE ID_CHAMPIONNAT = {id_championnat}
-          AND DATE_CALCUL <= DATE('{date}')
-        ORDER BY POULE, RANG
-    """
-    return client.query(query).to_dataframe()
-
+# Récupération du classement via la vue à jour
 @st.cache_data(show_spinner=False)
 def get_classement_par_date(id_championnat, date):
     query = f"""
@@ -65,13 +51,7 @@ def get_classement_par_date(id_championnat, date):
     """
     return client.query(query).to_dataframe()
 
-# Chargement des données
-if mode_vue == "Classement réel (vérifié)":
-    classement_df = get_classement_reel(champ_id, date_limite)
-    classement_label = "RANG"
-else:
-    classement_df = get_classement_par_date(champ_id, date_limite)
-    classement_label = "CLASSEMENT"
+classement_df = get_classement_par_date(champ_id, date_limite)
 
 # Affichage
 st.title("🏆 Classement - Datafoot")
@@ -83,10 +63,10 @@ else:
     for poule in sorted(classement_df["POULE"].unique()):
         st.subheader(f"Poule {poule}")
         df = classement_df[classement_df["POULE"] == poule][[
-            classement_label, "NOM_EQUIPE", "PTS", "BP", "BC", "DIFF", "MJ"
+            "CLASSEMENT", "NOM_EQUIPE", "PTS", "BP", "BC", "DIFF", "MJ"
         ]].rename(columns={
             "PTS": "POINTS", "BP": "BUTS_POUR", "BC": "BUTS_CONTRE", "MJ": "MATCHS_JOUES"
         })
         st.dataframe(df, use_container_width=True)
 
-st.caption("💡 Données basées sur la vue sélectionnée (matchs terminés uniquement pour le moment).")
+st.caption("💡 Classement calculé à partir des matchs terminés uniquement, selon la date sélectionnée.")
