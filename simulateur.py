@@ -61,7 +61,7 @@ def get_classement_simule(date, id_championnat):
         SELECT *
         FROM `datafoot-448514.DATAFOOT.VIEW_CLASSEMENT_DYNAMIQUE`
         WHERE DATE_CALCUL = DATE('{date}')
-          AND ID_CHAMPIONNAT = '{id_championnat}'
+          AND ID_CHAMPIONNAT = {id_championnat}
         ORDER BY POULE, RANG
     """
     return client.query(query).to_dataframe()
