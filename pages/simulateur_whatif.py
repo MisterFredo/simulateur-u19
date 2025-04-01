@@ -130,8 +130,10 @@ if "simulated_scores" in st.session_state:
         ).reset_index()
 
         classement["DIFF"] = classement["BP"] - classement["BC"]
-        classement["CLASSEMENT"] = classement.groupby("POULE")["PTS", "DIFF", "BP"].rank(
-            method="dense", ascending=False).astype(int)["PTS"]
+        classement = classement.sort_values(
+    by=["POULE", "PTS", "DIFF", "BP"], ascending=[True, False, False, False]
+)
+classement["CLASSEMENT"] = classement.groupby("POULE").cumcount() + 1
 
         # Affichage
         for poule in sorted(classement["POULE"].unique()):
