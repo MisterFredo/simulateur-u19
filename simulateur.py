@@ -60,13 +60,11 @@ if classement_reel.empty:
     st.warning("Aucun classement disponible pour ces critères.")
 else:
     poules = classement_reel["POULE"].unique()
-        for poule in sorted(poules):
+    for poule in sorted(poules):
         st.subheader(f"Poule {poule}")
         df = classement_reel[classement_reel["POULE"] == poule][
             ["RANG", "NOM_EQUIPE", "POINTS", "BUTS_POUR", "BUTS_CONTRE", "DIFF", "MATCHS_JOUES"]
         ].sort_values("RANG")
         st.dataframe(df, use_container_width=True)
-
-        )
 
 st.caption("💡 Classement calculé à partir des matchs terminés uniquement, à la date choisie.")
