@@ -46,7 +46,7 @@ def get_classement_par_date(id_championnat, date):
         SELECT *
         FROM `datafoot-448514.DATAFOOT.VIEW_CLASSEMENT_PAR_DATE`
         WHERE ID_CHAMPIONNAT = {id_championnat}
-          AND DATE <= DATE('{date}')
+          AND DATE_CALCUL <= DATE('{date}')
         ORDER BY POULE, CLASSEMENT
     """
     return client.query(query).to_dataframe()
