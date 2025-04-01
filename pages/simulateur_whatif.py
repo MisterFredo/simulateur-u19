@@ -121,7 +121,6 @@ if "simulated_scores" in st.session_state:
 
         df_simules = df_valid.set_index("ID_MATCH")
         matchs_termines = matchs_termines.set_index("ID_MATCH")
-
         matchs_reels_sans_doublon = matchs_termines[~matchs_termines.index.isin(df_simules.index)]
         matchs_complets = pd.concat([matchs_reels_sans_doublon, df_simules]).reset_index()
 
@@ -153,13 +152,10 @@ if "simulated_scores" in st.session_state:
         ).reset_index()
 
         classement["DIFF"] = classement["BP"] - classement["BC"]
-
-        classement = classement.sort_values(
-            by=["POULE", "PTS", "DIFF", "BP"], ascending=[True, False, False, False]
-        )
-
+        classement = classement.sort_values(by=["POULE", "PTS", "DIFF", "BP"], ascending=[True, False, False, False])
         classement["CLASSEMENT"] = classement.groupby("POULE").cumcount() + 1
 
+        # Bloc spécial U19 National - 11e
         if champ_id == 6 and not classement.empty:
             st.markdown("### 🚨 Classement spécial des 11e (règle U19 National)")
             df_11e = classement[classement["CLASSEMENT"] == 11]
@@ -195,8 +191,46 @@ if "simulated_scores" in st.session_state:
 
             df_comparatif = pd.DataFrame(comparatif_11e).sort_values("PTS_CONFRONT_6_10")
             df_comparatif["RANG"] = df_comparatif["PTS_CONFRONT_6_10"].rank(method="min")
-
             st.dataframe(df_comparatif, use_container_width=True)
+
+        # Bloc spécial U17 National - 2e
+        if champ_id == 7 and not classement.empty:
+            st.markdown("### 🥌 Comparatif des 2e (règle U17 National)")
+            df_2e = classement[classement["CLASSEMENT"] == 2]
+            comparatif_2e = []
+
+            for _, row in df_2e.iterrows():
+                poule = row["POULE"]
+                equipe_2e = row["NOM_EQUIPE"]
+
+                top_5 = classement[
+                    (classement["POULE"] == poule) &
+                    (classement["CLASSEMENT"].between(1, 5))
+                ]["NOM_EQUIPE"].tolist()
+
+                confrontations = matchs_complets[
+                    ((matchs_complets["EQUIPE_DOM"] == equipe_2e) & (matchs_complets["EQUIPE_EXT"].isin(top_5))) |
+                    ((matchs_complets["EQUIPE_EXT"] == equipe_2e) & (matchs_complets["EQUIPE_DOM"].isin(top_5)))
+                ]
+
+                pts = 0
+                for _, m in confrontations.iterrows():
+                    if m["EQUIPE_DOM"] == equipe_2e:
+                        if m["NB_BUT_DOM"] > m["NB_BUT_EXT"]: pts += 3
+                        elif m["NB_BUT_DOM"] == m["NB_BUT_EXT"]: pts += 1
+                    elif m["EQUIPE_EXT"] == equipe_2e:
+                        if m["NB_BUT_EXT"] > m["NB_BUT_DOM"]: pts += 3
+                        elif m["NB_BUT_EXT"] == m["NB_BUT_DOM"]: pts += 1
+
+                comparatif_2e.append({
+                    "POULE": poule,
+                    "EQUIPE": equipe_2e,
+                    "PTS_CONFRONT_TOP5": pts
+                })
+
+            df_2e_comp = pd.DataFrame(comparatif_2e).sort_values("PTS_CONFRONT_TOP5", ascending=False)
+            df_2e_comp["RANG"] = df_2e_comp["PTS_CONFRONT_TOP5"].rank(method="min", ascending=False)
+            st.dataframe(df_2e_comp, use_container_width=True)
 
         for poule in sorted(classement["POULE"].unique()):
             st.subheader(f"Poule {poule}")
