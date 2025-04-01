@@ -229,7 +229,6 @@ if champ_id == 7 and not classement_df.empty:
     df_2e_comp = pd.DataFrame(comparatif_2e).sort_values("PTS_CONFRONT_TOP5", ascending=False)
     df_2e_comp["RANG"] = df_2e_comp["PTS_CONFRONT_TOP5"].rank(method="min", ascending=False)
 
-    st.dataframe(df_2e_comp, use_container_width=True)
 
     
     st.dataframe(df_comparatif, use_container_width=True)
