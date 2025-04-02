@@ -110,7 +110,28 @@ def get_classement_dynamique(champ_id, date_limite):
     """
     return client.query(query).to_dataframe()
 
+# Récupération du classement
 classement_df = get_classement_dynamique(champ_id, date_limite)
+
+# Récupération des pénalités actives
+penalites_actives = penalites_df[
+    (penalites_df["ID_CHAMPIONNAT"] == champ_id) &
+    (penalites_df["DATE"] <= pd.to_datetime(date_limite))
+]
+
+# Agrégation des points de pénalité par équipe
+penalites_par_equipe = penalites_actives.groupby("ID_EQUIPE")["POINTS"].sum().reset_index()
+penalites_par_equipe.rename(columns={"POINTS": "PENALITES"}, inplace=True)
+
+# Ajout dans le classement (avant filtre sur la poule)
+classement_df = classement_df.merge(penalites_par_equipe, on="ID_EQUIPE", how="left")
+classement_df["PENALITES"] = classement_df["PENALITES"].fillna(0).astype(int)
+classement_df["POINTS"] = classement_df["PTS"] - classement_df["PENALITES"]
+
+# Filtrage si une seule poule est sélectionnée
+if selected_poule != "Toutes les poules":
+    classement_df = classement_df[classement_df["POULE"] == selected_poule]
+
 
 # Ajout des pénalités
 penalites_actives = penalites_df[
