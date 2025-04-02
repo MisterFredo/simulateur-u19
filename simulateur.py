@@ -107,7 +107,7 @@ classement_complet = get_classement_dynamique(champ_id, date_limite)
 def load_penalites():
     query = """
         SELECT ID_EQUIPE, ID_CHAMPIONNAT, POINTS, DATE
-        FROM `datafoot-448514.DATAFOOT.DATA_PENALITE`
+        FROM `datafoot-448514.DATAFOOT.DATAFOOT_PENALITE`
     """
     return client.query(query).to_dataframe()
 
