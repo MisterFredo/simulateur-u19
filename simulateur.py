@@ -126,7 +126,12 @@ penalites_agg.rename(columns={"POINTS": "PENALITES"}, inplace=True)
 # Jointure avec le classement
 classement_df = classement_complet.merge(penalites_agg, on="ID_EQUIPE", how="left")
 classement_df["PENALITES"] = classement_df["PENALITES"].fillna(0).astype(int)
+# Mise à jour des points après pénalités
 classement_df["POINTS"] = classement_df["PTS"] - classement_df["PENALITES"]
+
+# Recalcul du classement
+classement_df = classement_df.sort_values(by=["POULE", "POINTS", "DIFF", "BP"], ascending=[True, False, False, False])
+classement_df["CLASSEMENT"] = classement_df.groupby("POULE").cumcount() + 1
 
 # Filtrage si une poule spécifique est sélectionnée
 if selected_poule != "Toutes les poules":
