@@ -98,11 +98,21 @@ if st.button("🔁 Recalculer le classement avec ces scores simulés"):
     # Construction des lignes pour chaque équipe
     dom = matchs_fusion[["ID_EQUIPE_DOM", "EQUIPE_DOM", "NB_BUT_DOM", "NB_BUT_EXT", "POULE"]].copy()
     dom.columns = ["ID_EQUIPE", "NOM_EQUIPE", "BUTS_POUR", "BUTS_CONTRE", "POULE"]
-    dom["POINTS"] = dom.apply(lambda r: 3 if r["BUTS_POUR"] > r["BUTS_CONTRE"] else 1 if r["BUTS_POUR"] == r["BUTS_CONTRE"] else 0, axis=1)
+    dom["POINTS"] = dom.apply(
+        lambda r: 3 if pd.notna(r["BUTS_POUR"]) and pd.notna(r["BUTS_CONTRE"]) and r["BUTS_POUR"] > r["BUTS_CONTRE"]
+        else 1 if pd.notna(r["BUTS_POUR"]) and pd.notna(r["BUTS_CONTRE"]) and r["BUTS_POUR"] == r["BUTS_CONTRE"]
+        else 0,
+        axis=1
+    )
 
     ext = matchs_fusion[["ID_EQUIPE_EXT", "EQUIPE_EXT", "NB_BUT_EXT", "NB_BUT_DOM", "POULE"]].copy()
     ext.columns = ["ID_EQUIPE", "NOM_EQUIPE", "BUTS_POUR", "BUTS_CONTRE", "POULE"]
-    ext["POINTS"] = ext.apply(lambda r: 3 if r["BUTS_POUR"] > r["BUTS_CONTRE"] else 1 if r["BUTS_POUR"] == r["BUTS_CONTRE"] else 0, axis=1)
+    ext["POINTS"] = ext.apply(
+        lambda r: 3 if pd.notna(r["BUTS_POUR"]) and pd.notna(r["BUTS_CONTRE"]) and r["BUTS_POUR"] > r["BUTS_CONTRE"]
+        else 1 if pd.notna(r["BUTS_POUR"]) and pd.notna(r["BUTS_CONTRE"]) and r["BUTS_POUR"] == r["BUTS_CONTRE"]
+        else 0,
+        axis=1
+    )
 
     classement_data = pd.concat([dom, ext], ignore_index=True)
     classement = classement_data.groupby(["ID_EQUIPE", "NOM_EQUIPE", "POULE"]).agg(
@@ -136,8 +146,6 @@ if st.button("🔁 Recalculer le classement avec ces scores simulés"):
         st.dataframe(df_affiche, use_container_width=True)
 
     st.success("Classement recalculé avec les scores simulés et les pénalités.")
-
-
 # Cas particuliers (U19 / U17 / N2 / N3)
 if "simulated_scores" in st.session_state and "classement" in locals() and selected_poule == "Toutes les poules":
     if champ_id == 6 and not classement.empty:
