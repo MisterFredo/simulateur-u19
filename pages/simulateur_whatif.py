@@ -155,7 +155,7 @@ else:
             })
             st.dataframe(df, use_container_width=True)
 
-# 🧩 REGLES SPECIFIQUES - à coller juste après l'affichage principal
+# 🧩 REGLES SPECIFIQUES - à coller juste après l’affichage du classement simulé
 
 if selected_poule == "Toutes les poules":
     # U19
@@ -289,6 +289,3 @@ if selected_poule == "Toutes les poules":
 else:
     if champ_id in [4, 5, 6, 7]:
         st.info("🔒 Les règles spécifiques (U19, U17, N2, N3) ne sont disponibles que si toutes les poules sont affichées.")
-
-
-
