@@ -113,6 +113,22 @@ def get_classement_dynamique(champ_id, date_limite):
 # Récupération du classement
 classement_df = get_classement_dynamique(champ_id, date_limite)
 
+# Intégration des pénalités
+penalites_actives = penalites_df[
+    (penalites_df["ID_CHAMPIONNAT"] == champ_id) &
+    (penalites_df["DATE"] <= pd.to_datetime(date_limite))
+]
+
+# Agrégation par ID_EQUIPE uniquement
+penalites_par_equipe = penalites_actives.groupby("ID_EQUIPE")["POINTS"].sum().reset_index()
+penalites_par_equipe.rename(columns={"POINTS": "PENALITES"}, inplace=True)
+
+# Ajout des pénalités dans le classement
+classement_df = classement_df.merge(penalites_par_equipe, on="ID_EQUIPE", how="left")
+classement_df["PENALITES"] = classement_df["PENALITES"].fillna(0).astype(int)
+classement_df["POINTS"] = classement_df["PTS"] - classement_df["PENALITES"]
+
+
 # Récupération des pénalités actives
 penalites_actives = penalites_df[
     (penalites_df["ID_CHAMPIONNAT"] == champ_id) &
@@ -177,8 +193,9 @@ if classement_df.empty:
 else:
     for poule in sorted(classement_df["POULE"].unique()):
         st.subheader(f"Poule {poule}")
-        df = classement_df[classement_df["POULE"] == poule][[
-            "CLASSEMENT", "NOM_EQUIPE", "POINTS", "PENALITES", "BP", "BC", "DIFF", "MJ"
+       df = classement_df[classement_df["POULE"] == poule][[
+    "CLASSEMENT", "NOM_EQUIPE", "POINTS", "PENALITES", "BP", "BC", "DIFF", "MJ"
+]]
         ]].rename(columns={
             "BP": "BUTS_POUR", "BC": "BUTS_CONTRE", "MJ": "MATCHS_JOUES"
         })
