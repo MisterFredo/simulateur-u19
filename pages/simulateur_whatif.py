@@ -184,7 +184,6 @@ if "simulated_scores" in st.session_state:
         penalites_par_equipe.rename(columns={"POINTS": "PENALITES"}, inplace=True)
 
         # Correspondance NOM_EQUIPE → ID_EQUIPE pour la jointure
-        classement = classement.merge(equipe_df, left_on="NOM_EQUIPE", right_on="NOM", how="left")
         classement = classement.merge(penalites_par_equipe, on="ID_EQUIPE", how="left")
         classement["PENALITES"] = classement["PENALITES"].fillna(0).astype(int)
 
