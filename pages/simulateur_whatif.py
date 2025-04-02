@@ -112,6 +112,18 @@ else:
         st.session_state["simulated_scores"] = edited_df
         st.success("Scores pris en compte. On peut maintenant recalculer le classement.")
 
+        @st.cache_data(show_spinner=False)
+def get_matchs_termines(champ_id, date_limite):
+    query = f"""
+        SELECT ID_MATCH, JOURNEE, POULE, DATE, EQUIPE_DOM, NB_BUT_DOM, EQUIPE_EXT, NB_BUT_EXT, STATUT
+        FROM `datafoot-448514.DATAFOOT.DATAFOOT_MATCH_2025`
+        WHERE ID_CHAMPIONNAT = {champ_id}
+          AND DATE <= DATE('{date_limite}')
+          AND STATUT = 'TERMINE'
+    """
+    return client.query(query).to_dataframe()
+
+
         # 🔢 Recalcul du classement avec scores simulés + pénalités
         matchs_termines = get_matchs_termines(champ_id, date_limite)
 
