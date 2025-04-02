@@ -145,8 +145,9 @@ if classement_df.empty:
 else:
     for poule in sorted(classement_df["POULE"].unique()):
         st.subheader(f"Poule {poule}")
-        df = classement_df[classement_df["POULE"] == poule][[
-            "CLASSEMENT", "NOM_EQUIPE", "POINTS", "PENALITES", "BP", "BC", "DIFF", "MJ"
+       df = classement_df[classement_df["POULE"] == poule][[
+    "CLASSEMENT", "NOM_EQUIPE", "PTS", "PENALITES", "MJ", "G", "N", "P", "BP", "BC", "DIFF"
+]]
         ]].rename(columns={
             "BP": "BP",
             "BC": "BC",
