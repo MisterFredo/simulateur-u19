@@ -132,19 +132,36 @@ if selected_poule != "Toutes les poules":
 st.title("🏆 Classement - Datafoot")
 st.markdown(f"### {selected_nom} ({selected_categorie} - {selected_niveau}) au {date_limite.strftime('%d/%m/%Y')}")
 
+# 🔄 Ajout des pénalités à déduire des points
+penalites_actives = penalites_df[
+    (penalites_df["ID_CHAMPIONNAT"] == champ_id) &
+    (penalites_df["DATE"] <= pd.to_datetime(date_limite))
+]
+
+# Aggrégation par équipe
+penalites_par_equipe = penalites_actives.groupby("ID_EQUIPE")["POINTS"].sum().reset_index()
+penalites_par_equipe.rename(columns={"POINTS": "PENALITES"}, inplace=True)
+
+# Merge dans le classement
+classement_df = classement_df.merge(penalites_par_equipe, on="ID_EQUIPE", how="left")
+classement_df["PENALITES"] = classement_df["PENALITES"].fillna(0)
+classement_df["POINTS"] = classement_df["PTS"] - classement_df["PENALITES"]
+
+# Filtre poule si nécessaire
+if selected_poule != "Toutes les poules":
+    classement_df = classement_df[classement_df["POULE"] == selected_poule]
+
 if classement_df.empty:
     st.warning("Aucun classement disponible pour ces critères.")
 else:
     for poule in sorted(classement_df["POULE"].unique()):
         st.subheader(f"Poule {poule}")
         df = classement_df[classement_df["POULE"] == poule][[
-            "CLASSEMENT", "NOM_EQUIPE", "PTS", "BP", "BC", "DIFF", "MJ"
+            "CLASSEMENT", "NOM_EQUIPE", "POINTS", "PENALITES", "BP", "BC", "DIFF", "MJ"
         ]].rename(columns={
-            "PTS": "POINTS", "BP": "BUTS_POUR", "BC": "BUTS_CONTRE", "MJ": "MATCHS_JOUES"
+            "BP": "BUTS_POUR", "BC": "BUTS_CONTRE", "MJ": "MATCHS_JOUES"
         })
         st.dataframe(df, use_container_width=True)
-
-st.caption("💡 Classement calculé à partir des matchs terminés uniquement, selon la date sélectionnée. Les éventuelles pénalités sont appliquées à la date sélectionnée.")
 
 # Cas particuliers (U19 / U17 / N2 / N3)
 if "simulated_scores" in st.session_state and "classement" in locals() and selected_poule == "Toutes les poules":
