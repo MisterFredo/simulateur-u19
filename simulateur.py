@@ -99,13 +99,16 @@ def get_classement_dynamique(champ_id, date_limite):
     """
     return client.query(query).to_dataframe()
 
-classement_df = get_classement_dynamique(champ_id, date_limite)
+# Chargement du classement complet (non filtré)
+classement_complet = get_classement_dynamique(champ_id, date_limite)
+classement_df = classement_complet.copy()
 
+# Filtrage si une poule spécifique est sélectionnée
 if selected_poule != "Toutes les poules":
     classement_df = classement_df[classement_df["POULE"] == selected_poule]
 
 # Affichage principal
-st.title("🏆 Classement - Datafoot")
+st.title("\U0001F3C6 Classement - Datafoot")
 st.markdown(f"### {selected_nom} ({selected_categorie} - {selected_niveau}) au {date_limite.strftime('%d/%m/%Y')}")
 
 if classement_df.empty:
@@ -119,6 +122,9 @@ else:
             "PTS": "POINTS", "BP": "BUTS_POUR", "BC": "BUTS_CONTRE", "MJ": "MATCHS_JOUES"
         })
         st.dataframe(df, use_container_width=True)
+
+# Les règles spécifiques sont désormais à adapter avec "classement_complet" pour avoir toutes les poules disponibles
+
 
 # Cas particuliers (U19 / U17 / N2)
 if selected_poule == "Toutes les poules":
