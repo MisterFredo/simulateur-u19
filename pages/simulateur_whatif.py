@@ -24,6 +24,15 @@ def load_championnats():
 
 championnats_df = load_championnats()
 
+# Chargement des pénalités
+@st.cache_data(show_spinner=False)
+def load_penalites():
+    query = """
+        SELECT ID_EQUIPE, ID_CHAMPIONNAT, POULE, POINTS, DATE
+        FROM `datafoot-448514.DATAFOOT.DATAFOOT_PENALITE`
+    """
+    return client.query(query).to_dataframe()
+
 # Filtres
 st.sidebar.header("Filtres simulation")
 selected_categorie = st.sidebar.selectbox("Catégorie", sorted(championnats_df["CATEGORIE"].unique()))
@@ -151,12 +160,32 @@ if "simulated_scores" in st.session_state:
         classement = classement.sort_values(by=["POULE", "PTS", "DIFF", "BP"], ascending=[True, False, False, False])
         classement["CLASSEMENT"] = classement.groupby("POULE").cumcount() + 1
 
+        # Intégration des pénalités dans le classement simulé
+penalites_df = load_penalites()
+penalites_actives = penalites_df[
+    (penalites_df["ID_CHAMPIONNAT"] == champ_id) &
+    (penalites_df["DATE"] <= pd.to_datetime(date_limite))
+]
+
+penalites_par_equipe = penalites_actives.groupby("ID_EQUIPE")["POINTS"].sum().reset_index()
+penalites_par_equipe.rename(columns={"POINTS": "PENALITES"}, inplace=True)
+
+classement = classement.merge(penalites_par_equipe, on="ID_EQUIPE", how="left")
+classement["PENALITES"] = classement["PENALITES"].fillna(0).astype(int)
+classement["POINTS"] = classement["PTS"] - classement["PENALITES"]
+
+
         # Affichage du classement par poule
-        for poule in sorted(classement["POULE"].unique()):
-            st.subheader(f"Poule {poule}")
-            df_poule = classement[classement["POULE"] == poule].sort_values("CLASSEMENT")
-            st.dataframe(df_poule[["CLASSEMENT", "NOM_EQUIPE", "PTS", "MJ", "G", "N", "P", "BP", "BC", "DIFF"]],
-                         use_container_width=True)
+ for poule in sorted(classement["POULE"].unique()):
+    st.subheader(f"Poule {poule}")
+    df = classement[classement["POULE"] == poule][[
+        "CLASSEMENT", "NOM_EQUIPE", "POINTS", "PENALITES", "BP", "BC", "DIFF", "MJ"
+    ]].rename(columns={
+        "BP": "BUTS_POUR",
+        "BC": "BUTS_CONTRE",
+        "MJ": "MATCHS_JOUES"
+    })
+    st.dataframe(df, use_container_width=True)
 
 # Cas particuliers (U19 / U17 / N2 / N3)
 if "simulated_scores" in st.session_state and "classement" in locals() and selected_poule == "Toutes les poules":
