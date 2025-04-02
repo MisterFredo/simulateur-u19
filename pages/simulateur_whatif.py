@@ -25,7 +25,7 @@ def load_championnats():
 @st.cache_data(show_spinner=False)
 def load_penalites():
     query = """
-        SELECT ID_EQUIPE, NOM_EQUIPE, ID_CHAMPIONNAT, POINTS, DATE
+        SELECT ID_EQUIPE, ID_CHAMPIONNAT, POINTS, DATE
         FROM `datafoot-448514.DATAFOOT.DATAFOOT_PENALITE`
     """
     return client.query(query).to_dataframe()
@@ -139,13 +139,23 @@ if "simulated_scores" in st.session_state:
         matchs_reels_sans_doublon = matchs_termines[~matchs_termines.index.isin(df_simules.index)]
         matchs_complets = pd.concat([matchs_reels_sans_doublon, df_simules]).reset_index()
 
-        dom = matchs_complets.rename(columns={"EQUIPE_DOM": "NOM_EQUIPE", "NB_BUT_DOM": "BUTS_POUR", "NB_BUT_EXT": "BUTS_CONTRE"})
+        dom = matchs_complets.rename(columns={
+    "ID_EQUIPE_DOM": "ID_EQUIPE",
+    "EQUIPE_DOM": "NOM_EQUIPE",
+    "NB_BUT_DOM": "BUTS_POUR",
+    "NB_BUT_EXT": "BUTS_CONTRE"
+})
         dom["POINTS"] = dom.apply(lambda r: 3 if r.BUTS_POUR > r.BUTS_CONTRE else (1 if r.BUTS_POUR == r.BUTS_CONTRE else 0), axis=1)
 
-        ext = matchs_complets.rename(columns={"EQUIPE_EXT": "NOM_EQUIPE", "NB_BUT_EXT": "BUTS_POUR", "NB_BUT_DOM": "BUTS_CONTRE"})
+        ext = matchs_complets.rename(columns={
+    "ID_EQUIPE_EXT": "ID_EQUIPE",
+    "EQUIPE_EXT": "NOM_EQUIPE",
+    "NB_BUT_EXT": "BUTS_POUR",
+    "NB_BUT_DOM": "BUTS_CONTRE"
+})
         ext["POINTS"] = ext.apply(lambda r: 3 if r.BUTS_POUR > r.BUTS_CONTRE else (1 if r.BUTS_POUR == r.BUTS_CONTRE else 0), axis=1)
 
-        full = pd.concat([dom, ext])["POULE NOM_EQUIPE BUTS_POUR BUTS_CONTRE POINTS".split()]
+        full = pd.concat([dom, ext])["POULE ID_EQUIPE NOM_EQUIPE BUTS_POUR BUTS_CONTRE POINTS".split()]
         classement = full.groupby(["POULE", "NOM_EQUIPE"]).agg(
             MJ=("POINTS", "count"),
             G=("POINTS", lambda x: (x == 3).sum()),
@@ -162,7 +172,7 @@ if "simulated_scores" in st.session_state:
         penalites_actives = penalites_df[
             (penalites_df["ID_CHAMPIONNAT"] == champ_id) & (penalites_df["DATE"] <= pd.to_datetime(date_limite))
         ]
-        penalites_agg = penalites_actives.groupby("NOM_EQUIPE")["POINTS"].sum().reset_index().rename(columns={"POINTS": "PENALITES"})
+        penalites_agg = penalites_actives.groupby("ID_EQUIPE")["POINTS"].sum().reset_index().rename(columns={"POINTS": "PENALITES"})
 
         classement = classement.merge(penalites_agg, on="NOM_EQUIPE", how="left")
         classement["PENALITES"] = classement["PENALITES"].fillna(0).astype(int)
@@ -179,9 +189,6 @@ if "simulated_scores" in st.session_state:
             st.subheader(f"Poule {poule}")
             df_poule = classement[classement["POULE"] == poule].sort_values("CLASSEMENT")
             st.dataframe(df_poule[["CLASSEMENT", "NOM_EQUIPE", "POINTS", "PENALITES", "MJ", "G", "N", "P", "BP", "BC", "DIFF"]], use_container_width=True)
-
-# Cas particuliers inchangés... (suite du fichier inchangée)
-
 
 # Cas particuliers (U19 / U17 / N2 / N3)
 if "simulated_scores" in st.session_state and "classement" in locals() and selected_poule == "Toutes les poules":
