@@ -150,6 +150,10 @@ if "simulated_scores" in st.session_state:
         classement["DIFF"] = classement["BP"] - classement["BC"]
         classement = classement.sort_values(by=["POULE", "PTS", "DIFF", "BP"], ascending=[True, False, False, False])
         classement["CLASSEMENT"] = classement.groupby("POULE").cumcount() + 1
+        
+        if selected_poule != "Toutes les poules":
+            classement = classement[classement["POULE"] == selected_poule]
+
 
         # Affichage du classement par poule
         for poule in sorted(classement["POULE"].unique()):
