@@ -149,7 +149,6 @@ else:
         df = classement_df[classement_df["POULE"] == poule][[
             "CLASSEMENT", "NOM_EQUIPE", "PTS", "PENALITES", "BP", "BC", "DIFF", "MJ"
         ]].rename(columns={
-            "NOM_EQUIPE": "EQUIPE"
             "BP": "BP",
             "BC": "BC",
             "MJ": "J."
