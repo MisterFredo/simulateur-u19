@@ -116,12 +116,16 @@ if st.button("🔁 Recalculer le classement avec ces scores simulés"):
 
     classement_data = pd.concat([dom, ext], ignore_index=True)
     classement = classement_data.groupby(["ID_EQUIPE", "NOM_EQUIPE", "POULE"]).agg(
-        MJ=("POINTS", "count"), G=("POINTS", lambda x: (x==3).sum()),
-        N=("POINTS", lambda x: (x==1).sum()), P=("POINTS", lambda x: (x==0).sum()),
-        BP=("BUTS_POUR", "sum"), BC=("BUTS_CONTRE", "sum"),
-        DIFF=("BUTS_POUR", lambda x: x.sum()) - classement_data.groupby(["ID_EQUIPE", "POULE"])["BUTS_CONTRE"].sum(),
-        PTS=("POINTS", "sum")
-    ).reset_index()
+    MJ=("POINTS", "count"),
+    G=("POINTS", lambda x: (x == 3).sum()),
+    N=("POINTS", lambda x: (x == 1).sum()),
+    P=("POINTS", lambda x: (x == 0).sum()),
+    BP=("BUTS_POUR", "sum"),
+    BC=("BUTS_CONTRE", "sum"),
+    PTS=("POINTS", "sum")
+).reset_index()
+
+classement["DIFF"] = classement["BP"] - classement["BC"]
 
     # Ajout des pénalités
     penalites_actives = penalites_df[
