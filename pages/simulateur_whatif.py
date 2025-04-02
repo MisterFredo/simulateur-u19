@@ -155,4 +155,140 @@ else:
             })
             st.dataframe(df, use_container_width=True)
 
+# 🧩 REGLES SPECIFIQUES - à coller juste après l'affichage principal
+
+if selected_poule == "Toutes les poules":
+    # U19
+    if champ_id == 6 and not classement.empty:
+        st.markdown("### 🚨 Classement spécial des 11èmes (règle U19 National)")
+        df_11e = classement[classement["CLASSEMENT"] == 11]
+        comparatif_11e = []
+
+        for _, row in df_11e.iterrows():
+            poule = row["POULE"]
+            equipe = row["NOM_EQUIPE"]
+            adversaires = classement[
+                (classement["POULE"] == poule) &
+                (classement["CLASSEMENT"].between(6, 10))
+            ]["NOM_EQUIPE"].tolist()
+
+            confrontations = matchs_complets[
+                ((matchs_complets["EQUIPE_DOM"] == equipe) & (matchs_complets["EQUIPE_EXT"].isin(adversaires))) |
+                ((matchs_complets["EQUIPE_EXT"] == equipe) & (matchs_complets["EQUIPE_DOM"].isin(adversaires)))
+            ]
+
+            pts = 0
+            for _, m in confrontations.iterrows():
+                if m["EQUIPE_DOM"] == equipe:
+                    pts += 3 if m["NB_BUT_DOM"] > m["NB_BUT_EXT"] else 1 if m["NB_BUT_DOM"] == m["NB_BUT_EXT"] else 0
+                elif m["EQUIPE_EXT"] == equipe:
+                    pts += 3 if m["NB_BUT_EXT"] > m["NB_BUT_DOM"] else 1 if m["NB_BUT_EXT"] == m["NB_BUT_DOM"] else 0
+
+            comparatif_11e.append({"POULE": poule, "EQUIPE": equipe, "PTS_CONFRONT_6_10": pts})
+
+        df_11e_comp = pd.DataFrame(comparatif_11e).sort_values("PTS_CONFRONT_6_10", ascending=False)
+        df_11e_comp["RANG"] = df_11e_comp["PTS_CONFRONT_6_10"].rank(method="min", ascending=False)
+        st.dataframe(df_11e_comp, use_container_width=True)
+
+    # U17
+    if champ_id == 7 and not classement.empty:
+        st.markdown("### 🌟 Comparatif des 2e (règle U17 National)")
+        df_2e = classement[classement["CLASSEMENT"] == 2]
+        comparatif_2e = []
+
+        for _, row in df_2e.iterrows():
+            poule = row["POULE"]
+            equipe = row["NOM_EQUIPE"]
+            adversaires = classement[
+                (classement["POULE"] == poule) &
+                (classement["CLASSEMENT"].between(1, 5))
+            ]["NOM_EQUIPE"].tolist()
+
+            confrontations = matchs_complets[
+                ((matchs_complets["EQUIPE_DOM"] == equipe) & (matchs_complets["EQUIPE_EXT"].isin(adversaires))) |
+                ((matchs_complets["EQUIPE_EXT"] == equipe) & (matchs_complets["EQUIPE_DOM"].isin(adversaires)))
+            ]
+
+            pts = 0
+            for _, m in confrontations.iterrows():
+                if m["EQUIPE_DOM"] == equipe:
+                    pts += 3 if m["NB_BUT_DOM"] > m["NB_BUT_EXT"] else 1 if m["NB_BUT_DOM"] == m["NB_BUT_EXT"] else 0
+                elif m["EQUIPE_EXT"] == equipe:
+                    pts += 3 if m["NB_BUT_EXT"] > m["NB_BUT_DOM"] else 1 if m["NB_BUT_EXT"] == m["NB_BUT_DOM"] else 0
+
+            comparatif_2e.append({"POULE": poule, "EQUIPE": equipe, "PTS_CONFRONT_TOP5": pts})
+
+        df_2e_comp = pd.DataFrame(comparatif_2e).sort_values("PTS_CONFRONT_TOP5", ascending=False)
+        df_2e_comp["RANG"] = df_2e_comp["PTS_CONFRONT_TOP5"].rank(method="min", ascending=False)
+        st.dataframe(df_2e_comp, use_container_width=True)
+
+    # N2
+    if champ_id == 4 and not classement.empty:
+        st.markdown("### 🔻 Comparatif des 13e (règle N2)")
+        df_13e = classement[classement["CLASSEMENT"] == 13]
+        comparatif_13e = []
+
+        for _, row in df_13e.iterrows():
+            poule = row["POULE"]
+            equipe = row["NOM_EQUIPE"]
+            adversaires = classement[
+                (classement["POULE"] == poule) &
+                (classement["CLASSEMENT"].between(8, 12))
+            ]["NOM_EQUIPE"].tolist()
+
+            confrontations = matchs_complets[
+                ((matchs_complets["EQUIPE_DOM"] == equipe) & (matchs_complets["EQUIPE_EXT"].isin(adversaires))) |
+                ((matchs_complets["EQUIPE_EXT"] == equipe) & (matchs_complets["EQUIPE_DOM"].isin(adversaires)))
+            ]
+
+            pts = 0
+            for _, m in confrontations.iterrows():
+                if m["EQUIPE_DOM"] == equipe:
+                    pts += 3 if m["NB_BUT_DOM"] > m["NB_BUT_EXT"] else 1 if m["NB_BUT_DOM"] == m["NB_BUT_EXT"] else 0
+                elif m["EQUIPE_EXT"] == equipe:
+                    pts += 3 if m["NB_BUT_EXT"] > m["NB_BUT_DOM"] else 1 if m["NB_BUT_EXT"] == m["NB_BUT_DOM"] else 0
+
+            comparatif_13e.append({"POULE": poule, "EQUIPE": equipe, "PTS_CONFRONT_8_12": pts})
+
+        df_13e_comp = pd.DataFrame(comparatif_13e).sort_values("PTS_CONFRONT_8_12", ascending=False)
+        df_13e_comp["RANG"] = df_13e_comp["PTS_CONFRONT_8_12"].rank(method="min", ascending=False)
+        st.dataframe(df_13e_comp, use_container_width=True)
+
+    # N3
+    if champ_id == 5 and not classement.empty:
+        st.markdown("### 🔻 Comparatif des 10e (règle N3)")
+        df_10e = classement[classement["CLASSEMENT"] == 10]
+        comparatif_10e = []
+
+        for _, row in df_10e.iterrows():
+            poule = row["POULE"]
+            equipe = row["NOM_EQUIPE"]
+            adversaires = classement[
+                (classement["POULE"] == poule) &
+                (classement["CLASSEMENT"].between(5, 9))
+            ]["NOM_EQUIPE"].tolist()
+
+            confrontations = matchs_complets[
+                ((matchs_complets["EQUIPE_DOM"] == equipe) & (matchs_complets["EQUIPE_EXT"].isin(adversaires))) |
+                ((matchs_complets["EQUIPE_EXT"] == equipe) & (matchs_complets["EQUIPE_DOM"].isin(adversaires)))
+            ]
+
+            pts = 0
+            for _, m in confrontations.iterrows():
+                if m["EQUIPE_DOM"] == equipe:
+                    pts += 3 if m["NB_BUT_DOM"] > m["NB_BUT_EXT"] else 1 if m["NB_BUT_DOM"] == m["NB_BUT_EXT"] else 0
+                elif m["EQUIPE_EXT"] == equipe:
+                    pts += 3 if m["NB_BUT_EXT"] > m["NB_BUT_DOM"] else 1 if m["NB_BUT_EXT"] == m["NB_BUT_DOM"] else 0
+
+            comparatif_10e.append({"POULE": poule, "EQUIPE": equipe, "PTS_CONFRONT_5_9": pts})
+
+        df_10e_comp = pd.DataFrame(comparatif_10e).sort_values("PTS_CONFRONT_5_9", ascending=False)
+        df_10e_comp["RANG"] = df_10e_comp["PTS_CONFRONT_5_9"].rank(method="min", ascending=False)
+        st.dataframe(df_10e_comp, use_container_width=True)
+
+else:
+    if champ_id in [4, 5, 6, 7]:
+        st.info("🔒 Les règles spécifiques (U19, U17, N2, N3) ne sont disponibles que si toutes les poules sont affichées.")
+
+
 
