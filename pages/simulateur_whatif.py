@@ -135,36 +135,34 @@ if "simulated_scores" in st.session_state:
     else:
         st.markdown("### 📊 Classement simulé (avec scores simulés + résultats réels)")
 
-        # 🔁 Récupération des matchs réels
+        @st.cache_data(show_spinner=False)
+        def get_matchs_termines(champ_id, date_limite):
+            query = f"""
+                SELECT ID_MATCH, JOURNEE, POULE, DATE, EQUIPE_DOM, NB_BUT_DOM, EQUIPE_EXT, NB_BUT_EXT, STATUT
+                FROM `datafoot-448514.DATAFOOT.DATAFOOT_MATCH_2025`
+                WHERE ID_CHAMPIONNAT = {champ_id}
+                  AND DATE <= DATE('{date_limite}')
+                  AND STATUT = 'TERMINE'
+            """
+            return client.query(query).to_dataframe()
+
         matchs_termines = get_matchs_termines(champ_id, date_limite)
 
-        # 🧩 Fusion avec les matchs simulés
+        # Fusion des scores simulés avec les matchs réels
         df_simules = df_valid.set_index("ID_MATCH")
         matchs_termines = matchs_termines.set_index("ID_MATCH")
         matchs_reels_sans_doublon = matchs_termines[~matchs_termines.index.isin(df_simules.index)]
         matchs_complets = pd.concat([matchs_reels_sans_doublon, df_simules]).reset_index()
 
-        # 🏟️ Génération des lignes domicile / extérieur
-        dom = matchs_complets.rename(columns={
-            "EQUIPE_DOM": "NOM_EQUIPE",
-            "NB_BUT_DOM": "BUTS_POUR",
-            "NB_BUT_EXT": "BUTS_CONTRE"
-        })
+        # Création du classement à partir des résultats
+        dom = matchs_complets.rename(columns={"EQUIPE_DOM": "NOM_EQUIPE", "NB_BUT_DOM": "BUTS_POUR", "NB_BUT_EXT": "BUTS_CONTRE"})
         dom["POINTS"] = dom.apply(lambda r: 3 if r.BUTS_POUR > r.BUTS_CONTRE else (1 if r.BUTS_POUR == r.BUTS_CONTRE else 0), axis=1)
-        dom["ID_EQUIPE"] = matchs_complets["ID_EQUIPE_DOM"]
 
-        ext = matchs_complets.rename(columns={
-            "EQUIPE_EXT": "NOM_EQUIPE",
-            "NB_BUT_EXT": "BUTS_POUR",
-            "NB_BUT_DOM": "BUTS_CONTRE"
-        })
+        ext = matchs_complets.rename(columns={"EQUIPE_EXT": "NOM_EQUIPE", "NB_BUT_EXT": "BUTS_POUR", "NB_BUT_DOM": "BUTS_CONTRE"})
         ext["POINTS"] = ext.apply(lambda r: 3 if r.BUTS_POUR > r.BUTS_CONTRE else (1 if r.BUTS_POUR == r.BUTS_CONTRE else 0), axis=1)
-        ext["ID_EQUIPE"] = matchs_complets["ID_EQUIPE_EXT"]
 
-        full = pd.concat([dom, ext])[["POULE", "NOM_EQUIPE", "ID_EQUIPE", "BUTS_POUR", "BUTS_CONTRE", "POINTS"]]
-
-        # 🧮 Calcul du classement de base
-        classement = full.groupby(["POULE", "NOM_EQUIPE", "ID_EQUIPE"]).agg(
+        full = pd.concat([dom, ext])[["POULE", "NOM_EQUIPE", "BUTS_POUR", "BUTS_CONTRE", "POINTS"]]
+        classement = full.groupby(["POULE", "NOM_EQUIPE"]).agg(
             MJ=("POINTS", "count"),
             G=("POINTS", lambda x: (x == 3).sum()),
             N=("POINTS", lambda x: (x == 1).sum()),
@@ -173,9 +171,10 @@ if "simulated_scores" in st.session_state:
             BC=("BUTS_CONTRE", "sum"),
             PTS=("POINTS", "sum")
         ).reset_index()
+
         classement["DIFF"] = classement["BP"] - classement["BC"]
 
-        # 🔁 Intégration des pénalités
+        # Ajout des pénalités
         penalites_df = load_penalites()
         penalites_actives = penalites_df[
             (penalites_df["ID_CHAMPIONNAT"] == champ_id) &
@@ -184,27 +183,26 @@ if "simulated_scores" in st.session_state:
         penalites_par_equipe = penalites_actives.groupby("ID_EQUIPE")["POINTS"].sum().reset_index()
         penalites_par_equipe.rename(columns={"POINTS": "PENALITES"}, inplace=True)
 
+        # Correspondance NOM_EQUIPE → ID_EQUIPE pour la jointure
+        equipe_df = client.query("SELECT ID_EQUIPE, NOM FROM `datafoot-448514.DATAFOOT.DATAFOOT_EQUIPE`").to_dataframe()
+        classement = classement.merge(equipe_df, left_on="NOM_EQUIPE", right_on="NOM", how="left")
         classement = classement.merge(penalites_par_equipe, on="ID_EQUIPE", how="left")
         classement["PENALITES"] = classement["PENALITES"].fillna(0).astype(int)
-        classement["POINTS"] = classement["PTS"] - classement["PENALITES"]
 
-        # 🧮 Recalcul des positions
+        # Calcul des points et classement final
+        classement["POINTS"] = classement["PTS"] - classement["PENALITES"]
         classement = classement.sort_values(by=["POULE", "POINTS", "DIFF", "BP"], ascending=[True, False, False, False])
         classement["CLASSEMENT"] = classement.groupby("POULE").cumcount() + 1
 
-        # 🧾 Filtrage éventuel par poule
         if selected_poule != "Toutes les poules":
             classement = classement[classement["POULE"] == selected_poule]
 
-        # 📊 Affichage
         for poule in sorted(classement["POULE"].unique()):
             st.subheader(f"Poule {poule}")
             df = classement[classement["POULE"] == poule][[
                 "CLASSEMENT", "NOM_EQUIPE", "POINTS", "PENALITES", "BP", "BC", "DIFF", "MJ"
             ]].rename(columns={
-                "BP": "BUTS_POUR",
-                "BC": "BUTS_CONTRE",
-                "MJ": "MATCHS_JOUES"
+                "BP": "BUTS_POUR", "BC": "BUTS_CONTRE", "MJ": "MATCHS_JOUES"
             })
             st.dataframe(df, use_container_width=True)
 
