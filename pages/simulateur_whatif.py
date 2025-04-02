@@ -95,6 +95,19 @@ def get_matchs_modifiables(champ_id, date_limite, non_joues_only):
     """
     return client.query(query).to_dataframe()
 
+@st.cache_data(show_spinner=False)
+def get_matchs_termines(champ_id, date_limite):
+    query = f"""
+        SELECT ID_MATCH, JOURNEE, POULE, DATE,
+               ID_EQUIPE_DOM, EQUIPE_DOM, NB_BUT_DOM,
+               ID_EQUIPE_EXT, EQUIPE_EXT, NB_BUT_EXT
+        FROM `datafoot-448514.DATAFOOT.DATAFOOT_MATCH_2025`
+        WHERE ID_CHAMPIONNAT = {champ_id}
+          AND STATUT = 'TERMINE'
+          AND DATE <= DATE('{date_limite}')
+    """
+    return client.query(query).to_dataframe()
+
 matchs_simulables = get_matchs_modifiables(champ_id, date_limite, filtrer_non_joues)
 if selected_poule != "Toutes les poules":
     matchs_simulables = matchs_simulables[matchs_simulables["POULE"] == selected_poule]
@@ -113,17 +126,19 @@ else:
     if st.button("🔁 Recalculer le classement avec ces scores simulés"):
         st.session_state["simulated_scores"] = edited_df
 
-        # Calcul du classement simulé
         df_valid = edited_df.dropna(subset=["NB_BUT_DOM", "NB_BUT_EXT"])
         if df_valid.empty:
             st.warning("🚫 Aucun score simulé valide.")
         else:
-            # Construction des lignes DOM et EXT
-            dom = df_valid[["POULE", "ID_EQUIPE_DOM", "EQUIPE_DOM", "NB_BUT_DOM", "NB_BUT_EXT"]].copy()
+            matchs_termines = get_matchs_termines(champ_id, date_limite)
+            matchs_termines = matchs_termines[~matchs_termines["ID_MATCH"].isin(df_valid["ID_MATCH"])]
+            matchs_complets = pd.concat([matchs_termines, df_valid], ignore_index=True)
+
+            dom = matchs_complets[["POULE", "ID_EQUIPE_DOM", "EQUIPE_DOM", "NB_BUT_DOM", "NB_BUT_EXT"]].copy()
             dom.columns = ["POULE", "ID_EQUIPE", "NOM_EQUIPE", "BUTS_POUR", "BUTS_CONTRE"]
             dom["POINTS"] = dom.apply(lambda r: 3 if r.BUTS_POUR > r.BUTS_CONTRE else 1 if r.BUTS_POUR == r.BUTS_CONTRE else 0, axis=1)
 
-            ext = df_valid[["POULE", "ID_EQUIPE_EXT", "EQUIPE_EXT", "NB_BUT_EXT", "NB_BUT_DOM"]].copy()
+            ext = matchs_complets[["POULE", "ID_EQUIPE_EXT", "EQUIPE_EXT", "NB_BUT_EXT", "NB_BUT_DOM"]].copy()
             ext.columns = ["POULE", "ID_EQUIPE", "NOM_EQUIPE", "BUTS_POUR", "BUTS_CONTRE"]
             ext["POINTS"] = ext.apply(lambda r: 3 if r.BUTS_POUR > r.BUTS_CONTRE else 1 if r.BUTS_POUR == r.BUTS_CONTRE else 0, axis=1)
 
