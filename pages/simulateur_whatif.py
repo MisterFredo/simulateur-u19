@@ -1,9 +1,9 @@
-# Nouveau simulateur_whatif.py corrigé
 import streamlit as st
 import pandas as pd
 from google.cloud import bigquery
 from google.oauth2 import service_account
 
+# Configuration
 st.set_page_config(page_title="Simulation What If", layout="wide")
 
 # Connexion BigQuery
@@ -12,7 +12,7 @@ credentials = service_account.Credentials.from_service_account_info(
 )
 client = bigquery.Client(credentials=credentials, project=credentials.project_id)
 
-# --- Chargement des données de base ---
+# Chargement des championnats
 @st.cache_data(show_spinner=False)
 def load_championnats():
     query = """
@@ -22,24 +22,22 @@ def load_championnats():
     """
     return client.query(query).to_dataframe()
 
-@st.cache_data(show_spinner=False)
-def load_penalites():
-    query = """
-        SELECT ID_EQUIPE, ID_CHAMPIONNAT, POINTS, DATE
-        FROM `datafoot-448514.DATAFOOT.DATAFOOT_PENALITE`
-    """
-    return client.query(query).to_dataframe()
+championnats_df = load_championnats()
 
-@st.cache_data(show_spinner=False)
-def get_matchs(champ_id, date_limite):
-    query = f"""
-        SELECT ID_MATCH, JOURNEE, POULE, DATE, ID_EQUIPE_DOM, EQUIPE_DOM, NB_BUT_DOM,
-               ID_EQUIPE_EXT, EQUIPE_EXT, NB_BUT_EXT, STATUT
-        FROM `datafoot-448514.DATAFOOT.DATAFOOT_MATCH_2025`
-        WHERE ID_CHAMPIONNAT = {champ_id} AND DATE <= DATE('{date_limite}')
-    """
-    return client.query(query).to_dataframe()
+# Filtres
+st.sidebar.header("Filtres simulation")
+selected_categorie = st.sidebar.selectbox("Catégorie", sorted(championnats_df["CATEGORIE"].unique()))
+selected_niveau = st.sidebar.selectbox(
+    "Niveau", sorted(championnats_df[championnats_df["CATEGORIE"] == selected_categorie]["NIVEAU"].unique())
+)
+champ_options = championnats_df[
+    (championnats_df["CATEGORIE"] == selected_categorie) &
+    (championnats_df["NIVEAU"] == selected_niveau)
+]
+selected_nom = st.sidebar.selectbox("Championnat", champ_options["NOM_CHAMPIONNAT"])
+champ_id = champ_options[champ_options["NOM_CHAMPIONNAT"] == selected_nom]["ID_CHAMPIONNAT"].values[0]
 
+# Sélecteur de poule
 @st.cache_data(show_spinner=False)
 def get_poules(champ_id):
     query = f"""
@@ -50,106 +48,120 @@ def get_poules(champ_id):
     """
     return client.query(query).to_dataframe()
 
-championnats_df = load_championnats()
-penalites_df = load_penalites()
-
-# --- Filtres utilisateur ---
-st.sidebar.header("Filtres simulation")
-selected_categorie = st.sidebar.selectbox("Catégorie", sorted(championnats_df["CATEGORIE"].unique()))
-selected_niveau = st.sidebar.selectbox("Niveau", sorted(championnats_df[championnats_df["CATEGORIE"] == selected_categorie]["NIVEAU"].unique()))
-champ_options = championnats_df[(championnats_df["CATEGORIE"] == selected_categorie) & (championnats_df["NIVEAU"] == selected_niveau)]
-selected_nom = st.sidebar.selectbox("Championnat", champ_options["NOM_CHAMPIONNAT"])
-champ_id = champ_options[champ_options["NOM_CHAMPIONNAT"] == selected_nom]["ID_CHAMPIONNAT"].values[0]
-
 poules_df = get_poules(champ_id)
 all_poules = sorted(poules_df["POULE"].dropna().unique())
-selected_poule = st.sidebar.selectbox("Poule", ["Toutes les poules"] + all_poules) if len(all_poules) > 1 else all_poules[0]
+if len(all_poules) > 1:
+    selected_poule = st.sidebar.selectbox("Poule", ["Toutes les poules"] + all_poules)
+else:
+    selected_poule = all_poules[0] if all_poules else "Toutes les poules"
 
-date_limite = st.sidebar.date_input("Date de simulation", value=pd.to_datetime("2025-03-31"))
+date_limite = st.sidebar.date_input("Date max à prendre en compte", value=pd.to_datetime("2025-03-31"))
+
+# Affichage des matchs modifiables
+st.title("🧪 Simulation What If")
+
 filtrer_non_joues = st.checkbox("Afficher uniquement les matchs non joués", value=True)
 
-# --- Edition des matchs ---
-st.title("🧪 Simulation What If")
-matchs_complets = get_matchs(champ_id, date_limite)
-if selected_poule != "Toutes les poules":
-    matchs_complets = matchs_complets[matchs_complets["POULE"] == selected_poule]
+@st.cache_data(show_spinner=False)
+def get_matchs_modifiables(champ_id, date_limite, non_joues_only):
+    condition = "AND STATUT IS NULL" if non_joues_only else ""
+    query = f"""
+        SELECT 
+            ID_MATCH,
+            JOURNEE,
+            POULE,
+            DATE,
+            EQUIPE_DOM,
+            NB_BUT_DOM,
+            EQUIPE_EXT,
+            NB_BUT_EXT,
+            STATUT
+        FROM `datafoot-448514.DATAFOOT.DATAFOOT_MATCH_2025`
+        WHERE ID_CHAMPIONNAT = {champ_id}
+          AND DATE <= DATE('{date_limite}')
+          {condition}
+        ORDER BY DATE, JOURNEE
+    """
+    return client.query(query).to_dataframe()
 
-matchs_simulables = matchs_complets[matchs_complets["STATUT"].isnull()] if filtrer_non_joues else matchs_complets
+matchs_simulables = get_matchs_modifiables(champ_id, date_limite, filtrer_non_joues)
+if selected_poule != "Toutes les poules":
+    matchs_simulables = matchs_simulables[matchs_simulables["POULE"] == selected_poule]
+
 if matchs_simulables.empty:
     st.info("Aucun match à afficher pour cette configuration.")
-    st.stop()
-
-st.markdown("### Matchs simulables")
-edited_df = st.data_editor(
-    matchs_simulables[["ID_MATCH", "JOURNEE", "POULE", "DATE", "EQUIPE_DOM", "NB_BUT_DOM", "EQUIPE_EXT", "NB_BUT_EXT"]],
-    num_rows="dynamic",
-    use_container_width=True,
-    key="simulation_scores"
-)
-
-if st.button("🔁 Recalculer le classement avec ces scores simulés"):
-    # Fusion des données
-    matchs_fusion = matchs_complets.copy()
-    edited_scores = edited_df.set_index("ID_MATCH")[["NB_BUT_DOM", "NB_BUT_EXT"]]
-    matchs_fusion.set_index("ID_MATCH", inplace=True)
-    matchs_fusion.update(edited_scores)
-    matchs_fusion.reset_index(inplace=True)
-
-    # Construction des lignes pour chaque équipe
-    dom = matchs_fusion[["ID_EQUIPE_DOM", "EQUIPE_DOM", "NB_BUT_DOM", "NB_BUT_EXT", "POULE"]].copy()
-    dom.columns = ["ID_EQUIPE", "NOM_EQUIPE", "BUTS_POUR", "BUTS_CONTRE", "POULE"]
-    dom["POINTS"] = dom.apply(
-        lambda r: 3 if pd.notna(r["BUTS_POUR"]) and pd.notna(r["BUTS_CONTRE"]) and r["BUTS_POUR"] > r["BUTS_CONTRE"]
-        else 1 if pd.notna(r["BUTS_POUR"]) and pd.notna(r["BUTS_CONTRE"]) and r["BUTS_POUR"] == r["BUTS_CONTRE"]
-        else 0,
-        axis=1
+else:
+    st.markdown("### Matchs simulables")
+    df_simulation = matchs_simulables.copy()
+    edited_df = st.data_editor(
+        df_simulation[["ID_MATCH", "JOURNEE", "POULE", "DATE", "EQUIPE_DOM", "NB_BUT_DOM", "EQUIPE_EXT", "NB_BUT_EXT", "STATUT"]],
+        num_rows="dynamic",
+        use_container_width=True,
+        key="simulation_scores"
     )
+    if st.button("🔁 Recalculer le classement avec ces scores simulés"):
+        st.session_state["simulated_scores"] = edited_df
+        st.success("Scores pris en compte. On peut maintenant recalculer le classement.")
 
-    ext = matchs_fusion[["ID_EQUIPE_EXT", "EQUIPE_EXT", "NB_BUT_EXT", "NB_BUT_DOM", "POULE"]].copy()
-    ext.columns = ["ID_EQUIPE", "NOM_EQUIPE", "BUTS_POUR", "BUTS_CONTRE", "POULE"]
-    ext["POINTS"] = ext.apply(
-        lambda r: 3 if pd.notna(r["BUTS_POUR"]) and pd.notna(r["BUTS_CONTRE"]) and r["BUTS_POUR"] > r["BUTS_CONTRE"]
-        else 1 if pd.notna(r["BUTS_POUR"]) and pd.notna(r["BUTS_CONTRE"]) and r["BUTS_POUR"] == r["BUTS_CONTRE"]
-        else 0,
-        axis=1
-    )
+if "simulated_scores" in st.session_state:
+    df_sim = st.session_state["simulated_scores"]
+    df_valid = df_sim.dropna(subset=["NB_BUT_DOM", "NB_BUT_EXT"])
 
-    classement_data = pd.concat([dom, ext], ignore_index=True)
-    classement = classement_data.groupby(["ID_EQUIPE", "NOM_EQUIPE", "POULE"]).agg(
-    MJ=("POINTS", "count"),
-    G=("POINTS", lambda x: (x == 3).sum()),
-    N=("POINTS", lambda x: (x == 1).sum()),
-    P=("POINTS", lambda x: (x == 0).sum()),
-    BP=("BUTS_POUR", "sum"),
-    BC=("BUTS_CONTRE", "sum"),
-    PTS=("POINTS", "sum")
-).reset_index()
+    if df_valid.empty:
+        st.warning("Aucun score simulé n’a été saisi.")
+    else:
+        st.markdown("### 📊 Classement simulé (avec scores simulés + résultats réels)")
 
-classement["DIFF"] = classement["BP"] - classement["BC"]
+        @st.cache_data(show_spinner=False)
+        def get_matchs_termines(champ_id, date_limite):
+            query = f"""
+                SELECT ID_MATCH, JOURNEE, POULE, DATE, EQUIPE_DOM, NB_BUT_DOM, EQUIPE_EXT, NB_BUT_EXT, STATUT
+                FROM `datafoot-448514.DATAFOOT.DATAFOOT_MATCH_2025`
+                WHERE ID_CHAMPIONNAT = {champ_id}
+                  AND DATE <= DATE('{date_limite}')
+                  AND STATUT = 'TERMINE'
+            """
+            return client.query(query).to_dataframe()
 
-    # Ajout des pénalités
-    penalites_actives = penalites_df[
-        (penalites_df["ID_CHAMPIONNAT"] == champ_id) &
-        (penalites_df["DATE"] <= pd.to_datetime(date_limite))
-    ].groupby("ID_EQUIPE")["POINTS"].sum().reset_index().rename(columns={"POINTS": "PENALITES"})
+        matchs_termines = get_matchs_termines(champ_id, date_limite)
 
-    classement = classement.merge(penalites_actives, on="ID_EQUIPE", how="left")
-    classement["PENALITES"] = classement["PENALITES"].fillna(0).astype(int)
-    classement["POINTS"] = classement["PTS"] - classement["PENALITES"]
+        df_simules = df_valid.set_index("ID_MATCH")
+        matchs_termines = matchs_termines.set_index("ID_MATCH")
+        matchs_reels_sans_doublon = matchs_termines[~matchs_termines.index.isin(df_simules.index)]
+        matchs_complets = pd.concat([matchs_reels_sans_doublon, df_simules]).reset_index()
 
-    # Tri final
-    classement = classement.sort_values(by=["POULE", "POINTS", "DIFF", "BP"], ascending=[True, False, False, False])
-    classement["CLASSEMENT"] = classement.groupby("POULE").cumcount() + 1
+        dom = matchs_complets.rename(columns={"EQUIPE_DOM": "NOM_EQUIPE", "NB_BUT_DOM": "BUTS_POUR", "NB_BUT_EXT": "BUTS_CONTRE"})
+        dom["POINTS"] = dom.apply(lambda r: 3 if r.BUTS_POUR > r.BUTS_CONTRE else (1 if r.BUTS_POUR == r.BUTS_CONTRE else 0), axis=1)
 
-    # Affichage
-    for poule in sorted(classement["POULE"].unique()):
-        st.subheader(f"Poule {poule}")
-        df_affiche = classement[classement["POULE"] == poule][[
-            "CLASSEMENT", "NOM_EQUIPE", "POINTS", "PENALITES", "BP", "BC", "DIFF", "MJ"
-        ]].rename(columns={"BP": "BP", "BC": "BC", "MJ": "J."})
-        st.dataframe(df_affiche, use_container_width=True)
+        ext = matchs_complets.rename(columns={"EQUIPE_EXT": "NOM_EQUIPE", "NB_BUT_EXT": "BUTS_POUR", "NB_BUT_DOM": "BUTS_CONTRE"})
+        ext["POINTS"] = ext.apply(lambda r: 3 if r.BUTS_POUR > r.BUTS_CONTRE else (1 if r.BUTS_POUR == r.BUTS_CONTRE else 0), axis=1)
 
-    st.success("Classement recalculé avec les scores simulés et les pénalités.")
+        full = pd.concat([dom, ext])[["POULE", "NOM_EQUIPE", "BUTS_POUR", "BUTS_CONTRE", "POINTS"]]
+        classement = full.groupby(["POULE", "NOM_EQUIPE"]).agg(
+            MJ=("POINTS", "count"),
+            G=("POINTS", lambda x: (x == 3).sum()),
+            N=("POINTS", lambda x: (x == 1).sum()),
+            P=("POINTS", lambda x: (x == 0).sum()),
+            BP=("BUTS_POUR", "sum"),
+            BC=("BUTS_CONTRE", "sum"),
+            PTS=("POINTS", "sum")
+        ).reset_index()
+
+        classement["DIFF"] = classement["BP"] - classement["BC"]
+        classement = classement.sort_values(by=["POULE", "PTS", "DIFF", "BP"], ascending=[True, False, False, False])
+        classement["CLASSEMENT"] = classement.groupby("POULE").cumcount() + 1
+        
+        if selected_poule != "Toutes les poules":
+            classement = classement[classement["POULE"] == selected_poule]
+
+
+        # Affichage du classement par poule
+        for poule in sorted(classement["POULE"].unique()):
+            st.subheader(f"Poule {poule}")
+            df_poule = classement[classement["POULE"] == poule].sort_values("CLASSEMENT")
+            st.dataframe(df_poule[["CLASSEMENT", "NOM_EQUIPE", "PTS", "MJ", "G", "N", "P", "BP", "BC", "DIFF"]],
+                         use_container_width=True)
+
 # Cas particuliers (U19 / U17 / N2 / N3)
 if "simulated_scores" in st.session_state and "classement" in locals() and selected_poule == "Toutes les poules":
     if champ_id == 6 and not classement.empty:
