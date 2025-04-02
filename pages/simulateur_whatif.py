@@ -152,7 +152,7 @@ if "simulated_scores" in st.session_state:
         classement["CLASSEMENT"] = classement.groupby("POULE").cumcount() + 1
 
 # Cas particuliers (U19 / U17 / N2 / N3)
-if selected_poule == "Toutes les poules":
+if "simulated_scores" in st.session_state and "classement" in locals() and selected_poule == "Toutes les poules":
     if champ_id == 6 and not classement.empty:
         st.markdown("### 🚨 Classement spécial des 11èmes (règle U19 National)")
         df_11e = classement[classement["CLASSEMENT"] == 11]
