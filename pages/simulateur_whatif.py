@@ -160,19 +160,36 @@ if "simulated_scores" in st.session_state:
         classement = classement.sort_values(by=["POULE", "PTS", "DIFF", "BP"], ascending=[True, False, False, False])
         classement["CLASSEMENT"] = classement.groupby("POULE").cumcount() + 1
 
-        # Intégration des pénalités dans le classement simulé
-penalites_df = load_penalites()
-penalites_actives = penalites_df[
-    (penalites_df["ID_CHAMPIONNAT"] == champ_id) &
-    (penalites_df["DATE"] <= pd.to_datetime(date_limite))
-]
+               # Ajout des pénalités
+        penalites_actives = penalites_df[
+            (penalites_df["ID_CHAMPIONNAT"] == champ_id) &
+            (penalites_df["DATE"] <= pd.to_datetime(date_limite))
+        ]
 
-penalites_par_equipe = penalites_actives.groupby("ID_EQUIPE")["POINTS"].sum().reset_index()
-penalites_par_equipe.rename(columns={"POINTS": "PENALITES"}, inplace=True)
+        penalites_par_equipe = penalites_actives.groupby("ID_EQUIPE")["POINTS"].sum().reset_index()
+        penalites_par_equipe.rename(columns={"POINTS": "PENALITES"}, inplace=True)
 
-classement = classement.merge(penalites_par_equipe, on="ID_EQUIPE", how="left")
-classement["PENALITES"] = classement["PENALITES"].fillna(0).astype(int)
-classement["POINTS"] = classement["PTS"] - classement["PENALITES"]
+        classement = classement.merge(penalites_par_equipe, on="ID_EQUIPE", how="left")
+        classement["PENALITES"] = classement["PENALITES"].fillna(0).astype(int)
+        classement["POINTS"] = classement["PTS"] - classement["PENALITES"]
+
+        classement = classement.sort_values(by=["POULE", "POINTS", "DIFF", "BP"], ascending=[True, False, False, False])
+        classement["CLASSEMENT"] = classement.groupby("POULE").cumcount() + 1
+
+        if selected_poule != "Toutes les poules":
+            classement = classement[classement["POULE"] == selected_poule]
+
+        for poule in sorted(classement["POULE"].unique()):
+            st.subheader(f"Poule {poule}")
+            df = classement[classement["POULE"] == poule][[
+                "CLASSEMENT", "NOM_EQUIPE", "POINTS", "PENALITES", "BP", "BC", "DIFF", "MJ"
+            ]].rename(columns={
+                "BP": "BUTS_POUR",
+                "BC": "BUTS_CONTRE",
+                "MJ": "MATCHS_JOUES"
+            })
+            st.dataframe(df, use_container_width=True)
+
 
 
         # Affichage du classement par poule
