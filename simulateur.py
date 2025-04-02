@@ -101,7 +101,32 @@ def get_classement_dynamique(champ_id, date_limite):
 
 # Chargement du classement complet (non filtré)
 classement_complet = get_classement_dynamique(champ_id, date_limite)
-classement_df = classement_complet.copy()
+
+# 🔁 Intégration des pénalités
+@st.cache_data(show_spinner=False)
+def load_penalites():
+    query = """
+        SELECT ID_EQUIPE, ID_CHAMPIONNAT, POINTS, DATE
+        FROM `datafoot-448514.DATAFOOT.DATA_PENALITE`
+    """
+    return client.query(query).to_dataframe()
+
+penalites_df = load_penalites()
+
+# Sélection des pénalités applicables
+penalites_actives = penalites_df[
+    (penalites_df["ID_CHAMPIONNAT"] == champ_id) &
+    (penalites_df["DATE"] <= pd.to_datetime(date_limite))
+]
+
+# Agrégation par équipe
+penalites_agg = penalites_actives.groupby("ID_EQUIPE")["POINTS"].sum().reset_index()
+penalites_agg.rename(columns={"POINTS": "PENALITES"}, inplace=True)
+
+# Jointure avec le classement
+classement_df = classement_complet.merge(penalites_agg, on="ID_EQUIPE", how="left")
+classement_df["PENALITES"] = classement_df["PENALITES"].fillna(0).astype(int)
+classement_df["POINTS"] = classement_df["PTS"] - classement_df["PENALITES"]
 
 # Filtrage si une poule spécifique est sélectionnée
 if selected_poule != "Toutes les poules":
@@ -116,8 +141,9 @@ if classement_df.empty:
 else:
     for poule in sorted(classement_df["POULE"].unique()):
         st.subheader(f"Poule {poule}")
-        df = classement_df[classement_df["POULE"] == poule][[
-            "CLASSEMENT", "NOM_EQUIPE", "PTS", "BP", "BC", "DIFF", "MJ"
+       df = classement_df[classement_df["POULE"] == poule][[
+    "CLASSEMENT", "NOM_EQUIPE", "POINTS", "PENALITES", "BP", "BC", "DIFF", "MJ"
+]]
         ]].rename(columns={
             "PTS": "POINTS", "BP": "BUTS_POUR", "BC": "BUTS_CONTRE", "MJ": "MATCHS_JOUES"
         })
