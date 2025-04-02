@@ -190,13 +190,6 @@ if "simulated_scores" in st.session_state:
             })
             st.dataframe(df, use_container_width=True)
 
-
-
-        # 🔢 Recalcul du classement avec pénalités
-classement["POINTS"] = classement["PTS"] - classement["PENALITES"]
-classement = classement.sort_values(by=["POULE", "POINTS", "DIFF", "BP"], ascending=[True, False, False, False])
-classement["CLASSEMENT"] = classement.groupby("POULE").cumcount() + 1
-
 # 📊 Affichage du classement par poule
 for poule in sorted(classement["POULE"].unique()):
     st.subheader(f"Poule {poule}")
