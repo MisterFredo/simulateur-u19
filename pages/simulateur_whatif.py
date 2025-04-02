@@ -139,24 +139,16 @@ if "simulated_scores" in st.session_state:
         matchs_reels_sans_doublon = matchs_termines[~matchs_termines.index.isin(df_simules.index)]
         matchs_complets = pd.concat([matchs_reels_sans_doublon, df_simules]).reset_index()
 
-        dom = matchs_complets.rename(columns={
-    "ID_EQUIPE_DOM": "ID_EQUIPE",
-    "EQUIPE_DOM": "NOM_EQUIPE",
-    "NB_BUT_DOM": "BUTS_POUR",
-    "NB_BUT_EXT": "BUTS_CONTRE"
-})
-        dom["POINTS"] = dom.apply(lambda r: 3 if r.BUTS_POUR > r.BUTS_CONTRE else (1 if r.BUTS_POUR == r.BUTS_CONTRE else 0), axis=1)
+        dom = matchs_complets[["POULE", "ID_EQUIPE_DOM", "EQUIPE_DOM", "NB_BUT_DOM", "NB_BUT_EXT"]].copy()
+        dom.columns = ["POULE", "ID_EQUIPE", "NOM_EQUIPE", "BUTS_POUR", "BUTS_CONTRE"]
+        dom["POINTS"] = dom.apply(lambda r: 3 if r.BUTS_POUR > r.BUTS_CONTRE else 1 if r.BUTS_POUR == r.BUTS_CONTRE else 0, axis=1)
 
-        ext = matchs_complets.rename(columns={
-    "ID_EQUIPE_EXT": "ID_EQUIPE",
-    "EQUIPE_EXT": "NOM_EQUIPE",
-    "NB_BUT_EXT": "BUTS_POUR",
-    "NB_BUT_DOM": "BUTS_CONTRE"
-})
-        ext["POINTS"] = ext.apply(lambda r: 3 if r.BUTS_POUR > r.BUTS_CONTRE else (1 if r.BUTS_POUR == r.BUTS_CONTRE else 0), axis=1)
+        ext = matchs_complets[["POULE", "ID_EQUIPE_EXT", "EQUIPE_EXT", "NB_BUT_EXT", "NB_BUT_DOM"]].copy()
+        ext.columns = ["POULE", "ID_EQUIPE", "NOM_EQUIPE", "BUTS_POUR", "BUTS_CONTRE"]
+        ext["POINTS"] = ext.apply(lambda r: 3 if r.BUTS_POUR > r.BUTS_CONTRE else 1 if r.BUTS_POUR == r.BUTS_CONTRE else 0, axis=1)
 
         full = pd.concat([dom, ext])["POULE ID_EQUIPE NOM_EQUIPE BUTS_POUR BUTS_CONTRE POINTS".split()]
-        classement = full.groupby(["POULE", "NOM_EQUIPE"]).agg(
+        classement = full.groupby(["POULE", "ID_EQUIPE", "NOM_EQUIPE"]).agg(
             MJ=("POINTS", "count"),
             G=("POINTS", lambda x: (x == 3).sum()),
             N=("POINTS", lambda x: (x == 1).sum()),
@@ -168,15 +160,19 @@ if "simulated_scores" in st.session_state:
 
         classement["DIFF"] = classement["BP"] - classement["BC"]
 
-        # Intégration des pénalités
+        # Intégration des pénalités via ID_EQUIPE
         penalites_actives = penalites_df[
             (penalites_df["ID_CHAMPIONNAT"] == champ_id) & (penalites_df["DATE"] <= pd.to_datetime(date_limite))
         ]
         penalites_agg = penalites_actives.groupby("ID_EQUIPE")["POINTS"].sum().reset_index().rename(columns={"POINTS": "PENALITES"})
 
-        classement = classement.merge(penalites_agg, on="NOM_EQUIPE", how="left")
+        classement = classement.merge(penalites_agg, on="ID_EQUIPE", how="left")
         classement["PENALITES"] = classement["PENALITES"].fillna(0).astype(int)
         classement["POINTS"] = classement["PTS"] - classement["PENALITES"]
+
+        # Tri et classement après pénalités
+        classement = classement.sort_values(by=["POULE", "POINTS", "DIFF", "BP"], ascending=[True, False, False, False])
+        classement["CLASSEMENT"] = classement.groupby("POULE").cumcount() + 1
 
         # Tri et classement après pénalités
         classement = classement.sort_values(by=["POULE", "POINTS", "DIFF", "BP"], ascending=[True, False, False, False])
