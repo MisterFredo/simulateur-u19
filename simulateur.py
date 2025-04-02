@@ -126,6 +126,7 @@ penalites_agg.rename(columns={"POINTS": "PENALITES"}, inplace=True)
 # Jointure avec le classement
 classement_df = classement_complet.merge(penalites_agg, on="ID_EQUIPE", how="left")
 classement_df["PENALITES"] = classement_df["PENALITES"].fillna(0).astype(int)
+
 # Mise à jour des points après pénalités
 classement_df["POINTS"] = classement_df["PTS"] - classement_df["PENALITES"]
 
@@ -140,6 +141,23 @@ if selected_poule != "Toutes les poules":
 # Affichage principal
 st.title("\U0001F3C6 Classement - Datafoot")
 st.markdown(f"### {selected_nom} ({selected_categorie} - {selected_niveau}) au {date_limite.strftime('%d/%m/%Y')}")
+
+if classement_df.empty:
+    st.warning("Aucun classement disponible pour ces critères.")
+else:
+    for poule in sorted(classement_df["POULE"].unique()):
+        st.subheader(f"Poule {poule}")
+        df = classement_df[classement_df["POULE"] == poule][[
+            "CLASSEMENT", "NOM_EQUIPE", "POINTS", "PENALITES", "BP", "BC", "DIFF", "MJ"
+        ]].rename(columns={
+            "BP": "BUTS_POUR",
+            "BC": "BUTS_CONTRE",
+            "MJ": "MATCHS_JOUES"
+        })
+        st.dataframe(df, use_container_width=True)
+
+st.caption("💡 Classement calculé à partir des matchs terminés uniquement, selon la date sélectionnée. Les pénalités sont déduites des points.")
+
 
 if classement_df.empty:
     st.warning("Aucun classement disponible pour ces critères.")
