@@ -145,15 +145,13 @@ if classement_df.empty:
 else:
     for poule in sorted(classement_df["POULE"].unique()):
         st.subheader(f"Poule {poule}")
-       df = classement_df[classement_df["POULE"] == poule][[
-    "CLASSEMENT", "NOM_EQUIPE", "PTS", "PENALITES", "MJ", "G", "N", "P", "BP", "BC", "DIFF"
-]]
+        df = classement_df[classement_df["POULE"] == poule][[
+            "CLASSEMENT", "NOM_EQUIPE", "POINTS", "PENALITES", "MJ", "G", "N", "P", "BP", "BC", "DIFF"
         ]].rename(columns={
-            "BP": "BP",
-            "BC": "BC",
             "MJ": "J."
         })
         st.dataframe(df, use_container_width=True)
+
 
 st.caption("💡 Classement calculé à partir des matchs terminés uniquement, selon la date sélectionnée. Les pénalités sont déduites des points.")
 
