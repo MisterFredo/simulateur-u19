@@ -128,9 +128,10 @@ classement_df = classement_complet.merge(penalites_agg, on="ID_EQUIPE", how="lef
 classement_df["PENALITES"] = classement_df["PENALITES"].fillna(0).astype(int)
 
 # Mise à jour des points après pénalités
+classement_df["PENALITES"] = classement_df["PENALITES"].fillna(0).astype(int)
 classement_df["POINTS"] = classement_df["PTS"] - classement_df["PENALITES"]
 
-# Recalcul du classement
+# Recalcul du classement après pénalités
 classement_df = classement_df.sort_values(by=["POULE", "POINTS", "DIFF", "BP"], ascending=[True, False, False, False])
 classement_df["CLASSEMENT"] = classement_df.groupby("POULE").cumcount() + 1
 
@@ -138,40 +139,23 @@ classement_df["CLASSEMENT"] = classement_df.groupby("POULE").cumcount() + 1
 if selected_poule != "Toutes les poules":
     classement_df = classement_df[classement_df["POULE"] == selected_poule]
 
-# Affichage principal
-st.title("\U0001F3C6 Classement - Datafoot")
-st.markdown(f"### {selected_nom} ({selected_categorie} - {selected_niveau}) au {date_limite.strftime('%d/%m/%Y')}")
-
+# Affichage
 if classement_df.empty:
     st.warning("Aucun classement disponible pour ces critères.")
 else:
     for poule in sorted(classement_df["POULE"].unique()):
         st.subheader(f"Poule {poule}")
         df = classement_df[classement_df["POULE"] == poule][[
-            "CLASSEMENT", "NOM_EQUIPE", "PTS", "PENALITES", "BP", "BC", "DIFF", "MJ"
+            "CLASSEMENT", "NOM_EQUIPE", "POINTS", "PENALITES", "BP", "BC", "DIFF", "MJ"
         ]].rename(columns={
-            "BP": "BP",
-            "BC": "BC",
-            "MJ": "J."
+            "BP": "BUTS_POUR",
+            "BC": "BUTS_CONTRE",
+            "MJ": "MATCHS_JOUES"
         })
         st.dataframe(df, use_container_width=True)
 
 st.caption("💡 Classement calculé à partir des matchs terminés uniquement, selon la date sélectionnée. Les pénalités sont déduites des points.")
 
-
-if classement_df.empty:
-    st.warning("Aucun classement disponible pour ces critères.")
-else:
-    for poule in sorted(classement_df["POULE"].unique()):
-        st.subheader(f"Poule {poule}")
-        df = classement_df[classement_df["POULE"] == poule][[
-            "CLASSEMENT", "NOM_EQUIPE", "PTS", "PENALITES", "BP", "BC", "DIFF", "MJ"
-        ]].rename(columns={
-            "BP": "BP",
-            "BC": "BC",
-            "MJ": "J."
-        })
-        st.dataframe(df, use_container_width=True)
 
 # Les règles spécifiques sont désormais à adapter avec "classement_complet" pour avoir toutes les poules disponibles
 
