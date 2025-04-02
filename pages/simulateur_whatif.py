@@ -151,6 +151,13 @@ if "simulated_scores" in st.session_state:
         classement = classement.sort_values(by=["POULE", "PTS", "DIFF", "BP"], ascending=[True, False, False, False])
         classement["CLASSEMENT"] = classement.groupby("POULE").cumcount() + 1
 
+        # Affichage du classement par poule
+        for poule in sorted(classement["POULE"].unique()):
+            st.subheader(f"Poule {poule}")
+            df_poule = classement[classement["POULE"] == poule].sort_values("CLASSEMENT")
+            st.dataframe(df_poule[["CLASSEMENT", "NOM_EQUIPE", "PTS", "MJ", "G", "N", "P", "BP", "BC", "DIFF"]],
+                         use_container_width=True)
+
 # Cas particuliers (U19 / U17 / N2 / N3)
 if "simulated_scores" in st.session_state and "classement" in locals() and selected_poule == "Toutes les poules":
     if champ_id == 6 and not classement.empty:
