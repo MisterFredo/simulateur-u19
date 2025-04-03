@@ -57,7 +57,7 @@ else:
     selected_poule = all_poules[0] if all_poules else "Toutes les poules"
 
 # Date limite de simulation
-date_limite = st.sidebar.date_input("Date de simulation", value=pd.to_datetime("2025-03-31"))
+date_limite = st.sidebar.date_input("Date de simulation", value=pd.to_datetime("2025-06-30"))
 
 # Classement
 @st.cache_data(show_spinner=False)
