@@ -3,6 +3,29 @@ import pandas as pd
 from google.cloud import bigquery
 from google.oauth2 import service_account
 
+# 🔄 Bloc de rechargement forcé
+def load_data():
+    client = bigquery.Client()
+    job_config = bigquery.QueryJobConfig(use_query_cache=False)
+    query = """
+        SELECT *
+        FROM `datafoot-448514.DATAFOOT.DATAFOOT_MATCH_2025`
+    """
+    df = client.query(query, job_config=job_config).to_dataframe()
+    return df
+
+if "refresh_data" not in st.session_state:
+    st.session_state["refresh_data"] = False
+
+if st.button("🔄 Recharger les données"):
+    st.session_state["refresh_data"] = True
+
+if st.session_state["refresh_data"]:
+    df = load_data()
+    st.session_state["refresh_data"] = False
+else:
+    df = load_data()
+
 # Configuration de la page
 st.set_page_config(page_title="Classement - Datafoot", layout="wide")
 
