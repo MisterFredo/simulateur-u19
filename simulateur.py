@@ -3,18 +3,6 @@ import pandas as pd
 from google.cloud import bigquery
 from google.oauth2 import service_account
 
-# 🔄 Bloc de rechargement forcé
-def load_data():
-    client = bigquery.Client()
-    query = """
-        SELECT *
-        FROM `datafoot-448514.DATAFOOT.DATAFOOT_MATCH_2025`
-    """
-    df = client.query(query).to_dataframe()
-    return df
-
-df = load_data()
-
 # Configuration de la page
 st.set_page_config(page_title="Classement - Datafoot", layout="wide")
 
