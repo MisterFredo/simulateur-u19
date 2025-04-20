@@ -61,6 +61,7 @@ date_limite = st.sidebar.date_input("Date de simulation", value=pd.to_datetime("
 
 # Classement
 @st.cache_data(show_spinner=False)
+@st.cache_data(show_spinner=False)
 def get_classement_dynamique(champ_id, date_limite):
     query = f"""
         WITH matchs_termine AS (
@@ -97,6 +98,12 @@ def get_classement_dynamique(champ_id, date_limite):
         FROM classement
         ORDER BY POULE, CLASSEMENT
     """
+    
+    # ⬇️ Ajout pour affichage de debug
+    print("REQUÊTE GÉNÉRÉE ==================")
+    print(query)
+    print("==================================")
+
     return client.query(query).to_dataframe()
 
 # Chargement du classement complet (non filtré)
