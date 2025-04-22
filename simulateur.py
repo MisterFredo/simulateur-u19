@@ -106,8 +106,30 @@ def get_classement_dynamique(champ_id, date_limite):
 
     return client.query(query).to_dataframe()
 
-# Chargement du classement complet (non filtré)
-classement_complet = get_classement_dynamique(champ_id, date_limite)
+# Type de classement
+def get_type_classement(champ_id):
+    query = f"""
+        SELECT CLASSEMENT
+        FROM `datafoot-448514.DATAFOOT.DATAFOOT_CHAMPIONNAT`
+        WHERE ID_CHAMPIONNAT = {champ_id}
+        LIMIT 1
+    """
+    result = client.query(query).to_dataframe()
+    return result.iloc[0]["CLASSEMENT"] if not result.empty else "GENERALE"
+
+
+def get_classement_particuliere(champ_id, date_limite):
+    print("⚠️ Classement PARTICULIERE non encore implémenté – fallback sur dynamique")
+    return get_classement_dynamique(champ_id, date_limite)
+
+
+type_classement = get_type_classement(champ_id)
+print("Type de classement pour ce championnat :", type_classement)
+
+if type_classement == "PARTICULIERE":
+    classement_complet = get_classement_particuliere(champ_id, date_limite)
+else:
+    classement_complet = get_classement_dynamique(champ_id, date_limite)
 
 # 🔁 Intégration des pénalités
 @st.cache_data(show_spinner=False)
