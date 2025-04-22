@@ -122,9 +122,8 @@ def get_classement_particuliere(champ_id, date_limite):
     print("⚠️ Classement PARTICULIERE non encore implémenté – fallback sur dynamique")
     return get_classement_dynamique(champ_id, date_limite)
 
-
 type_classement = get_type_classement(champ_id)
-print("Type de classement pour ce championnat :", type_classement)
+st.write("📌 Type de classement pour ce championnat :", type_classement)
 
 if type_classement == "PARTICULIERE":
     classement_complet = get_classement_particuliere(champ_id, date_limite)
