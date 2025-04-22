@@ -106,6 +106,16 @@ def get_classement_dynamique(champ_id, date_limite):
 
     return client.query(query).to_dataframe()
 
+def get_matchs_termine(champ_id, date_limite):
+    query = f"""
+        SELECT *
+        FROM `datafoot-448514.DATAFOOT.DATAFOOT_MATCH_2025`
+        WHERE STATUT = 'TERMINE'
+          AND ID_CHAMPIONNAT = {champ_id}
+          AND DATE <= DATE('{date_limite}')
+    """
+    return client.query(query).to_dataframe()
+
 # Type de classement
 def get_type_classement(champ_id):
     query = f"""
@@ -131,16 +141,6 @@ if type_classement == "PARTICULIERE":
     classement_complet = get_classement_particuliere(champ_id, date_limite)
 else:
     classement_complet = get_classement_dynamique(champ_id, date_limite)
-
-def get_matchs_termine(champ_id, date_limite):
-    query = f"""
-        SELECT *
-        FROM `datafoot-448514.DATAFOOT.DATAFOOT_MATCH_2025`
-        WHERE STATUT = 'TERMINE'
-          AND ID_CHAMPIONNAT = {champ_id}
-          AND DATE <= DATE('{date_limite}')
-    """
-    return client.query(query).to_dataframe()
 
 # 🔁 Intégration des pénalités
 @st.cache_data(show_spinner=False)
