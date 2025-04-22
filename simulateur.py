@@ -127,6 +127,38 @@ def get_type_classement(champ_id):
     result = client.query(query).to_dataframe()
     return result.iloc[0]["CLASSEMENT"] if not result.empty else "GENERALE"
 
+def appliquer_diff_particuliere(classement_df, matchs_df):
+    st.write("🔍 Détection des égalités pour classement PARTICULIERE...")
+
+    # 1. Regrouper les équipes à égalité de points par poule
+    groupes = (
+        classement_df
+        .groupby(["POULE", "PTS"])
+        .filter(lambda x: len(x) > 1)  # garder seulement les égalités
+        .groupby(["POULE", "PTS"])
+    )
+
+    for (poule, pts), groupe in groupes:
+        equipes_concernees = groupe["ID_EQUIPE"].tolist()
+
+        # 2. Extraire les matchs entre ces équipes
+        matchs_confrontations = matchs_df[
+            (matchs_df["ID_EQUIPE_DOM"].isin(equipes_concernees)) &
+            (matchs_df["ID_EQUIPE_EXT"].isin(equipes_concernees))
+        ]
+
+        st.write(f"📌 Poule {poule} — Égalité à {pts} pts entre {len(equipes_concernees)} équipes")
+        st.dataframe(groupe[["ID_EQUIPE", "NOM_EQUIPE", "PTS", "DIFF"]])
+        st.write("📄 Matchs concernés :")
+        st.dataframe(matchs_confrontations[[
+            "DATE", "ID_EQUIPE_DOM", "EQUIPE_DOM",
+            "ID_EQUIPE_EXT", "EQUIPE_EXT",
+            "NB_BUT_DOM", "NB_BUT_EXT"
+        ]])
+
+    # Pour l’instant, on retourne le classement tel quel
+    return classement_df
+
 
 def get_classement_particuliere(champ_id, date_limite):
     classement = get_classement_dynamique(champ_id, date_limite)
@@ -412,35 +444,3 @@ if selected_poule == "Toutes les poules":
 else:
     if champ_id in [4, 5, 6, 7]:
         st.info("🔒 Les règles spécifiques (U19, U17, N2, N3) ne sont disponibles que si toutes les poules sont affichées.")
-
-def appliquer_diff_particuliere(classement_df, matchs_df):
-    st.write("🔍 Détection des égalités pour classement PARTICULIERE...")
-
-    # 1. Regrouper les équipes à égalité de points par poule
-    groupes = (
-        classement_df
-        .groupby(["POULE", "PTS"])
-        .filter(lambda x: len(x) > 1)  # garder seulement les égalités
-        .groupby(["POULE", "PTS"])
-    )
-
-    for (poule, pts), groupe in groupes:
-        equipes_concernees = groupe["ID_EQUIPE"].tolist()
-
-        # 2. Extraire les matchs entre ces équipes
-        matchs_confrontations = matchs_df[
-            (matchs_df["ID_EQUIPE_DOM"].isin(equipes_concernees)) &
-            (matchs_df["ID_EQUIPE_EXT"].isin(equipes_concernees))
-        ]
-
-        st.write(f"📌 Poule {poule} — Égalité à {pts} pts entre {len(equipes_concernees)} équipes")
-        st.dataframe(groupe[["ID_EQUIPE", "NOM_EQUIPE", "PTS", "DIFF"]])
-        st.write("📄 Matchs concernés :")
-        st.dataframe(matchs_confrontations[[
-            "DATE", "ID_EQUIPE_DOM", "EQUIPE_DOM",
-            "ID_EQUIPE_EXT", "EQUIPE_EXT",
-            "NB_BUT_DOM", "NB_BUT_EXT"
-        ]])
-
-    # Pour l’instant, on retourne le classement tel quel
-    return classement_df
