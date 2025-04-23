@@ -130,31 +130,13 @@ def get_type_classement(champ_id):
 def appliquer_diff_particuliere(classement_df, matchs_df):
     st.write("🔍 Détection des égalités pour classement PARTICULIERE...")
 
-    # 1. Regrouper les équipes à égalité de points par poule
     groupes = (
         classement_df
         .groupby(["POULE", "PTS"])
-        .filter(lambda x: len(x) > 1)  # garder seulement les égalités
+        .filter(lambda x: len(x) > 1)
         .groupby(["POULE", "PTS"])
     )
 
-    for (poule, pts), groupe in groupes:
-        equipes_concernees = groupe["ID_EQUIPE"].tolist()
-
-        # 2. Extraire les matchs entre ces équipes
-        matchs_confrontations = matchs_df[
-            (matchs_df["ID_EQUIPE_DOM"].isin(equipes_concernees)) &
-            (matchs_df["ID_EQUIPE_EXT"].isin(equipes_concernees))
-        ]
-
-       # Affichage des infos
-st.write(f"📌 Poule {poule} — Égalité à {pts} pts entre {len(equipes_concernees)} équipes")
-st.dataframe(groupe[["NOM_EQUIPE", "PTS", "DIFF"]])
-st.write("📄 Matchs concernés :")
-st.dataframe(matchs_confrontations[[
-    "DATE", "EQUIPE_DOM", "EQUIPE_EXT", "NB_BUT_DOM", "NB_BUT_EXT"
-]])
-        
     for (poule, pts), groupe in groupes:
         equipes_concernees = groupe["ID_EQUIPE"].tolist()
 
@@ -214,6 +196,7 @@ st.dataframe(matchs_confrontations[[
         st.dataframe(mini_df)
 
     return classement_df
+
 
 # 🔁 Intégration des pénalités
 @st.cache_data(show_spinner=False)
