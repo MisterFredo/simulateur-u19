@@ -214,6 +214,10 @@ classement_df = classement_complet.merge(penalites_agg, on="ID_EQUIPE", how="lef
 classement_df["PENALITES"] = classement_df["PENALITES"].fillna(0).astype(int)
 classement_df["POINTS"] = classement_df["POINTS"] - classement_df["PENALITES"]
 
+matchs = get_matchs_termine(champ_id, date_limite)
+afficher_debug = selected_poule != "Toutes les poules"
+classement_df = appliquer_diff_particuliere(classement_df, matchs, afficher_debug)
+
 # Affichage des mini-classements uniquement si une seule poule est sélectionnée
 afficher_debug = selected_poule != "Toutes les poules"
 classement_df = appliquer_diff_particuliere(classement_df, matchs, afficher_debug)
