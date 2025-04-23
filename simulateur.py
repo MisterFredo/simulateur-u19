@@ -197,6 +197,12 @@ def appliquer_diff_particuliere(classement_df, matchs_df):
 
     return classement_df
 
+def get_classement_particuliere(champ_id, date_limite):
+    classement = get_classement_dynamique(champ_id, date_limite)
+    matchs = get_matchs_termine(champ_id, date_limite)
+    return appliquer_diff_particuliere(classement, matchs)
+
+
 type_classement = get_type_classement(champ_id)
 st.write("📌 Type de classement pour ce championnat :", type_classement)
 
