@@ -228,13 +228,6 @@ penalites_actives = client.query(f"""
     WHERE DATE <= DATE('{date_limite}')
 """).to_dataframe()
 
-# Chargement des pénalités valables à la date limite
-penalites_actives = client.query(f"""
-    SELECT ID_EQUIPE, POINTS
-    FROM `datafoot-448514.DATAFOOT.DATAFOOT_PENALITE`
-    WHERE DATE <= DATE('{date_limite}')
-""").to_dataframe()
-
 # Agrégation par équipe
 penalites_agg = penalites_actives.groupby("ID_EQUIPE")["POINTS"].sum().reset_index()
 penalites_agg.rename(columns={"POINTS": "PENALITES"}, inplace=True)
