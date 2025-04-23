@@ -137,9 +137,9 @@ def appliquer_diff_particuliere(classement_df, matchs_df):
     # 1. Regrouper les équipes à égalité de points par poule
     groupes = (
         classement_df
-        .groupby(["POULE", "PTS"])
+        .groupby(["POULE", "POINTS"])
         .filter(lambda x: len(x) > 1)  # garder seulement les égalités
-        .groupby(["POULE", "PTS"])
+        .groupby(["POULE", "POINTS"])
     )
 
     for (poule, pts), groupe in groupes:
@@ -152,7 +152,7 @@ def appliquer_diff_particuliere(classement_df, matchs_df):
         ]
 
         st.write(f"📌 Poule {poule} — Égalité à {pts} pts entre {len(equipes_concernees)} équipes")
-        st.dataframe(groupe[["NOM_EQUIPE", "PTS", "DIFF"]])
+        st.dataframe(groupe[["NOM_EQUIPE", "POINTS", "DIFF"]])
         st.write("📄 Matchs concernés :")
         st.dataframe(matchs_confrontations[[
             "DATE", "EQUIPE_DOM", "EQUIPE_EXT", "NB_BUT_DOM", "NB_BUT_EXT"
@@ -215,7 +215,7 @@ def appliquer_diff_particuliere(classement_df, matchs_df):
         # 👁️ Inspection du classement mis à jour
         st.write("🧪 Vérification du classement après intégration de RANG_CONFRONT :")
         st.dataframe(classement_df[[
-            "ID_EQUIPE", "NOM_EQUIPE", "PTS", "RANG_CONFRONT"
+            "ID_EQUIPE", "NOM_EQUIPE", "POINTS", "RANG_CONFRONT"
         ]])
     
     return classement_df
@@ -251,7 +251,7 @@ classement_df["PENALITES"] = classement_df["PENALITES"].fillna(0).astype(int)
 
 # Mise à jour des points après pénalités
 classement_df["PENALITES"] = classement_df["PENALITES"].fillna(0).astype(int)
-classement_df["POINTS"] = classement_df["PTS"] - classement_df["PENALITES"]
+classement_df["POINTS"] = classement_df["POINTS"] - classement_df["PENALITES"]
 
 # 🧮 Recalcul du classement après pénalités et éventuelles égalités particulières
 if type_classement == "PARTICULIERE":
