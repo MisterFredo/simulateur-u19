@@ -104,6 +104,10 @@ def get_classement_dynamique(champ_id, date_limite):
 
 afficher_debug = selected_poule != "Toutes les poules"
 
+# Chargement du classement brut
+classement_complet = get_classement_dynamique(champ_id, date_limite)
+classement_df = classement_complet.copy()
+
 # 1. Application des pénalités
 penalites_actives = client.query(f"""
     SELECT ID_EQUIPE, POINTS
