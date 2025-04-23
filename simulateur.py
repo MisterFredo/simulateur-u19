@@ -200,7 +200,7 @@ st.dataframe(mini_df)
 
 
     # Pour l’instant, on retourne le classement tel quel
-return classement_df
+    return classement_df
 
 
 def get_classement_particuliere(champ_id, date_limite):
