@@ -189,14 +189,16 @@ def appliquer_diff_particuliere(classement_df, matchs_df):
         mini_df["RANG_CONFRONT"] = range(1, len(mini_df) + 1)
 
         # 🔁 Mise à jour dans le classement général
-        if "RANG_CONFRONT" in classement_df.columns:
-            classement_df.drop(columns=["RANG_CONFRONT"], inplace=True)
+       if "RANG_CONFRONT" in classement_df.columns:
+    classement_df.drop(columns=["RANG_CONFRONT"], inplace=True)
 
-        classement_df = classement_df.merge(
-            mini_df[["ID_EQUIPE", "RANG_CONFRONT"]],
-            on="ID_EQUIPE",
-            how="left"
-        )
+classement_df = classement_df.merge(
+    mini_df[["ID_EQUIPE", "RANG_CONFRONT"]],
+    on="ID_EQUIPE",
+    how="left"
+)
+
+classement_df["RANG_CONFRONT"] = classement_df["RANG_CONFRONT"].fillna(999)
 
 
         # 👁️ Affichage
