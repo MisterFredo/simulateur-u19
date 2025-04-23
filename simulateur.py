@@ -104,6 +104,16 @@ def get_classement_dynamique(champ_id, date_limite):
 
 afficher_debug = selected_poule != "Toutes les poules"
 
+def get_matchs_termine(champ_id, date_limite):
+    query = f"""
+        SELECT *
+        FROM `datafoot-448514.DATAFOOT.DATAFOOT_MATCH_2025`
+        WHERE STATUT = 'TERMINE'
+          AND ID_CHAMPIONNAT = {champ_id}
+          AND DATE <= DATE('{date_limite}')
+    """
+    return client.query(query).to_dataframe()
+
 def get_type_classement(champ_id):
     query = f"""
         SELECT CLASSEMENT
@@ -235,16 +245,6 @@ def appliquer_diff_particuliere(classement_df, matchs_df, selected_poule="Toutes
         print(mini_df[["NOM_EQUIPE", "PTS_CONFRONT", "DIFF_CONFRONT"]])
 
     return classement_df, mini_classements
-
-def get_matchs_termine(champ_id, date_limite):
-    query = f"""
-        SELECT *
-        FROM `datafoot-448514.DATAFOOT.DATAFOOT_MATCH_2025`
-        WHERE STATUT = 'TERMINE'
-          AND ID_CHAMPIONNAT = {champ_id}
-          AND DATE <= DATE('{date_limite}')
-    """
-    return client.query(query).to_dataframe()
 
 # 1. Type de classement
 type_classement = get_type_classement(champ_id)
