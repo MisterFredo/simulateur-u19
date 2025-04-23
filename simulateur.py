@@ -106,7 +106,7 @@ afficher_debug = selected_poule != "Toutes les poules"
 st.write("🎛️ selected_poule =", selected_poule)
 st.write("🎛️ afficher_debug =", afficher_debug)
 
-def appliquer_diff_particuliere(classement_df, matchs_df, afficher_debug=True):
+def appliquer_diff_particuliere(classement_df, matchs_df, afficher_debug=True, selected_poule="Toutes les poules"):
     if afficher_debug:
         st.write("🔍 Détection des égalités pour classement PARTICULIERE...")
 
@@ -120,6 +120,10 @@ def appliquer_diff_particuliere(classement_df, matchs_df, afficher_debug=True):
     )
 
     for (poule, pts), groupe in groupes:
+        # 🛑 Si une seule poule est sélectionnée, ignorer les autres
+        if selected_poule != "Toutes les poules" and poule != selected_poule:
+            continue
+
         equipes_concernees = groupe["ID_EQUIPE"].tolist()
 
         matchs_confrontations = matchs_df[
@@ -179,6 +183,7 @@ def appliquer_diff_particuliere(classement_df, matchs_df, afficher_debug=True):
     return classement_df
 
 
+
 def get_matchs_termine(champ_id, date_limite):
     query = f"""
         SELECT *
@@ -221,16 +226,16 @@ classement_df["POINTS"] = classement_df["POINTS"] - classement_df["PENALITES"]
 
 matchs = get_matchs_termine(champ_id, date_limite)
 afficher_debug = selected_poule != "Toutes les poules"
-classement_df = appliquer_diff_particuliere(classement_df, matchs, afficher_debug)
+classement_df = appliquer_diff_particuliere(classement_df, matchs, afficher_debug, selected_poule)
 
 # Affichage des mini-classements uniquement si une seule poule est sélectionnée
 afficher_debug = selected_poule != "Toutes les poules"
-classement_df = appliquer_diff_particuliere(classement_df, matchs, afficher_debug)
+classement_df = appliquer_diff_particuliere(classement_df, matchs, afficher_debug, selected_poule)
 st.caption("\U0001F4A1 Classement calculé à partir des matchs terminés uniquement, selon la date sélectionnée. Les pénalités sont déduites des points.")
 
 if type_classement == "PARTICULIERE":
     matchs = get_matchs_termine(champ_id, date_limite)
-    classement_df = appliquer_diff_particuliere(classement_df, matchs, afficher_debug)
+    classement_df = appliquer_diff_particuliere(classement_df, matchs, afficher_debug, selected_poule)
 
 if type_classement == "PARTICULIERE":
     classement_df["RANG_CONFRONT"] = classement_df.get("RANG_CONFRONT", 999)
