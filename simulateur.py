@@ -193,14 +193,14 @@ for equipe_id in equipes_concernees:
         "DIFF_CONFRONT": diff_buts
     })
 
-mini_df = pd.DataFrame(mini_classement)
-mini_df = mini_df.sort_values(by=["PTS_CONFRONT", "DIFF_CONFRONT"], ascending=[False, False])
-st.write(f"🏅 Mini-classement pour égalité à {pts} pts")
-st.dataframe(mini_df)
-
+    mini_df = pd.DataFrame(mini_classement)
+    mini_df = mini_df.sort_values(by=["PTS_CONFRONT", "DIFF_CONFRONT"], ascending=[False, False])
+    st.write(f"🏅 Mini-classement pour égalité à {pts} pts")
+    st.dataframe(mini_df)
 
     # Pour l’instant, on retourne le classement tel quel
     return classement_df
+
 
 
 def get_classement_particuliere(champ_id, date_limite):
