@@ -155,65 +155,51 @@ st.dataframe(matchs_confrontations[[
     "DATE", "EQUIPE_DOM", "EQUIPE_EXT", "NB_BUT_DOM", "NB_BUT_EXT"
 ]])
 
-# Recalcul du mini-classement entre ces équipes
-mini_classement = []
+        # Recalcul du mini-classement entre ces équipes
+        mini_classement = []
 
-for equipe_id in equipes_concernees:
-    matchs_eq = matchs_confrontations[
-        (matchs_confrontations["ID_EQUIPE_DOM"] == equipe_id) |
-        (matchs_confrontations["ID_EQUIPE_EXT"] == equipe_id)
-    ]
+        for equipe_id in equipes_concernees:
+            matchs_eq = matchs_confrontations[
+                (matchs_confrontations["ID_EQUIPE_DOM"] == equipe_id) |
+                (matchs_confrontations["ID_EQUIPE_EXT"] == equipe_id)
+            ]
 
-    points = 0
-    diff_buts = 0
+            points = 0
+            diff_buts = 0
 
-    for _, row in matchs_eq.iterrows():
-        if row["ID_EQUIPE_DOM"] == equipe_id:
-            bp = row["NB_BUT_DOM"]
-            bc = row["NB_BUT_EXT"]
-            if bp > bc:
-                points += 3
-            elif bp == bc:
-                points += 1
-            diff_buts += bp - bc
-        elif row["ID_EQUIPE_EXT"] == equipe_id:
-            bp = row["NB_BUT_EXT"]
-            bc = row["NB_BUT_DOM"]
-            if bp > bc:
-                points += 3
-            elif bp == bc:
-                points += 1
-            diff_buts += bp - bc
+            for _, row in matchs_eq.iterrows():
+                if row["ID_EQUIPE_DOM"] == equipe_id:
+                    bp = row["NB_BUT_DOM"]
+                    bc = row["NB_BUT_EXT"]
+                    if bp > bc:
+                        points += 3
+                    elif bp == bc:
+                        points += 1
+                    diff_buts += bp - bc
+                elif row["ID_EQUIPE_EXT"] == equipe_id:
+                    bp = row["NB_BUT_EXT"]
+                    bc = row["NB_BUT_DOM"]
+                    if bp > bc:
+                        points += 3
+                    elif bp == bc:
+                        points += 1
+                    diff_buts += bp - bc
 
-    nom_equipe = groupe[groupe["ID_EQUIPE"] == equipe_id]["NOM_EQUIPE"].values[0]
-    mini_classement.append({
-        "ID_EQUIPE": equipe_id,
-        "NOM_EQUIPE": nom_equipe,
-        "PTS_CONFRONT": points,
-        "DIFF_CONFRONT": diff_buts
-    })
+            nom_equipe = groupe[groupe["ID_EQUIPE"] == equipe_id]["NOM_EQUIPE"].values[0]
+            mini_classement.append({
+                "ID_EQUIPE": equipe_id,
+                "NOM_EQUIPE": nom_equipe,
+                "PTS_CONFRONT": points,
+                "DIFF_CONFRONT": diff_buts
+            })
 
         mini_df = pd.DataFrame(mini_classement)
-    mini_df = mini_df.sort_values(by=["PTS_CONFRONT", "DIFF_CONFRONT"], ascending=[False, False])
-    st.write(f"🏅 Mini-classement pour égalité à {pts} pts")
-    st.dataframe(mini_df)
+        mini_df = mini_df.sort_values(by=["PTS_CONFRONT", "DIFF_CONFRONT"], ascending=[False, False])
+        st.write(f"🏅 Mini-classement pour égalité à {pts} pts")
+        st.dataframe(mini_df)
 
-    # Pour l’instant, on retourne le classement tel quel
+    # Fin de la fonction
     return classement_df
-
-def get_classement_particuliere(champ_id, date_limite):
-    classement = get_classement_dynamique(champ_id, date_limite)
-    matchs = get_matchs_termine(champ_id, date_limite)
-    return appliquer_diff_particuliere(classement, matchs)
-
-
-type_classement = get_type_classement(champ_id)
-st.write("📌 Type de classement pour ce championnat :", type_classement)
-
-if type_classement == "PARTICULIERE":
-    classement_complet = get_classement_particuliere(champ_id, date_limite)
-else:
-    classement_complet = get_classement_dynamique(champ_id, date_limite)
 
 # 🔁 Intégration des pénalités
 @st.cache_data(show_spinner=False)
