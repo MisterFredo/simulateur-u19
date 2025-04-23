@@ -189,11 +189,15 @@ def appliquer_diff_particuliere(classement_df, matchs_df):
         mini_df["RANG_CONFRONT"] = range(1, len(mini_df) + 1)
 
         # 🔁 Mise à jour dans le classement général
+        if "RANG_CONFRONT" in classement_df.columns:
+            classement_df.drop(columns=["RANG_CONFRONT"], inplace=True)
+
         classement_df = classement_df.merge(
             mini_df[["ID_EQUIPE", "RANG_CONFRONT"]],
             on="ID_EQUIPE",
             how="left"
         )
+
 
         # 👁️ Affichage
         st.write(f"🏅 Mini-classement pour égalité à {pts} pts")
@@ -242,11 +246,6 @@ classement_df["PENALITES"] = classement_df["PENALITES"].fillna(0).astype(int)
 classement_df["POINTS"] = classement_df["PTS"] - classement_df["PENALITES"]
 
 # Recalcul du classement après pénalités, avec prise en compte des égalités particulières
-if "RANG_CONFRONT" not in classement_df.columns:
-    classement_df["RANG_CONFRONT"] = 999
-else:
-    classement_df["RANG_CONFRONT"] = classement_df["RANG_CONFRONT"].fillna(999)
-
 classement_df = classement_df.sort_values(
     by=["POULE", "POINTS", "RANG_CONFRONT", "DIFF", "BP"],
     ascending=[True, False, True, False, False]
