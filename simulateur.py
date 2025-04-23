@@ -320,9 +320,10 @@ if selected_poule == "Toutes les poules":
 
             comparatif_11e.append({"POULE": poule, "EQUIPE": equipe_11e, "PTS_CONFRONT_6_10": pts})
 
-        df_11e_comp = pd.DataFrame(comparatif_11e).sort_values("PTS_CONFRONT_6_10")
-        df_11e_comp["RANG"] = df_11e_comp["PTS_CONFRONT_6_10"].rank(method="min")
-        st.dataframe(df_11e_comp, use_container_width=True)
+        df_11e_comp = pd.DataFrame(comparatif_11e).sort_values(by="PTS_CONFRONT_6_10", ascending=False)
+df_11e_comp["RANG"] = df_11e_comp["PTS_CONFRONT_6_10"].rank(method="min", ascending=False).astype(int)
+st.dataframe(df_11e_comp, use_container_width=True)
+
 
     # U17 National - 2e
     if champ_id == 7 and not classement_df.empty:
