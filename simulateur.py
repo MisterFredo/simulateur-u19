@@ -103,8 +103,6 @@ def get_classement_dynamique(champ_id, date_limite):
     return classement_df
 
 afficher_debug = selected_poule != "Toutes les poules"
-st.write("🎛️ selected_poule =", selected_poule)
-st.write("🎛️ afficher_debug =", afficher_debug)
 
 def appliquer_diff_particuliere(classement_df, matchs_df, afficher_debug=True, selected_poule="Toutes les poules"):
     if afficher_debug:
