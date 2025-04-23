@@ -230,7 +230,7 @@ st.caption("\U0001F4A1 Classement calculé à partir des matchs terminés unique
 
 if type_classement == "PARTICULIERE":
     matchs = get_matchs_termine(champ_id, date_limite)
-    classement_df = appliquer_diff_particuliere(classement_df, matchs)
+    classement_df = appliquer_diff_particuliere(classement_df, matchs, afficher_debug)
 
 if type_classement == "PARTICULIERE":
     classement_df["RANG_CONFRONT"] = classement_df.get("RANG_CONFRONT", 999)
