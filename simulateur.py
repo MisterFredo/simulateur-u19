@@ -204,7 +204,6 @@ def get_type_classement(champ_id):
 
 # Chargement du type de classement
 type_classement = get_type_classement(champ_id)
-st.write("\U0001F4CC Type de classement pour ce championnat :", type_classement)
 
 # Étapes 1 à 4 : classement brut -> pénalités -> égalités -> tri
 classement_complet = get_classement_dynamique(champ_id, date_limite)
