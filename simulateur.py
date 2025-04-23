@@ -241,11 +241,6 @@ else:
         ascending=[True, False, False, False]
     )
 
-# Affichage des mini-classements uniquement si une seule poule est sélectionnée
-afficher_debug = selected_poule != "Toutes les poules"
-classement_df = appliquer_diff_particuliere(classement_df, matchs, afficher_debug, selected_poule)
-st.caption("💡 Classement calculé à partir des matchs terminés uniquement, selon la date sélectionnée. Les pénalités sont déduites des points.")
-
 classement_df["CLASSEMENT"] = classement_df.groupby("POULE").cumcount() + 1
 
 if selected_poule != "Toutes les poules":
@@ -260,6 +255,11 @@ else:
             "CLASSEMENT", "NOM_EQUIPE", "POINTS", "PENALITES", "MJ", "G", "N", "P", "BP", "BC", "DIFF"
         ]].rename(columns={"MJ": "J."})
         st.dataframe(df, use_container_width=True)
+
+# Affichage des mini-classements uniquement si une seule poule est sélectionnée
+afficher_debug = selected_poule != "Toutes les poules"
+classement_df = appliquer_diff_particuliere(classement_df, matchs, afficher_debug, selected_poule)
+st.caption("💡 Classement calculé à partir des matchs terminés uniquement, selon la date sélectionnée. Les pénalités sont déduites des points.")
 
 # Cas particuliers (U19 / U17 / N2)
 if selected_poule == "Toutes les poules":
