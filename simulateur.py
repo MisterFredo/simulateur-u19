@@ -235,7 +235,6 @@ classement_df["CLASSEMENT"] = classement_df.groupby("POULE").cumcount() + 1
 matchs = get_matchs_termine(champ_id, date_limite)
 classement_df, mini_classements = appliquer_diff_particuliere(classement_df, matchs, selected_poule)
 
-
 if selected_poule != "Toutes les poules":
     classement_df = classement_df[classement_df["POULE"] == selected_poule]
 
