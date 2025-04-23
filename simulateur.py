@@ -162,7 +162,7 @@ def appliquer_diff_particuliere(classement_df, matchs_df, selected_poule="Toutes
         for _, row in mini_df.iterrows():
             classement_df.loc[classement_df["ID_EQUIPE"] == row["ID_EQUIPE"], "RANG_CONFRONT"] = row["RANG_CONFRONT"]
 
-        mini_classements[poule] = mini_df.drop(columns=["ID_EQUIPE"])
+        mini_classements[(poule, pts)] = mini_df.drop(columns=["ID_EQUIPE"])
 
     return classement_df, mini_classements
 
@@ -251,9 +251,10 @@ else:
 # Affichage des mini-classements uniquement si une seule poule est sélectionnée
 if selected_poule != "Toutes les poules" and mini_classements:
     st.markdown("## Mini-classements (en cas d’égalité)")
-    for poule, df_mini in mini_classements.items():
-        st.markdown(f"### Poule {poule}")
+    for (poule, pts), df_mini in mini_classements.items():
+        st.markdown(f"### Poule {poule} — Égalité à {pts} pts")
         st.dataframe(df_mini)
+
 
 # Cas particuliers (U19 / U17 / N2)
 if selected_poule == "Toutes les poules":
