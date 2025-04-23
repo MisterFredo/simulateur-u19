@@ -122,8 +122,14 @@ def get_type_classement(champ_id):
     result = client.query(query).to_dataframe()
     return result.iloc[0]["CLASSEMENT"] if not result.empty else "GENERALE"
 
-def appliquer_diff_particuliere(classement_df, matchs_df):
-    st.write("\U0001F50D Détection des égalités pour classement PARTICULIERE...")
+# Affichage des mini-classements uniquement si une seule poule est sélectionnée
+afficher_debug = selected_poule != "Toutes les poules"
+classement_df = appliquer_diff_particuliere(classement_df, matchs, afficher_debug)
+
+def appliquer_diff_particuliere(classement_df, matchs_df, afficher_debug=True):
+    if afficher_debug:
+        st.write("🔍 Détection des égalités pour classement PARTICULIERE...")
+
     classement_df["RANG_CONFRONT"] = 999  # Valeur par défaut globale
 
     groupes = (
@@ -141,9 +147,10 @@ def appliquer_diff_particuliere(classement_df, matchs_df):
             (matchs_df["ID_EQUIPE_EXT"].isin(equipes_concernees))
         ]
 
-        st.write(f"\U0001F4CC Poule {poule} — Égalité à {pts} pts entre {len(equipes_concernees)} équipes")
-        st.dataframe(groupe[["NOM_EQUIPE", "POINTS", "DIFF"]])
-        st.dataframe(matchs_confrontations[["DATE", "EQUIPE_DOM", "EQUIPE_EXT", "NB_BUT_DOM", "NB_BUT_EXT"]])
+        if afficher_debug:
+            st.write(f"📌 Poule {poule} — Égalité à {pts} pts entre {len(equipes_concernees)} équipes")
+            st.dataframe(groupe[["NOM_EQUIPE", "POINTS", "DIFF"]])
+            st.dataframe(matchs_confrontations[["DATE", "EQUIPE_DOM", "EQUIPE_EXT", "NB_BUT_DOM", "NB_BUT_EXT"]])
 
         mini_classement = []
         for equipe_id in equipes_concernees:
@@ -178,17 +185,19 @@ def appliquer_diff_particuliere(classement_df, matchs_df):
         mini_df = mini_df.sort_values(by=["PTS_CONFRONT", "DIFF_CONFRONT"], ascending=[False, False])
         mini_df["RANG_CONFRONT"] = range(1, len(mini_df) + 1)
 
-        # 🔁 Mise à jour ciblée uniquement sur les équipes concernées
         for _, row in mini_df.iterrows():
             classement_df.loc[classement_df["ID_EQUIPE"] == row["ID_EQUIPE"], "RANG_CONFRONT"] = row["RANG_CONFRONT"]
 
-        st.write(f"\U0001F3C5 Mini-classement pour égalité à {pts} pts")
-        st.dataframe(mini_df)
-
-        st.write("\U0001F52A Vérification du classement après intégration de RANG_CONFRONT :")
-        st.dataframe(classement_df[classement_df["ID_EQUIPE"].isin(equipes_concernees)][["ID_EQUIPE", "NOM_EQUIPE", "POINTS", "RANG_CONFRONT"]])
+        if afficher_debug:
+            st.write(f"🏅 Mini-classement pour égalité à {pts} pts")
+            st.dataframe(mini_df)
+            st.write("🧪 Vérification du classement après intégration de RANG_CONFRONT :")
+            st.dataframe(classement_df[classement_df["ID_EQUIPE"].isin(equipes_concernees)][
+                ["ID_EQUIPE", "NOM_EQUIPE", "POINTS", "RANG_CONFRONT"]
+            ])
 
     return classement_df
+
 
 # Chargement du type de classement
 type_classement = get_type_classement(champ_id)
