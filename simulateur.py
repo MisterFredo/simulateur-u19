@@ -37,7 +37,7 @@ champ_options = championnats_df[
 selected_nom = st.sidebar.selectbox("Championnat", champ_options["NOM_CHAMPIONNAT"])
 champ_id = champ_options[champ_options["NOM_CHAMPIONNAT"] == selected_nom]["ID_CHAMPIONNAT"].values[0]
 
-# Temporaire : pour charger les poules avant d'afficher la date
+# Chargement temporaire des poules
 @st.cache_data(show_spinner=False)
 def get_poules_temp(champ_id):
     query = f"""
@@ -56,12 +56,11 @@ if len(all_poules) > 1:
 else:
     selected_poule = all_poules[0] if all_poules else "Toutes les poules"
 
-# Date limite de simulation
+# Date limite
 date_limite = st.sidebar.date_input("Date de simulation", value=pd.to_datetime("2025-06-30"))
 
-# Classement
-@st.cache_data(show_spinner=False)
-@st.cache_data(show_spinner=False)
+# Fonctions utilitaires
+
 def get_classement_dynamique(champ_id, date_limite):
     query = f"""
         WITH matchs_termine AS (
@@ -99,16 +98,9 @@ def get_classement_dynamique(champ_id, date_limite):
         ORDER BY POULE, CLASSEMENT
     """
 
-    # Debug
-    print("REQUÊTE GÉNÉRÉE ==================")
-    print(query)
-    print("==================================")
-
-    # ⬇️ Exécution + renommage
     classement_df = client.query(query).to_dataframe()
     classement_df = classement_df.rename(columns={"PTS": "POINTS"})
     return classement_df
-
 
 def get_matchs_termine(champ_id, date_limite):
     query = f"""
@@ -120,7 +112,6 @@ def get_matchs_termine(champ_id, date_limite):
     """
     return client.query(query).to_dataframe()
 
-# Type de classement
 def get_type_classement(champ_id):
     query = f"""
         SELECT CLASSEMENT
@@ -132,33 +123,26 @@ def get_type_classement(champ_id):
     return result.iloc[0]["CLASSEMENT"] if not result.empty else "GENERALE"
 
 def appliquer_diff_particuliere(classement_df, matchs_df):
-    st.write("🔍 Détection des égalités pour classement PARTICULIERE...")
-
-    # 1. Regrouper les équipes à égalité de points par poule
+    st.write("\U0001F50D Détection des égalités pour classement PARTICULIERE...")
     groupes = (
         classement_df
         .groupby(["POULE", "POINTS"])
-        .filter(lambda x: len(x) > 1)  # garder seulement les égalités
+        .filter(lambda x: len(x) > 1)
         .groupby(["POULE", "POINTS"])
     )
 
     for (poule, pts), groupe in groupes:
         equipes_concernees = groupe["ID_EQUIPE"].tolist()
 
-        # 2. Extraire les matchs entre ces équipes
         matchs_confrontations = matchs_df[
             (matchs_df["ID_EQUIPE_DOM"].isin(equipes_concernees)) &
             (matchs_df["ID_EQUIPE_EXT"].isin(equipes_concernees))
         ]
 
-        st.write(f"📌 Poule {poule} — Égalité à {pts} pts entre {len(equipes_concernees)} équipes")
+        st.write(f"\U0001F4CC Poule {poule} — Égalité à {pts} pts entre {len(equipes_concernees)} équipes")
         st.dataframe(groupe[["NOM_EQUIPE", "POINTS", "DIFF"]])
-        st.write("📄 Matchs concernés :")
-        st.dataframe(matchs_confrontations[[
-            "DATE", "EQUIPE_DOM", "EQUIPE_EXT", "NB_BUT_DOM", "NB_BUT_EXT"
-        ]])
+        st.dataframe(matchs_confrontations[["DATE", "EQUIPE_DOM", "EQUIPE_EXT", "NB_BUT_DOM", "NB_BUT_EXT"]])
 
-        # 3. Calcul du mini-classement
         mini_classement = []
         for equipe_id in equipes_concernees:
             matchs_eq = matchs_confrontations[
@@ -192,69 +176,43 @@ def appliquer_diff_particuliere(classement_df, matchs_df):
         mini_df = mini_df.sort_values(by=["PTS_CONFRONT", "DIFF_CONFRONT"], ascending=[False, False])
         mini_df["RANG_CONFRONT"] = range(1, len(mini_df) + 1)
 
-                # 🔁 Suppression préalable si la colonne existe
         if "RANG_CONFRONT" in classement_df.columns:
             classement_df.drop(columns=["RANG_CONFRONT"], inplace=True)
 
-        # 🔁 Mise à jour dans le classement général
-        classement_df = classement_df.merge(
-            mini_df[["ID_EQUIPE", "RANG_CONFRONT"]],
-            on="ID_EQUIPE",
-            how="left"
-        )
-
-        # Remplissage des valeurs manquantes
+        classement_df = classement_df.merge(mini_df[["ID_EQUIPE", "RANG_CONFRONT"]], on="ID_EQUIPE", how="left")
         classement_df["RANG_CONFRONT"] = classement_df["RANG_CONFRONT"].fillna(999)
 
-        # 👁️ Affichage pour contrôle
-        st.write(f"🏅 Mini-classement pour égalité à {pts} pts")
+        st.write(f"\U0001F3C5 Mini-classement pour égalité à {pts} pts")
         st.dataframe(mini_df)
 
+        st.write("\U0001F52A Vérification du classement après intégration de RANG_CONFRONT :")
+        st.dataframe(classement_df[["ID_EQUIPE", "NOM_EQUIPE", "POINTS", "RANG_CONFRONT"]])
 
-
-        # 👁️ Inspection du classement mis à jour
-        st.write("🧪 Vérification du classement après intégration de RANG_CONFRONT :")
-        st.dataframe(classement_df[[
-            "ID_EQUIPE", "NOM_EQUIPE", "POINTS", "RANG_CONFRONT"
-        ]])
-    
     return classement_df
 
-def get_classement_particuliere(champ_id, date_limite):
-    classement_base = get_classement_dynamique(champ_id, date_limite)
-    matchs = get_matchs_termine(champ_id, date_limite)
-    return appliquer_diff_particuliere(classement_base, matchs)
-
+# Chargement du type de classement
 type_classement = get_type_classement(champ_id)
-st.write("📌 Type de classement pour ce championnat :", type_classement)
+st.write("\U0001F4CC Type de classement pour ce championnat :", type_classement)
 
-# Chargement du classement adapté
-if type_classement == "PARTICULIERE":
-    classement_complet = get_classement_particuliere(champ_id, date_limite)
-else:
-    classement_complet = get_classement_dynamique(champ_id, date_limite)
+# Étapes 1 à 4 : classement brut -> pénalités -> égalités -> tri
+classement_complet = get_classement_dynamique(champ_id, date_limite)
 
-# Chargement des pénalités valables à la date limite
 penalites_actives = client.query(f"""
     SELECT ID_EQUIPE, POINTS
     FROM `datafoot-448514.DATAFOOT.DATAFOOT_PENALITE`
     WHERE DATE <= DATE('{date_limite}')
 """).to_dataframe()
 
-# Agrégation par équipe
 penalites_agg = penalites_actives.groupby("ID_EQUIPE")["POINTS"].sum().reset_index()
 penalites_agg.rename(columns={"POINTS": "PENALITES"}, inplace=True)
 
-# Jointure avec le classement
 classement_df = classement_complet.merge(penalites_agg, on="ID_EQUIPE", how="left")
-classement_df["PENALITES"] = classement_df["PENALITES"].fillna(0).astype(int)
-
-# Mise à jour des points après pénalités
 classement_df["PENALITES"] = classement_df["PENALITES"].fillna(0).astype(int)
 classement_df["POINTS"] = classement_df["POINTS"] - classement_df["PENALITES"]
 
-# 🧮 Recalcul du classement après pénalités et éventuelles égalités particulières
-st.write("🔍 Type de classement utilisé :", type_classement)
+if type_classement == "PARTICULIERE":
+    matchs = get_matchs_termine(champ_id, date_limite)
+    classement_df = appliquer_diff_particuliere(classement_df, matchs)
 
 if type_classement == "PARTICULIERE":
     classement_df["RANG_CONFRONT"] = classement_df.get("RANG_CONFRONT", 999)
@@ -270,11 +228,9 @@ else:
 
 classement_df["CLASSEMENT"] = classement_df.groupby("POULE").cumcount() + 1
 
-# Filtrage si une poule spécifique est sélectionnée
 if selected_poule != "Toutes les poules":
     classement_df = classement_df[classement_df["POULE"] == selected_poule]
 
-# Affichage
 if classement_df.empty:
     st.warning("Aucun classement disponible pour ces critères.")
 else:
@@ -282,16 +238,10 @@ else:
         st.subheader(f"Poule {poule}")
         df = classement_df[classement_df["POULE"] == poule][[
             "CLASSEMENT", "NOM_EQUIPE", "POINTS", "PENALITES", "MJ", "G", "N", "P", "BP", "BC", "DIFF"
-        ]].rename(columns={
-            "MJ": "J."
-        })
+        ]].rename(columns={"MJ": "J."})
         st.dataframe(df, use_container_width=True)
 
-
-st.caption("💡 Classement calculé à partir des matchs terminés uniquement, selon la date sélectionnée. Les pénalités sont déduites des points.")
-
-
-# Les règles spécifiques sont désormais à adapter avec "classement_complet" pour avoir toutes les poules disponibles
+st.caption("\U0001F4A1 Classement calculé à partir des matchs terminés uniquement, selon la date sélectionnée. Les pénalités sont déduites des points.")
 
 
 # Cas particuliers (U19 / U17 / N2)
