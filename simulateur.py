@@ -219,22 +219,13 @@ if type_classement == "PARTICULIERE":
 else:
     classement_complet = get_classement_dynamique(champ_id, date_limite)
 
-# 🔁 Intégration des pénalités
-@st.cache_data(show_spinner=False)
-def load_penalites():
-    query = """
-        SELECT ID_EQUIPE, ID_CHAMPIONNAT, POINTS, DATE
-        FROM `datafoot-448514.DATAFOOT.DATAFOOT_PENALITE`
-    """
-    return client.query(query).to_dataframe()
+# Chargement des pénalités valables à la date limite
+penalites_actives = client.query(f"""
+    SELECT ID_EQUIPE, POINTS
+    FROM `datafoot-448514.DATAFOOT.DATAFOOT_PENALITE`
+    WHERE DATE <= DATE('{date_limite}')
+""").to_dataframe()
 
-penalites_df = load_penalites()
-
-# Sélection des pénalités applicables
-penalites_actives = penalites_df[
-    (penalites_df["ID_CHAMPIONNAT"] == champ_id) &
-    (penalites_df["DATE"] <= pd.to_datetime(date_limite))
-]
 # Chargement des pénalités valables à la date limite
 penalites_actives = client.query(f"""
     SELECT ID_EQUIPE, POINTS
