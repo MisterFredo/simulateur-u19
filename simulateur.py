@@ -244,43 +244,11 @@ else:
 # 🔢 6. Numérotation
 classement_df["CLASSEMENT"] = classement_df.groupby("POULE").cumcount() + 1
 
-
-# 1. Type de classement
-type_classement = get_type_classement(champ_id)
-
-# 2. Message explicatif uniquement si PARTICULIERE
-if type_classement == "PARTICULIERE":
-    st.caption("📌 Les égalités sont traitées selon le principe de la différence particulière (points puis différence de buts).")
-    st.caption("📌 Pour le détail du calcul des départages des égalités, sélectionner une Poule.")
-
-# 3. Application des égalités particulières uniquement si besoin
-if type_classement == "PARTICULIERE":
-    matchs = get_matchs_termine(champ_id, date_limite)
-    classement_df, mini_classements = appliquer_diff_particuliere(classement_df, matchs, selected_poule)
-else:
-    mini_classements = {}
-
-# 4. Tri final avec ou sans RANG_CONFRONT
-if type_classement == "PARTICULIERE":
-    classement_df["RANG_CONFRONT"] = classement_df.get("RANG_CONFRONT", 999)
-    classement_df = classement_df.sort_values(
-        by=["POULE", "POINTS", "RANG_CONFRONT", "DIFF", "BP"],
-        ascending=[True, False, True, False, False]
-    )
-else:
-    classement_df = classement_df.sort_values(
-        by=["POULE", "POINTS", "DIFF", "BP"],
-        ascending=[True, False, False, False]
-    )
-
-# 5. Numérotation
-classement_df["CLASSEMENT"] = classement_df.groupby("POULE").cumcount() + 1
-
-# 6. Filtrage par poule sélectionnée
+# 🔍 7. Filtrage si une seule poule est sélectionnée
 if selected_poule != "Toutes les poules":
     classement_df = classement_df[classement_df["POULE"] == selected_poule]
 
-# 7. Affichage du classement
+# 📊 8. Affichage du classement principal
 if classement_df.empty:
     st.warning("Aucun classement disponible pour ces critères.")
 else:
@@ -291,7 +259,7 @@ else:
         ]].rename(columns={"MJ": "J."})
         st.dataframe(df, use_container_width=True)
 
-# 8. Affichage des mini-classements si applicable
+# 📌 9. Affichage des mini-classements si applicable
 if selected_poule != "Toutes les poules" and mini_classements:
     st.markdown("## Mini-classements (en cas d’égalité)")
     for (poule, pts), data in mini_classements.items():
@@ -300,6 +268,7 @@ if selected_poule != "Toutes les poules" and mini_classements:
         st.dataframe(data["classement"])
         st.markdown("**Matchs concernés**")
         st.dataframe(data["matchs"])
+
 
 
 # Cas particuliers (U19 / U17 / N2)
