@@ -248,6 +248,9 @@ else:
             "CLASSEMENT", "NOM_EQUIPE", "POINTS", "PENALITES", "MJ", "G", "N", "P", "BP", "BC", "DIFF"
         ]].rename(columns={"MJ": "J."})
         st.dataframe(df, use_container_width=True)
+        
+st.write("🧩 Mini-classements détectés :", mini_classements.keys())
+
 
 # Affichage des mini-classements uniquement si une seule poule est sélectionnée
 if selected_poule != "Toutes les poules" and mini_classements:
