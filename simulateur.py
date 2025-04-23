@@ -255,7 +255,10 @@ classement_df["PENALITES"] = classement_df["PENALITES"].fillna(0).astype(int)
 classement_df["POINTS"] = classement_df["PTS"] - classement_df["PENALITES"]
 
 # Recalcul du classement après pénalités, avec prise en compte des égalités particulières
-classement_df["RANG_CONFRONT"] = classement_df["RANG_CONFRONT"].fillna(999)
+if "RANG_CONFRONT" not in classement_df.columns:
+    classement_df["RANG_CONFRONT"] = 999
+else:
+    classement_df["RANG_CONFRONT"] = classement_df["RANG_CONFRONT"].fillna(999)
 
 classement_df = classement_df.sort_values(
     by=["POULE", "POINTS", "RANG_CONFRONT", "DIFF", "BP"],
