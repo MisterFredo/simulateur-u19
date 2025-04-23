@@ -148,7 +148,7 @@ def appliquer_diff_particuliere(classement_df, matchs_df):
         ]
 
         st.write(f"📌 Poule {poule} — Égalité à {pts} pts entre {len(equipes_concernees)} équipes")
-        st.dataframe(groupe[["NOM_EQUIPE", "POINTS", "DIFF"]])
+        st.dataframe(groupe[["NOM_EQUIPE", "PTS", "DIFF"]])
         st.write("📄 Matchs concernés :")
         st.dataframe(matchs_confrontations[[
             "DATE", "EQUIPE_DOM", "EQUIPE_EXT", "NB_BUT_DOM", "NB_BUT_EXT"
