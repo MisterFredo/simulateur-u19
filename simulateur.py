@@ -108,17 +108,17 @@ def appliquer_diff_particuliere(classement_df, matchs_df, selected_poule="Toutes
     classement_df["RANG_CONFRONT"] = 999  # Valeur par défaut globale
     mini_classements = {}
 
-    groupes = (
-        classement_df
-        .groupby(["POULE", "POINTS"])
-        .filter(lambda x: len(x) > 1)
-        .groupby(["POULE", "POINTS"])
-    )
+    # Étape plus robuste pour repérer toutes les égalités
+    groupes = classement_df.copy()
+    groupes = groupes[groupes.duplicated(subset=["POULE", "POINTS"], keep=False)]
+    groupes = groupes.groupby(["POULE", "POINTS"])
 
     for (poule, pts), groupe in groupes:
-        print(f"💬 Égalité détectée : poule {poule}, {pts} points, {len(groupe)} équipes")
+        # Ne traiter que la poule sélectionnée
         if selected_poule != "Toutes les poules" and poule != selected_poule:
             continue
+
+        print(f"📍 Égalité détectée → Poule : {poule} — {pts} points — {len(groupe)} équipes")
 
         equipes_concernees = groupe["ID_EQUIPE"].tolist()
 
@@ -164,6 +164,10 @@ def appliquer_diff_particuliere(classement_df, matchs_df, selected_poule="Toutes
             classement_df.loc[classement_df["ID_EQUIPE"] == row["ID_EQUIPE"], "RANG_CONFRONT"] = row["RANG_CONFRONT"]
 
         mini_classements[(poule, pts)] = mini_df.drop(columns=["ID_EQUIPE"])
+
+        # Debug terminal (à commenter plus tard)
+        print("✅ Mini-classement ajouté :", poule, pts)
+        print(mini_df[["NOM_EQUIPE", "PTS_CONFRONT", "DIFF_CONFRONT"]])
 
     return classement_df, mini_classements
 
