@@ -110,7 +110,7 @@ def get_classement_dynamique(champ_id, date_limite):
 # 🔁 Renommage immédiat pour standardiser POINTS
 classement_df = classement_df.rename(columns={"PTS": "POINTS"})
 
-return classement_df
+    return classement_df
 
 def get_matchs_termine(champ_id, date_limite):
     query = f"""
