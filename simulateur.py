@@ -155,7 +155,22 @@ st.dataframe(matchs_confrontations[[
     "DATE", "EQUIPE_DOM", "EQUIPE_EXT", "NB_BUT_DOM", "NB_BUT_EXT"
 ]])
         
-# Recalcul du mini-classement entre ces équipes
+    for (poule, pts), groupe in groupes:
+        equipes_concernees = groupe["ID_EQUIPE"].tolist()
+
+        matchs_confrontations = matchs_df[
+            (matchs_df["ID_EQUIPE_DOM"].isin(equipes_concernees)) &
+            (matchs_df["ID_EQUIPE_EXT"].isin(equipes_concernees))
+        ]
+
+        st.write(f"📌 Poule {poule} — Égalité à {pts} pts entre {len(equipes_concernees)} équipes")
+        st.dataframe(groupe[["NOM_EQUIPE", "PTS", "DIFF"]])
+        st.write("📄 Matchs concernés :")
+        st.dataframe(matchs_confrontations[[
+            "DATE", "EQUIPE_DOM", "EQUIPE_EXT", "NB_BUT_DOM", "NB_BUT_EXT"
+        ]])
+
+        # Recalcul du mini-classement entre ces équipes
         mini_classement = []
 
         for equipe_id in equipes_concernees:
@@ -198,10 +213,8 @@ st.dataframe(matchs_confrontations[[
         st.write(f"🏅 Mini-classement pour égalité à {pts} pts")
         st.dataframe(mini_df)
 
-    # Fin de la fonction
     return classement_df
 
-        
 # 🔁 Intégration des pénalités
 @st.cache_data(show_spinner=False)
 def load_penalites():
