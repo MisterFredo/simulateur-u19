@@ -104,11 +104,9 @@ def get_classement_dynamique(champ_id, date_limite):
 
 afficher_debug = selected_poule != "Toutes les poules"
 
-def appliquer_diff_particuliere(classement_df, matchs_df, afficher_debug=True, selected_poule="Toutes les poules"):
-    if afficher_debug:
-        st.write("🔍 Détection des égalités pour classement PARTICULIERE...")
-
+def appliquer_diff_particuliere(classement_df, matchs_df, selected_poule="Toutes les poules"):
     classement_df["RANG_CONFRONT"] = 999  # Valeur par défaut globale
+    mini_classements = {}
 
     groupes = (
         classement_df
@@ -118,7 +116,6 @@ def appliquer_diff_particuliere(classement_df, matchs_df, afficher_debug=True, s
     )
 
     for (poule, pts), groupe in groupes:
-        # 🛑 Si une seule poule est sélectionnée, ignorer les autres
         if selected_poule != "Toutes les poules" and poule != selected_poule:
             continue
 
@@ -128,11 +125,6 @@ def appliquer_diff_particuliere(classement_df, matchs_df, afficher_debug=True, s
             (matchs_df["ID_EQUIPE_DOM"].isin(equipes_concernees)) &
             (matchs_df["ID_EQUIPE_EXT"].isin(equipes_concernees))
         ]
-
-        if afficher_debug:
-            st.write(f"📌 Poule {poule} — Égalité à {pts} pts entre {len(equipes_concernees)} équipes")
-            st.dataframe(groupe[["NOM_EQUIPE", "POINTS", "DIFF"]])
-            st.dataframe(matchs_confrontations[["DATE", "EQUIPE_DOM", "EQUIPE_EXT", "NB_BUT_DOM", "NB_BUT_EXT"]])
 
         mini_classement = []
         for equipe_id in equipes_concernees:
@@ -170,13 +162,9 @@ def appliquer_diff_particuliere(classement_df, matchs_df, afficher_debug=True, s
         for _, row in mini_df.iterrows():
             classement_df.loc[classement_df["ID_EQUIPE"] == row["ID_EQUIPE"], "RANG_CONFRONT"] = row["RANG_CONFRONT"]
 
-        if afficher_debug:
-            st.write(f"🏅 Mini-classement pour égalité à {pts} pts")
-            st.dataframe(mini_df.drop(columns=["ID_EQUIPE"]))
+        mini_classements[poule] = mini_df.drop(columns=["ID_EQUIPE"])
 
-    return classement_df
-
-
+    return classement_df, mini_classements
 
 def get_matchs_termine(champ_id, date_limite):
     query = f"""
@@ -243,6 +231,11 @@ else:
 
 classement_df["CLASSEMENT"] = classement_df.groupby("POULE").cumcount() + 1
 
+# Application des égalités particulières + récupération des mini-classements
+matchs = get_matchs_termine(champ_id, date_limite)
+classement_df, mini_classements = appliquer_diff_particuliere(classement_df, matchs, selected_poule)
+
+
 if selected_poule != "Toutes les poules":
     classement_df = classement_df[classement_df["POULE"] == selected_poule]
 
@@ -257,9 +250,11 @@ else:
         st.dataframe(df, use_container_width=True)
 
 # Affichage des mini-classements uniquement si une seule poule est sélectionnée
-afficher_debug = selected_poule != "Toutes les poules"
-classement_df = appliquer_diff_particuliere(classement_df, matchs, afficher_debug, selected_poule)
-st.caption("💡 Classement calculé à partir des matchs terminés uniquement, selon la date sélectionnée. Les pénalités sont déduites des points.")
+if selected_poule != "Toutes les poules" and mini_classements:
+    st.markdown("## Mini-classements (en cas d’égalité)")
+    for poule, df_mini in mini_classements.items():
+        st.markdown(f"### Poule {poule}")
+        st.dataframe(df_mini)
 
 # Cas particuliers (U19 / U17 / N2)
 if selected_poule == "Toutes les poules":
