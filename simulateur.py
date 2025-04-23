@@ -154,8 +154,8 @@ st.write("📄 Matchs concernés :")
 st.dataframe(matchs_confrontations[[
     "DATE", "EQUIPE_DOM", "EQUIPE_EXT", "NB_BUT_DOM", "NB_BUT_EXT"
 ]])
-
-        # Recalcul du mini-classement entre ces équipes
+        
+# Recalcul du mini-classement entre ces équipes
         mini_classement = []
 
         for equipe_id in equipes_concernees:
@@ -201,6 +201,7 @@ st.dataframe(matchs_confrontations[[
     # Fin de la fonction
     return classement_df
 
+        
 # 🔁 Intégration des pénalités
 @st.cache_data(show_spinner=False)
 def load_penalites():
