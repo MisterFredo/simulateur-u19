@@ -200,11 +200,12 @@ def appliquer_diff_particuliere(classement_df, matchs_df):
 
         classement_df["RANG_CONFRONT"] = classement_df["RANG_CONFRONT"].fillna(999)
 
-
-        # 👁️ Affichage
-        st.write(f"🏅 Mini-classement pour égalité à {pts} pts")
-        st.dataframe(mini_df)
-
+        # 👁️ Inspection du classement mis à jour
+        st.write("🧪 Vérification du classement après intégration de RANG_CONFRONT :")
+        st.dataframe(classement_df[[
+            "ID_EQUIPE", "NOM_EQUIPE", "PTS", "RANG_CONFRONT"
+        ]])
+    
     return classement_df
 
 def get_classement_particuliere(champ_id, date_limite):
