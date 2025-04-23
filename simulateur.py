@@ -257,7 +257,6 @@ classement_df["POINTS"] = classement_df["POINTS"] - classement_df["PENALITES"]
 st.write("🔍 Type de classement utilisé :", type_classement)
 
 if type_classement == "PARTICULIERE":
-if type_classement == "PARTICULIERE":
     classement_df["RANG_CONFRONT"] = classement_df.get("RANG_CONFRONT", 999)
     classement_df = classement_df.sort_values(
         by=["POULE", "POINTS", "RANG_CONFRONT", "DIFF", "BP"],
