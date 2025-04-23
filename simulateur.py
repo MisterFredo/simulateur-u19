@@ -235,8 +235,12 @@ else:
 classement_df["CLASSEMENT"] = classement_df.groupby("POULE").cumcount() + 1
 
 # Application des égalités particulières + récupération des mini-classements
-matchs = get_matchs_termine(champ_id, date_limite)
-classement_df, mini_classements = appliquer_diff_particuliere(classement_df, matchs, selected_poule)
+if type_classement == "PARTICULIERE":
+    matchs = get_matchs_termine(champ_id, date_limite)
+    classement_df, mini_classements = appliquer_diff_particuliere(classement_df, matchs, selected_poule)
+else:
+    mini_classements = {}  # Pour éviter les erreurs plus bas
+
 
 if selected_poule != "Toutes les poules":
     classement_df = classement_df[classement_df["POULE"] == selected_poule]
@@ -250,8 +254,6 @@ else:
             "CLASSEMENT", "NOM_EQUIPE", "POINTS", "PENALITES", "MJ", "G", "N", "P", "BP", "BC", "DIFF"
         ]].rename(columns={"MJ": "J."})
         st.dataframe(df, use_container_width=True)
-        
-st.write("🧩 Mini-classements détectés :", mini_classements.keys())
 
 # Affichage des mini-classements uniquement si une seule poule est sélectionnée
 if selected_poule != "Toutes les poules" and mini_classements:
