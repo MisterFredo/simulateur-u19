@@ -102,30 +102,6 @@ def get_classement_dynamique(champ_id, date_limite):
     classement_df = classement_df.rename(columns={"PTS": "POINTS"})
     return classement_df
 
-def get_matchs_termine(champ_id, date_limite):
-    query = f"""
-        SELECT *
-        FROM `datafoot-448514.DATAFOOT.DATAFOOT_MATCH_2025`
-        WHERE STATUT = 'TERMINE'
-          AND ID_CHAMPIONNAT = {champ_id}
-          AND DATE <= DATE('{date_limite}')
-    """
-    return client.query(query).to_dataframe()
-
-def get_type_classement(champ_id):
-    query = f"""
-        SELECT CLASSEMENT
-        FROM `datafoot-448514.DATAFOOT.DATAFOOT_CHAMPIONNAT`
-        WHERE ID_CHAMPIONNAT = {champ_id}
-        LIMIT 1
-    """
-    result = client.query(query).to_dataframe()
-    return result.iloc[0]["CLASSEMENT"] if not result.empty else "GENERALE"
-
-# Affichage des mini-classements uniquement si une seule poule est sélectionnée
-afficher_debug = selected_poule != "Toutes les poules"
-classement_df = appliquer_diff_particuliere(classement_df, matchs, afficher_debug)
-
 def appliquer_diff_particuliere(classement_df, matchs_df, afficher_debug=True):
     if afficher_debug:
         st.write("🔍 Détection des égalités pour classement PARTICULIERE...")
@@ -198,6 +174,25 @@ def appliquer_diff_particuliere(classement_df, matchs_df, afficher_debug=True):
 
     return classement_df
 
+def get_matchs_termine(champ_id, date_limite):
+    query = f"""
+        SELECT *
+        FROM `datafoot-448514.DATAFOOT.DATAFOOT_MATCH_2025`
+        WHERE STATUT = 'TERMINE'
+          AND ID_CHAMPIONNAT = {champ_id}
+          AND DATE <= DATE('{date_limite}')
+    """
+    return client.query(query).to_dataframe()
+
+def get_type_classement(champ_id):
+    query = f"""
+        SELECT CLASSEMENT
+        FROM `datafoot-448514.DATAFOOT.DATAFOOT_CHAMPIONNAT`
+        WHERE ID_CHAMPIONNAT = {champ_id}
+        LIMIT 1
+    """
+    result = client.query(query).to_dataframe()
+    return result.iloc[0]["CLASSEMENT"] if not result.empty else "GENERALE"
 
 # Chargement du type de classement
 type_classement = get_type_classement(champ_id)
@@ -218,6 +213,11 @@ penalites_agg.rename(columns={"POINTS": "PENALITES"}, inplace=True)
 classement_df = classement_complet.merge(penalites_agg, on="ID_EQUIPE", how="left")
 classement_df["PENALITES"] = classement_df["PENALITES"].fillna(0).astype(int)
 classement_df["POINTS"] = classement_df["POINTS"] - classement_df["PENALITES"]
+
+# Affichage des mini-classements uniquement si une seule poule est sélectionnée
+afficher_debug = selected_poule != "Toutes les poules"
+classement_df = appliquer_diff_particuliere(classement_df, matchs, afficher_debug)
+st.caption("\U0001F4A1 Classement calculé à partir des matchs terminés uniquement, selon la date sélectionnée. Les pénalités sont déduites des points.")
 
 if type_classement == "PARTICULIERE":
     matchs = get_matchs_termine(champ_id, date_limite)
@@ -249,10 +249,6 @@ else:
             "CLASSEMENT", "NOM_EQUIPE", "POINTS", "PENALITES", "MJ", "G", "N", "P", "BP", "BC", "DIFF"
         ]].rename(columns={"MJ": "J."})
         st.dataframe(df, use_container_width=True)
-
-st.caption("\U0001F4A1 Classement calculé à partir des matchs terminés uniquement, selon la date sélectionnée. Les pénalités sont déduites des points.")
-
-
 
 # Cas particuliers (U19 / U17 / N2)
 if selected_poule == "Toutes les poules":
