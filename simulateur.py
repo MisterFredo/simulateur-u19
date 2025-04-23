@@ -124,6 +124,8 @@ def get_type_classement(champ_id):
 
 def appliquer_diff_particuliere(classement_df, matchs_df):
     st.write("\U0001F50D Détection des égalités pour classement PARTICULIERE...")
+    classement_df["RANG_CONFRONT"] = 999  # Valeur par défaut globale
+
     groupes = (
         classement_df
         .groupby(["POULE", "POINTS"])
@@ -176,17 +178,15 @@ def appliquer_diff_particuliere(classement_df, matchs_df):
         mini_df = mini_df.sort_values(by=["PTS_CONFRONT", "DIFF_CONFRONT"], ascending=[False, False])
         mini_df["RANG_CONFRONT"] = range(1, len(mini_df) + 1)
 
-        if "RANG_CONFRONT" in classement_df.columns:
-            classement_df.drop(columns=["RANG_CONFRONT"], inplace=True)
-
-        classement_df = classement_df.merge(mini_df[["ID_EQUIPE", "RANG_CONFRONT"]], on="ID_EQUIPE", how="left")
-        classement_df["RANG_CONFRONT"] = classement_df["RANG_CONFRONT"].fillna(999)
+        # 🔁 Mise à jour ciblée uniquement sur les équipes concernées
+        for _, row in mini_df.iterrows():
+            classement_df.loc[classement_df["ID_EQUIPE"] == row["ID_EQUIPE"], "RANG_CONFRONT"] = row["RANG_CONFRONT"]
 
         st.write(f"\U0001F3C5 Mini-classement pour égalité à {pts} pts")
         st.dataframe(mini_df)
 
         st.write("\U0001F52A Vérification du classement après intégration de RANG_CONFRONT :")
-        st.dataframe(classement_df[["ID_EQUIPE", "NOM_EQUIPE", "POINTS", "RANG_CONFRONT"]])
+        st.dataframe(classement_df[classement_df["ID_EQUIPE"].isin(equipes_concernees)][["ID_EQUIPE", "NOM_EQUIPE", "POINTS", "RANG_CONFRONT"]])
 
     return classement_df
 
@@ -242,6 +242,7 @@ else:
         st.dataframe(df, use_container_width=True)
 
 st.caption("\U0001F4A1 Classement calculé à partir des matchs terminés uniquement, selon la date sélectionnée. Les pénalités sont déduites des points.")
+
 
 
 # Cas particuliers (U19 / U17 / N2)
