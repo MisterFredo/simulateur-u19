@@ -102,6 +102,9 @@ def get_classement_dynamique(champ_id, date_limite):
     classement_df = classement_df.rename(columns={"PTS": "POINTS"})
     return classement_df
 
+st.write("🎛️ selected_poule =", selected_poule)
+st.write("🎛️ afficher_debug =", afficher_debug)
+
 def appliquer_diff_particuliere(classement_df, matchs_df, afficher_debug=True):
     if afficher_debug:
         st.write("🔍 Détection des égalités pour classement PARTICULIERE...")
