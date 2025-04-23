@@ -104,6 +104,16 @@ def get_classement_dynamique(champ_id, date_limite):
 
 afficher_debug = selected_poule != "Toutes les poules"
 
+def get_type_classement(champ_id):
+    query = f"""
+        SELECT CLASSEMENT
+        FROM `datafoot-448514.DATAFOOT.DATAFOOT_CHAMPIONNAT`
+        WHERE ID_CHAMPIONNAT = {champ_id}
+        LIMIT 1
+    """
+    result = client.query(query).to_dataframe()
+    return result.iloc[0]["CLASSEMENT"] if not result.empty else "GENERALE"
+
 # 🔢 0. Récupération du classement brut
 classement_complet = get_classement_dynamique(champ_id, date_limite)
 classement_df = classement_complet.copy()
@@ -235,16 +245,6 @@ def get_matchs_termine(champ_id, date_limite):
           AND DATE <= DATE('{date_limite}')
     """
     return client.query(query).to_dataframe()
-
-def get_type_classement(champ_id):
-    query = f"""
-        SELECT CLASSEMENT
-        FROM `datafoot-448514.DATAFOOT.DATAFOOT_CHAMPIONNAT`
-        WHERE ID_CHAMPIONNAT = {champ_id}
-        LIMIT 1
-    """
-    result = client.query(query).to_dataframe()
-    return result.iloc[0]["CLASSEMENT"] if not result.empty else "GENERALE"
 
 # Chargement du classement brut
 classement_complet = get_classement_dynamique(champ_id, date_limite)
