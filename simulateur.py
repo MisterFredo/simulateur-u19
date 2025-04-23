@@ -241,13 +241,17 @@ classement_df["PENALITES"] = classement_df["PENALITES"].fillna(0).astype(int)
 classement_df["PENALITES"] = classement_df["PENALITES"].fillna(0).astype(int)
 classement_df["POINTS"] = classement_df["PTS"] - classement_df["PENALITES"]
 
-# Recalcul du classement après pénalités, avec prise en compte des égalités particulières
-classement_df = classement_df.sort_values(
-    by=["POULE", "POINTS", "RANG_CONFRONT", "DIFF", "BP"],
-    ascending=[True, False, True, False, False]
-)
-
-classement_df["CLASSEMENT"] = classement_df.groupby("POULE").cumcount() + 1
+# Recalcul du classement après pénalités
+if type_classement == "PARTICULIERE" and "RANG_CONFRONT" in classement_df.columns:
+    classement_df = classement_df.sort_values(
+        by=["POULE", "POINTS", "RANG_CONFRONT", "DIFF", "BP"],
+        ascending=[True, False, True, False, False]
+    )
+else:
+    classement_df = classement_df.sort_values(
+        by=["POULE", "POINTS", "DIFF", "BP"],
+        ascending=[True, False, False, False]
+    )
 
 # Filtrage si une poule spécifique est sélectionnée
 if selected_poule != "Toutes les poules":
