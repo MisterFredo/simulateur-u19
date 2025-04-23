@@ -246,10 +246,6 @@ def get_matchs_termine(champ_id, date_limite):
     """
     return client.query(query).to_dataframe()
 
-# Chargement du classement brut
-classement_complet = get_classement_dynamique(champ_id, date_limite)
-classement_df = classement_complet.copy()
-
 # 1. Type de classement
 type_classement = get_type_classement(champ_id)
 
