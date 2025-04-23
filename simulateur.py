@@ -252,7 +252,7 @@ classement_df["POINTS"] = classement_df["PTS"] - classement_df["PENALITES"]
 # Recalcul du classement après pénalités, avec ou sans égalités particulières
 if type_classement == "PARTICULIERE":
     # Si la colonne n'existe pas, on la crée pour éviter les erreurs
-   if "RANG_CONFRONT_mini" in classement_df.columns:
+if "RANG_CONFRONT_mini" in classement_df.columns:
     classement_df["RANG_CONFRONT"] = classement_df["RANG_CONFRONT_mini"]
     classement_df.drop(columns=["RANG_CONFRONT_mini"], inplace=True)
 else:
