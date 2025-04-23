@@ -254,6 +254,9 @@ classement_df["PENALITES"] = classement_df["PENALITES"].fillna(0).astype(int)
 classement_df["POINTS"] = classement_df["POINTS"] - classement_df["PENALITES"]
 
 # 🧮 Recalcul du classement après pénalités et éventuelles égalités particulières
+st.write("🔍 Type de classement utilisé :", type_classement)
+
+if type_classement == "PARTICULIERE":
 if type_classement == "PARTICULIERE":
     classement_df["RANG_CONFRONT"] = classement_df.get("RANG_CONFRONT", 999)
     classement_df = classement_df.sort_values(
