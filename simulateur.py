@@ -151,10 +151,8 @@ def appliquer_diff_particuliere(classement_df, matchs_df):
         st.dataframe(groupe[["NOM_EQUIPE", "PTS", "DIFF"]])
         st.write("📄 Matchs concernés :")
         st.dataframe(matchs_confrontations[[
-            "DATE", "ID_EQUIPE_DOM", "EQUIPE_DOM",
-            "ID_EQUIPE_EXT", "EQUIPE_EXT",
-            "NB_BUT_DOM", "NB_BUT_EXT"
-        ]])
+    "DATE", "EQUIPE_DOM", "EQUIPE_EXT", "NB_BUT_DOM", "NB_BUT_EXT"
+]])
 
     # Pour l’instant, on retourne le classement tel quel
     return classement_df
