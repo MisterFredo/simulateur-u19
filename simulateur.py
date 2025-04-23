@@ -233,6 +233,7 @@ st.caption("💡 Classement calculé à partir des matchs terminés uniquement, 
 
 if type_classement == "PARTICULIERE":
     st.caption("📌 Les égalités sont traitées selon le principe de la différence particulière (points puis différence de buts).")
+    st.caption("📌 Pour le détail du calcul des départages des égalités, sélectionner une Poule.")
 
 if type_classement == "PARTICULIERE":
     matchs = get_matchs_termine(champ_id, date_limite)
