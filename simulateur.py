@@ -37,6 +37,9 @@ champ_options = championnats_df[
 selected_nom = st.sidebar.selectbox("Championnat", champ_options["NOM_CHAMPIONNAT"])
 champ_id = champ_options[champ_options["NOM_CHAMPIONNAT"] == selected_nom]["ID_CHAMPIONNAT"].values[0]
 
+# Affichage du nom du championnat en titre
+st.title(f"Classement – {selected_nom}")
+
 # Chargement temporaire des poules
 @st.cache_data(show_spinner=False)
 def get_poules_temp(champ_id):
