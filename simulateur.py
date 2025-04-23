@@ -90,7 +90,7 @@ def get_classement_dynamique(champ_id, date_limite):
                  SUM(BUTS_POUR) AS BP,
                  SUM(BUTS_CONTRE) AS BC,
                  SUM(BUTS_POUR - BUTS_CONTRE) AS DIFF,
-                 SUM(POINTS) AS PTS
+                 SUM(POINTS) AS POINTS
           FROM match_equipes
           GROUP BY ID_CHAMPIONNAT, POULE, ID_EQUIPE, NOM_EQUIPE
         )
