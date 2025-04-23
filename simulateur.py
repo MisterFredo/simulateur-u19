@@ -114,67 +114,6 @@ def get_matchs_termine(champ_id, date_limite):
     """
     return client.query(query).to_dataframe()
 
-def get_type_classement(champ_id):
-    query = f"""
-        SELECT CLASSEMENT
-        FROM `datafoot-448514.DATAFOOT.DATAFOOT_CHAMPIONNAT`
-        WHERE ID_CHAMPIONNAT = {champ_id}
-        LIMIT 1
-    """
-    result = client.query(query).to_dataframe()
-    return result.iloc[0]["CLASSEMENT"] if not result.empty else "GENERALE"
-
-# 🔢 0. Récupération du classement brut
-classement_complet = get_classement_dynamique(champ_id, date_limite)
-classement_df = classement_complet.copy()
-
-# 🧮 1. Application des pénalités
-penalites_actives = client.query(f"""
-    SELECT ID_EQUIPE, POINTS
-    FROM `datafoot-448514.DATAFOOT.DATAFOOT_PENALITE`
-    WHERE DATE <= DATE('{date_limite}')
-""").to_dataframe()
-
-penalites_agg = penalites_actives.groupby("ID_EQUIPE")["POINTS"].sum().reset_index()
-penalites_agg.rename(columns={"POINTS": "PENALITES"}, inplace=True)
-
-classement_df = classement_df.merge(penalites_agg, on="ID_EQUIPE", how="left")
-classement_df["PENALITES"] = classement_df["PENALITES"].fillna(0).astype(int)
-classement_df["POINTS"] = classement_df["POINTS"] - classement_df["PENALITES"]
-
-# 📌 2. Chargement du type de classement
-type_classement = get_type_classement(champ_id)
-
-# 🗨️ 3. Messages d’info si PARTICULIERE
-if type_classement == "PARTICULIERE":
-    st.caption("📌 Les égalités sont traitées selon le principe de la différence particulière (points puis différence de buts).")
-    st.caption("📌 Pour le détail du calcul des départages des égalités, sélectionner une Poule.")
-
-# 🔁 4. Application des égalités particulières
-if type_classement == "PARTICULIERE":
-    matchs = get_matchs_termine(champ_id, date_limite)
-    classement_df, mini_classements = appliquer_diff_particuliere(classement_df, matchs, selected_poule)
-else:
-    mini_classements = {}
-
-# 🔽 5. Tri final
-if type_classement == "PARTICULIERE":
-    classement_df["RANG_CONFRONT"] = classement_df.get("RANG_CONFRONT", 999)
-    classement_df = classement_df.sort_values(
-        by=["POULE", "POINTS", "RANG_CONFRONT", "DIFF", "BP"],
-        ascending=[True, False, True, False, False]
-    )
-else:
-    classement_df = classement_df.sort_values(
-        by=["POULE", "POINTS", "DIFF", "BP"],
-        ascending=[True, False, False, False]
-    )
-
-# 🔢 6. Numérotation
-classement_df["CLASSEMENT"] = classement_df.groupby("POULE").cumcount() + 1
-
-
-
 def appliquer_diff_particuliere(classement_df, matchs_df, selected_poule="Toutes les poules"):
     classement_df["RANG_CONFRONT"] = 999  # Valeur par défaut globale
     mini_classements = {}
@@ -245,6 +184,66 @@ def appliquer_diff_particuliere(classement_df, matchs_df, selected_poule="Toutes
         print(mini_df[["NOM_EQUIPE", "PTS_CONFRONT", "DIFF_CONFRONT"]])
 
     return classement_df, mini_classements
+
+def get_type_classement(champ_id):
+    query = f"""
+        SELECT CLASSEMENT
+        FROM `datafoot-448514.DATAFOOT.DATAFOOT_CHAMPIONNAT`
+        WHERE ID_CHAMPIONNAT = {champ_id}
+        LIMIT 1
+    """
+    result = client.query(query).to_dataframe()
+    return result.iloc[0]["CLASSEMENT"] if not result.empty else "GENERALE"
+
+# 🔢 0. Récupération du classement brut
+classement_complet = get_classement_dynamique(champ_id, date_limite)
+classement_df = classement_complet.copy()
+
+# 🧮 1. Application des pénalités
+penalites_actives = client.query(f"""
+    SELECT ID_EQUIPE, POINTS
+    FROM `datafoot-448514.DATAFOOT.DATAFOOT_PENALITE`
+    WHERE DATE <= DATE('{date_limite}')
+""").to_dataframe()
+
+penalites_agg = penalites_actives.groupby("ID_EQUIPE")["POINTS"].sum().reset_index()
+penalites_agg.rename(columns={"POINTS": "PENALITES"}, inplace=True)
+
+classement_df = classement_df.merge(penalites_agg, on="ID_EQUIPE", how="left")
+classement_df["PENALITES"] = classement_df["PENALITES"].fillna(0).astype(int)
+classement_df["POINTS"] = classement_df["POINTS"] - classement_df["PENALITES"]
+
+# 📌 2. Chargement du type de classement
+type_classement = get_type_classement(champ_id)
+
+# 🗨️ 3. Messages d’info si PARTICULIERE
+if type_classement == "PARTICULIERE":
+    st.caption("📌 Les égalités sont traitées selon le principe de la différence particulière (points puis différence de buts).")
+    st.caption("📌 Pour le détail du calcul des départages des égalités, sélectionner une Poule.")
+
+# 🔁 4. Application des égalités particulières
+if type_classement == "PARTICULIERE":
+    matchs = get_matchs_termine(champ_id, date_limite)
+    classement_df, mini_classements = appliquer_diff_particuliere(classement_df, matchs, selected_poule)
+else:
+    mini_classements = {}
+
+# 🔽 5. Tri final
+if type_classement == "PARTICULIERE":
+    classement_df["RANG_CONFRONT"] = classement_df.get("RANG_CONFRONT", 999)
+    classement_df = classement_df.sort_values(
+        by=["POULE", "POINTS", "RANG_CONFRONT", "DIFF", "BP"],
+        ascending=[True, False, True, False, False]
+    )
+else:
+    classement_df = classement_df.sort_values(
+        by=["POULE", "POINTS", "DIFF", "BP"],
+        ascending=[True, False, False, False]
+    )
+
+# 🔢 6. Numérotation
+classement_df["CLASSEMENT"] = classement_df.groupby("POULE").cumcount() + 1
+
 
 # 1. Type de classement
 type_classement = get_type_classement(champ_id)
