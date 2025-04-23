@@ -249,24 +249,20 @@ classement_df["PENALITES"] = classement_df["PENALITES"].fillna(0).astype(int)
 classement_df["PENALITES"] = classement_df["PENALITES"].fillna(0).astype(int)
 classement_df["POINTS"] = classement_df["PTS"] - classement_df["PENALITES"]
 
-# Recalcul du classement après pénalités, avec ou sans égalités particulières
+# 🧮 Recalcul du classement après pénalités et éventuelles égalités particulières
 if type_classement == "PARTICULIERE":
-    # Si la colonne n'existe pas, on la crée pour éviter les erreurs
-    if "RANG_CONFRONT_mini" in classement_df.columns:
-        classement_df["RANG_CONFRONT"] = classement_df["RANG_CONFRONT_mini"]
-        classement_df.drop(columns=["RANG_CONFRONT_mini"], inplace=True)
-    else:
-        classement_df["RANG_CONFRONT"] = 999
-
+    classement_df["RANG_CONFRONT"] = classement_df.get("RANG_CONFRONT", 999)
     classement_df = classement_df.sort_values(
-        by=["POULE", "PTS", "RANG_CONFRONT", "DIFF", "BP"],
+        by=["POULE", "POINTS", "RANG_CONFRONT", "DIFF", "BP"],
         ascending=[True, False, True, False, False]
     )
 else:
     classement_df = classement_df.sort_values(
-        by=["POULE", "PTS", "DIFF", "BP"],
+        by=["POULE", "POINTS", "DIFF", "BP"],
         ascending=[True, False, False, False]
     )
+
+classement_df["CLASSEMENT"] = classement_df.groupby("POULE").cumcount() + 1
 
 # Filtrage si une poule spécifique est sélectionnée
 if selected_poule != "Toutes les poules":
