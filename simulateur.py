@@ -133,9 +133,9 @@ def appliquer_diff_particuliere(classement_df, matchs_df):
     # 1. Regrouper les équipes à égalité de points par poule
     groupes = (
         classement_df
-        .groupby(["POULE", "POINTS"])
+        .groupby(["POULE", "PTS"])
         .filter(lambda x: len(x) > 1)  # garder seulement les égalités
-        .groupby(["POULE", "POINTS"])
+        .groupby(["POULE", "PTS"])
     )
 
     for (poule, pts), groupe in groupes:
