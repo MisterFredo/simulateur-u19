@@ -116,6 +116,7 @@ def appliquer_diff_particuliere(classement_df, matchs_df, selected_poule="Toutes
     )
 
     for (poule, pts), groupe in groupes:
+        print(f"💬 Égalité détectée : poule {poule}, {pts} points, {len(groupe)} équipes")
         if selected_poule != "Toutes les poules" and poule != selected_poule:
             continue
 
