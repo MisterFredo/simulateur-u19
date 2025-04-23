@@ -193,6 +193,13 @@ def appliquer_diff_particuliere(classement_df, matchs_df):
         mini_df = pd.DataFrame(mini_classement)
         mini_df = mini_df.sort_values(by=["PTS_CONFRONT", "DIFF_CONFRONT"], ascending=[False, False])
         mini_df["RANG_CONFRONT"] = range(1, len(mini_df) + 1)
+
+        # 🔁 Mise à jour dans le classement général
+        classement_df.update(
+            mini_df[["ID_EQUIPE", "RANG_CONFRONT"]].set_index("ID_EQUIPE")
+        )
+
+        # 👁️ Affichage
         st.write(f"🏅 Mini-classement pour égalité à {pts} pts")
         st.dataframe(mini_df)
 
