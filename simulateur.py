@@ -172,10 +172,7 @@ def appliquer_diff_particuliere(classement_df, matchs_df, afficher_debug=True, s
 
         if afficher_debug:
             st.write(f"🏅 Mini-classement pour égalité à {pts} pts")
-            st.dataframe(mini_df)
-            st.write("🧪 Vérification du classement après intégration de RANG_CONFRONT :")
-            st.dataframe(classement_df[classement_df["ID_EQUIPE"].isin(equipes_concernees)][
-                ["ID_EQUIPE", "NOM_EQUIPE", "POINTS", "RANG_CONFRONT"]
+            st.dataframe(mini_df.drop(columns=["ID_EQUIPE"]))
             ])
 
     return classement_df
