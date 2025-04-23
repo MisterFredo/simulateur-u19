@@ -163,8 +163,12 @@ def appliquer_diff_particuliere(classement_df, matchs_df, selected_poule="Toutes
         for _, row in mini_df.iterrows():
             classement_df.loc[classement_df["ID_EQUIPE"] == row["ID_EQUIPE"], "RANG_CONFRONT"] = row["RANG_CONFRONT"]
 
-        mini_classements[(poule, pts)] = mini_df.drop(columns=["ID_EQUIPE"])
-
+        mini_classements[(poule, pts)] = {
+    "classement": mini_df.drop(columns=["ID_EQUIPE"]),
+    "matchs": matchs_confrontations[[
+        "DATE", "EQUIPE_DOM", "EQUIPE_EXT", "NB_BUT_DOM", "NB_BUT_EXT"
+    ]].sort_values(by="DATE")
+}
         # Debug terminal (à commenter plus tard)
         print("✅ Mini-classement ajouté :", poule, pts)
         print(mini_df[["NOM_EQUIPE", "PTS_CONFRONT", "DIFF_CONFRONT"]])
@@ -253,9 +257,12 @@ st.write("🧩 Mini-classements détectés :", mini_classements.keys())
 # Affichage des mini-classements uniquement si une seule poule est sélectionnée
 if selected_poule != "Toutes les poules" and mini_classements:
     st.markdown("## Mini-classements (en cas d’égalité)")
-    for (poule, pts), df_mini in mini_classements.items():
-        st.markdown(f"### Poule {poule} — Égalité à {pts} pts")
-        st.dataframe(df_mini)
+    for (poule, pts), data in mini_classements.items():
+    st.markdown(f"### Poule {poule} — Égalité à {pts} pts")
+    st.markdown("**Mini-classement**")
+    st.dataframe(data["classement"])
+    st.markdown("**Matchs concernés**")
+    st.dataframe(data["matchs"])
 
 
 # Cas particuliers (U19 / U17 / N2)
