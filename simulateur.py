@@ -188,21 +188,19 @@ def appliquer_diff_particuliere(classement_df, matchs_df):
         mini_df = mini_df.sort_values(by=["PTS_CONFRONT", "DIFF_CONFRONT"], ascending=[False, False])
         mini_df["RANG_CONFRONT"] = range(1, len(mini_df) + 1)
 
-        # 🔁 Mise à jour dans le classement général
+                # 🔁 Suppression préalable si la colonne existe
         if "RANG_CONFRONT" in classement_df.columns:
             classement_df.drop(columns=["RANG_CONFRONT"], inplace=True)
 
-                # 🔁 Mise à jour dans le classement général
+        # 🔁 Mise à jour dans le classement général
         classement_df = classement_df.merge(
             mini_df[["ID_EQUIPE", "RANG_CONFRONT"]],
             on="ID_EQUIPE",
-            how="left",
-            suffixes=("", "_mini")
+            how="left"
         )
 
-        # S'assurer que c'est bien RANG_CONFRONT_mini qui est utilisé
-        classement_df["RANG_CONFRONT"] = classement_df["RANG_CONFRONT_mini"].fillna(999)
-        classement_df.drop(columns=["RANG_CONFRONT_mini"], inplace=True)
+        # Remplissage des valeurs manquantes
+        classement_df["RANG_CONFRONT"] = classement_df["RANG_CONFRONT"].fillna(999)
 
         # 👁️ Affichage pour contrôle
         st.write(f"🏅 Mini-classement pour égalité à {pts} pts")
