@@ -253,17 +253,15 @@ else:
         
 st.write("🧩 Mini-classements détectés :", mini_classements.keys())
 
-
 # Affichage des mini-classements uniquement si une seule poule est sélectionnée
 if selected_poule != "Toutes les poules" and mini_classements:
     st.markdown("## Mini-classements (en cas d’égalité)")
     for (poule, pts), data in mini_classements.items():
-    st.markdown(f"### Poule {poule} — Égalité à {pts} pts")
-    st.markdown("**Mini-classement**")
-    st.dataframe(data["classement"])
-    st.markdown("**Matchs concernés**")
-    st.dataframe(data["matchs"])
-
+        st.markdown(f"### Poule {poule} — Égalité à {pts} pts")
+        st.markdown("**Mini-classement**")
+        st.dataframe(data["classement"])
+        st.markdown("**Matchs concernés**")
+        st.dataframe(data["matchs"])
 
 # Cas particuliers (U19 / U17 / N2)
 if selected_poule == "Toutes les poules":
