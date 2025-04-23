@@ -98,19 +98,17 @@ def get_classement_dynamique(champ_id, date_limite):
         FROM classement
         ORDER BY POULE, CLASSEMENT
     """
-    
-    # ⬇️ Ajout pour affichage de debug
+
+    # Debug
     print("REQUÊTE GÉNÉRÉE ==================")
     print(query)
     print("==================================")
 
-    return client.query(query).to_dataframe()
+    # ⬇️ Exécution + renommage
     classement_df = client.query(query).to_dataframe()
-
-# 🔁 Renommage immédiat pour standardiser POINTS
-classement_df = classement_df.rename(columns={"PTS": "POINTS"})
-
+    classement_df = classement_df.rename(columns={"PTS": "POINTS"})
     return classement_df
+
 
 def get_matchs_termine(champ_id, date_limite):
     query = f"""
