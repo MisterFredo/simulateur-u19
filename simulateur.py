@@ -263,7 +263,7 @@ if type_classement == "PARTICULIERE":
     )
 else:
     classement_df = classement_df.sort_values(
-        by=["POULE", "POINTS", "DIFF", "BP"],
+        by=["POULE", "PTS", "DIFF", "BP"],
         ascending=[True, False, False, False]
     )
 
