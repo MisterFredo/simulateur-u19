@@ -252,15 +252,17 @@ classement_df["POINTS"] = classement_df["PTS"] - classement_df["PENALITES"]
 # Recalcul du classement après pénalités, avec ou sans égalités particulières
 if type_classement == "PARTICULIERE":
     # Si la colonne n'existe pas, on la crée pour éviter les erreurs
-    if "RANG_CONFRONT" not in classement_df.columns:
-        classement_df["RANG_CONFRONT"] = 999
-    else:
-        classement_df["RANG_CONFRONT"] = classement_df["RANG_CONFRONT"].fillna(999)
+   if "RANG_CONFRONT_mini" in classement_df.columns:
+    classement_df["RANG_CONFRONT"] = classement_df["RANG_CONFRONT_mini"]
+    classement_df.drop(columns=["RANG_CONFRONT_mini"], inplace=True)
+else:
+    classement_df["RANG_CONFRONT"] = 999
 
-    classement_df = classement_df.sort_values(
-        by=["POULE", "POINTS", "RANG_CONFRONT", "DIFF", "BP"],
-        ascending=[True, False, True, False, False]
-    )
+classement_df = classement_df.sort_values(
+    by=["POULE", "PTS", "RANG_CONFRONT", "DIFF", "BP"],
+    ascending=[True, False, True, False, False]
+)
+
 else:
     classement_df = classement_df.sort_values(
         by=["POULE", "PTS", "DIFF", "BP"],
