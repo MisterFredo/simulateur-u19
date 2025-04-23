@@ -174,6 +174,7 @@ def appliquer_diff_particuliere(classement_df, matchs_df, afficher_debug=True):
 
     return classement_df
 
+
 def get_matchs_termine(champ_id, date_limite):
     query = f"""
         SELECT *
