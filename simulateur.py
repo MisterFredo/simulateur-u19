@@ -102,6 +102,7 @@ def get_classement_dynamique(champ_id, date_limite):
     classement_df = classement_df.rename(columns={"PTS": "POINTS"})
     return classement_df
 
+afficher_debug = selected_poule != "Toutes les poules"
 st.write("🎛️ selected_poule =", selected_poule)
 st.write("🎛️ afficher_debug =", afficher_debug)
 
