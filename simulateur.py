@@ -105,6 +105,12 @@ def get_classement_dynamique(champ_id, date_limite):
     print("==================================")
 
     return client.query(query).to_dataframe()
+    classement_df = client.query(query).to_dataframe()
+
+# 🔁 Renommage immédiat pour standardiser POINTS
+classement_df = classement_df.rename(columns={"PTS": "POINTS"})
+
+return classement_df
 
 def get_matchs_termine(champ_id, date_limite):
     query = f"""
