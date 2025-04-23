@@ -173,7 +173,6 @@ def appliquer_diff_particuliere(classement_df, matchs_df, afficher_debug=True, s
         if afficher_debug:
             st.write(f"🏅 Mini-classement pour égalité à {pts} pts")
             st.dataframe(mini_df.drop(columns=["ID_EQUIPE"]))
-            ])
 
     return classement_df
 
