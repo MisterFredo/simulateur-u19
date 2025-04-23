@@ -207,16 +207,10 @@ classement_df["PENALITES"] = classement_df["PENALITES"].fillna(0).astype(int)
 classement_df["POINTS"] = classement_df["POINTS"] - classement_df["PENALITES"]
 
 matchs = get_matchs_termine(champ_id, date_limite)
-afficher_debug = selected_poule != "Toutes les poules"
-classement_df, mini_classements = appliquer_diff_particuliere(classement_df, matchs, selected_poule)
 
 if type_classement == "PARTICULIERE":
     st.caption("📌 Les égalités sont traitées selon le principe de la différence particulière (points puis différence de buts).")
     st.caption("📌 Pour le détail du calcul des départages des égalités, sélectionner une Poule.")
-
-if type_classement == "PARTICULIERE":
-    matchs = get_matchs_termine(champ_id, date_limite)
-    classement_df, mini_classements = appliquer_diff_particuliere(classement_df, matchs, selected_poule)
 
 if type_classement == "PARTICULIERE":
     classement_df["RANG_CONFRONT"] = classement_df.get("RANG_CONFRONT", 999)
