@@ -221,11 +221,6 @@ matchs = get_matchs_termine(champ_id, date_limite)
 afficher_debug = selected_poule != "Toutes les poules"
 classement_df = appliquer_diff_particuliere(classement_df, matchs, afficher_debug, selected_poule)
 
-# Affichage des mini-classements uniquement si une seule poule est sélectionnée
-afficher_debug = selected_poule != "Toutes les poules"
-classement_df = appliquer_diff_particuliere(classement_df, matchs, afficher_debug, selected_poule)
-st.caption("💡 Classement calculé à partir des matchs terminés uniquement, selon la date sélectionnée. Les pénalités sont déduites des points.")
-
 if type_classement == "PARTICULIERE":
     st.caption("📌 Les égalités sont traitées selon le principe de la différence particulière (points puis différence de buts).")
     st.caption("📌 Pour le détail du calcul des départages des égalités, sélectionner une Poule.")
@@ -245,6 +240,11 @@ else:
         by=["POULE", "POINTS", "DIFF", "BP"],
         ascending=[True, False, False, False]
     )
+
+# Affichage des mini-classements uniquement si une seule poule est sélectionnée
+afficher_debug = selected_poule != "Toutes les poules"
+classement_df = appliquer_diff_particuliere(classement_df, matchs, afficher_debug, selected_poule)
+st.caption("💡 Classement calculé à partir des matchs terminés uniquement, selon la date sélectionnée. Les pénalités sont déduites des points.")
 
 classement_df["CLASSEMENT"] = classement_df.groupby("POULE").cumcount() + 1
 
