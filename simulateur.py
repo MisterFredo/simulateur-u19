@@ -23,8 +23,6 @@ credentials = service_account.Credentials.from_service_account_info(
 client = bigquery.Client(credentials=credentials, project=credentials.project_id)
 
 # Chargement des championnats
-@st.cache_data(show_spinner=False)
-
 championnats_df = load_championnats()
 
 # Filtres latéraux
