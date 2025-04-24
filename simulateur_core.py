@@ -160,9 +160,13 @@ def appliquer_penalites(classement_df, date_limite):
     penalites_agg.rename(columns={"POINTS": "PENALITES"}, inplace=True)
 
     classement_df = classement_df.merge(penalites_agg, on="ID_EQUIPE", how="left")
+
+    if "PENALITES" not in classement_df.columns:
+        classement_df["PENALITES"] = 0
+
     classement_df["PENALITES"] = classement_df["PENALITES"].fillna(0).astype(int)
     classement_df["POINTS"] = classement_df["POINTS"] - classement_df["PENALITES"]
-    
+
     return classement_df
 
 def trier_et_numeroter(classement_df, type_classement):
