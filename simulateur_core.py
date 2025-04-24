@@ -403,10 +403,6 @@ def recalculer_classement_simule(matchs_simules, champ_id, date_limite, selected
 
     # Fusion avec les scores simulés
     matchs_complets = pd.concat([matchs_historiques, matchs_simules], ignore_index=True)
-    st.write("🧪 Matchs simulés transmis à la fonction :", matchs_simules)
-    st.write("🧪 Matchs historiques conservés :", matchs_historiques)
-    st.write("🧪 Matchs concaténés (historiques + simulés) :", matchs_complets)
-
 
     # Construction du tableau complet
     dom = matchs_complets[["POULE", "ID_EQUIPE_DOM", "EQUIPE_DOM", "NB_BUT_DOM", "NB_BUT_EXT"]].copy()
