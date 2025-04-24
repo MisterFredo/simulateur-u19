@@ -4,6 +4,8 @@ from google.cloud import bigquery
 from google.oauth2 import service_account
 
 from simulateur_core import recalculer_classement_simule
+from simulateur_core import appliquer_penalites
+
 
 # Configuration Streamlit
 st.set_page_config(page_title="SIMULATEUR - Datafoot", layout="wide")
@@ -84,6 +86,7 @@ if st.button("🔁 Recalculer le classement avec ces scores simulés"):
         from simulateur_core import recalculer_classement_simule
 
         classement_df = recalculer_classement_simule(df_valid, champ_id, date_limite, selected_poule)
+        classement_df = appliquer_penalites(classement_df, date_limite)
 
         if classement_df.empty:
             st.warning("🚫 Aucun classement n'a pu être généré.")
