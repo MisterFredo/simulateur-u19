@@ -46,3 +46,28 @@ else:
 # Date de simulation
 import datetime
 date_limite = st.sidebar.date_input("Date de simulation", value=datetime.date.today())
+
+from simulateur_core import get_matchs_modifiables
+
+# Titre principal
+st.title(f"🧪 SIMULATEUR – {selected_nom}")
+
+filtrer_non_joues = st.checkbox("Afficher uniquement les matchs non joués", value=True)
+
+matchs_simulables = get_matchs_modifiables(champ_id, date_limite, filtrer_non_joues)
+
+if selected_poule != "Toutes les poules":
+    matchs_simulables = matchs_simulables[matchs_simulables["POULE"] == selected_poule]
+
+if matchs_simulables.empty:
+    st.info("Aucun match à afficher pour cette configuration.")
+else:
+    st.markdown("### Matchs simulables")
+    df_simulation = matchs_simulables.copy()
+    edited_df = st.data_editor(
+        df_simulation[["ID_MATCH", "JOURNEE", "POULE", "DATE", "ID_EQUIPE_DOM", "EQUIPE_DOM", "NB_BUT_DOM", "ID_EQUIPE_EXT", "EQUIPE_EXT", "NB_BUT_EXT"]],
+        num_rows="dynamic",
+        use_container_width=True,
+        key="simulation_scores"
+    )
+
