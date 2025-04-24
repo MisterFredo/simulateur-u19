@@ -69,3 +69,28 @@ else:
         key="simulation_scores"
     )
 
+# Si des scores ont été modifiés et validés
+if st.button("🔁 Recalculer le classement avec ces scores simulés"):
+    st.session_state["simulated_scores"] = edited_df
+
+    # On ne garde que les lignes où les scores sont renseignés
+    df_valid = edited_df.dropna(subset=["NB_BUT_DOM", "NB_BUT_EXT"])
+
+    if df_valid.empty:
+        st.warning("🚫 Aucun score simulé valide.")
+    else:
+        from simulateur_core import recalculer_classement_simule
+
+        classement_df = recalculer_classement_simule(df_valid, champ_id, date_limite, selected_poule)
+
+        if classement_df.empty:
+            st.warning("🚫 Aucun classement n'a pu être généré.")
+        else:
+            for poule in sorted(classement_df["POULE"].unique()):
+                st.subheader(f"Poule {poule}")
+                st.dataframe(
+                    classement_df[classement_df["POULE"] == poule][[
+                        "CLASSEMENT", "NOM_EQUIPE", "POINTS", "PENALITES", "MJ", "G", "N", "P", "BP", "BC", "DIFF"
+                    ]],
+                    use_container_width=True
+                )
