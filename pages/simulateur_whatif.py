@@ -96,5 +96,3 @@ if st.button("🔁 Recalculer le classement avec ces scores simulés"):
                     ]],
                     use_container_width=True
                 )
-
-classement_df = recalculer_classement_simule(df_valid, champ_id, date_limite)
