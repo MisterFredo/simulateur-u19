@@ -50,7 +50,6 @@ champ_id = champ_options[champ_options["NOM_CHAMPIONNAT"] == selected_nom]["ID_C
 st.title(f"Classement – {selected_nom}")
 
 # Chargement temporaire des poules
-@st.cache_data(show_spinner=False)
 poules_temp = get_poules_temp(client, champ_id)
 all_poules = sorted(poules_temp["POULE"].dropna().unique())
 if len(all_poules) > 1:
