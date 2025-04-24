@@ -150,24 +150,35 @@ def load_championnats():
     return client.query(query).to_dataframe()
 
 def appliquer_penalites(classement_df, date_limite):
+    # Récupération des pénalités actives jusqu'à la date donnée
     penalites_actives = client.query(f"""
         SELECT ID_EQUIPE, POINTS
         FROM `datafoot-448514.DATAFOOT.DATAFOOT_PENALITE`
         WHERE DATE <= DATE('{date_limite}')
     """).to_dataframe()
 
+    # Agrégation des pénalités par équipe
     penalites_agg = penalites_actives.groupby("ID_EQUIPE")["POINTS"].sum().reset_index()
     penalites_agg.rename(columns={"POINTS": "PENALITES"}, inplace=True)
 
+    # Fusion avec le classement
     classement_df = classement_df.merge(penalites_agg, on="ID_EQUIPE", how="left")
 
+    # Gestion des valeurs manquantes
     if "PENALITES" not in classement_df.columns:
         classement_df["PENALITES"] = 0
-
     classement_df["PENALITES"] = classement_df["PENALITES"].fillna(0).astype(int)
+
+    # Application des pénalités sur les points
     classement_df["POINTS"] = classement_df["POINTS"] - classement_df["PENALITES"]
 
+    # Nettoyage des éventuelles colonnes multiples
+    if "PENALITES_x" in classement_df.columns or "PENALITES_y" in classement_df.columns:
+        classement_df["PENALITES"] = classement_df["PENALITES"].fillna(0)
+        classement_df = classement_df.drop(columns=[col for col in ["PENALITES_x", "PENALITES_y"] if col in classement_df.columns])
+
     return classement_df
+
 
 def trier_et_numeroter(classement_df, type_classement):
     if type_classement == "PARTICULIERE":
