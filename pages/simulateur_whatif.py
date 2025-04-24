@@ -3,6 +3,8 @@ import pandas as pd
 from google.cloud import bigquery
 from google.oauth2 import service_account
 
+from simulateur_core import recalculer_classement_simule
+
 # Configuration Streamlit
 st.set_page_config(page_title="SIMULATEUR - Datafoot", layout="wide")
 
@@ -94,3 +96,5 @@ if st.button("🔁 Recalculer le classement avec ces scores simulés"):
                     ]],
                     use_container_width=True
                 )
+
+classement_df = recalculer_classement_simule(df_valid, champ_id, date_limite)
