@@ -1,4 +1,5 @@
 import pandas as pd
+import streamlit as st
 
 def get_type_classement(client, champ_id):
     query = f"""
