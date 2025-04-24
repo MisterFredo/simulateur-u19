@@ -10,6 +10,7 @@ from simulateur_core import (
     appliquer_diff_particuliere,
     get_matchs_termine,
     get_poules_temp,
+    get_load_championnats
 )
 
 # Configuration de la page
@@ -23,13 +24,6 @@ client = bigquery.Client(credentials=credentials, project=credentials.project_id
 
 # Chargement des championnats
 @st.cache_data(show_spinner=False)
-def load_championnats():
-    query = """
-        SELECT ID_CHAMPIONNAT, NOM_CHAMPIONNAT, CATEGORIE, NIVEAU
-        FROM `datafoot-448514.DATAFOOT.DATAFOOT_CHAMPIONNAT`
-        ORDER BY CATEGORIE, NIVEAU, NOM_CHAMPIONNAT
-    """
-    return client.query(query).to_dataframe()
 
 championnats_df = load_championnats()
 
