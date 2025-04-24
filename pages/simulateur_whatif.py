@@ -99,7 +99,7 @@ if st.button("🔁 Recalculer le classement avec ces scores simulés"):
     if df_valid.empty:
         st.warning("🚫 Aucun score simulé valide.")
     else:
-        classement_df, mini_classements = recalculer_classement_simule(df_valid, champ_id, date_limite, selected_poule)
+        classement_df, mini_classements = recalculer_classement_simule(df_valid, champ_id, date_limite, selected_poule, type_classement)
         st.write("🧪 Colonnes dans classement_df :", classement_df.columns.tolist())
 
         if classement_df.empty:
