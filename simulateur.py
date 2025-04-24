@@ -10,8 +10,9 @@ from simulateur_core import (
     appliquer_diff_particuliere,
     get_matchs_termine,
     get_poules_temp,
-    get_load_championnats
+    load_championnats,
 )
+
 
 # Configuration de la page
 st.set_page_config(page_title="Classement - Datafoot", layout="wide")
