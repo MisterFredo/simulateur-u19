@@ -1,6 +1,5 @@
 import streamlit as st
 import pandas as pd
-import streamlit as st
 from google.cloud import bigquery
 from google.oauth2 import service_account
 
