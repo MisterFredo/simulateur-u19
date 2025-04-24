@@ -179,3 +179,44 @@ def trier_et_numeroter(classement_df, type_classement):
         )
     classement_df["CLASSEMENT"] = classement_df.groupby("POULE").cumcount() + 1
     return classement_df
+
+def classement_special_u19(classement_df, champ_id, date_limite):
+    if champ_id != 6 or classement_df.empty:
+        return None
+
+    query = f"""
+        SELECT *
+        FROM `datafoot-448514.DATAFOOT.DATAFOOT_MATCH_2025`
+        WHERE STATUT = 'TERMINE'
+          AND ID_CHAMPIONNAT = {champ_id}
+          AND DATE <= DATE('{date_limite}')
+    """
+    matchs_u19 = client.query(query).to_dataframe()
+    df_11e = classement_df[classement_df["CLASSEMENT"] == 11]
+    comparatif_11e = []
+
+    for _, row in df_11e.iterrows():
+        poule = row["POULE"]
+        equipe_11e = row["NOM_EQUIPE"]
+        adversaires = classement_df[
+            (classement_df["POULE"] == poule) &
+            (classement_df["CLASSEMENT"].between(6, 10))
+        ]["NOM_EQUIPE"].tolist()
+
+        confrontations = matchs_u19[
+            ((matchs_u19["EQUIPE_DOM"] == equipe_11e) & (matchs_u19["EQUIPE_EXT"].isin(adversaires))) |
+            ((matchs_u19["EQUIPE_EXT"] == equipe_11e) & (matchs_u19["EQUIPE_DOM"].isin(adversaires)))
+        ]
+
+        pts = 0
+        for _, m in confrontations.iterrows():
+            if m["EQUIPE_DOM"] == equipe_11e:
+                pts += 3 if m["NB_BUT_DOM"] > m["NB_BUT_EXT"] else 1 if m["NB_BUT_DOM"] == m["NB_BUT_EXT"] else 0
+            elif m["EQUIPE_EXT"] == equipe_11e:
+                pts += 3 if m["NB_BUT_EXT"] > m["NB_BUT_DOM"] else 1 if m["NB_BUT_EXT"] == m["NB_BUT_DOM"] else 0
+
+        comparatif_11e.append({"POULE": poule, "EQUIPE": equipe_11e, "PTS_CONFRONT_6_10": pts})
+
+    df_11e_comp = pd.DataFrame(comparatif_11e).sort_values(by="PTS_CONFRONT_6_10", ascending=False)
+    df_11e_comp["RANG"] = df_11e_comp["PTS_CONFRONT_6_10"].rank(method="min", ascending=False).astype(int)
+    return df_11e_comp
