@@ -121,12 +121,12 @@ def appliquer_diff_particuliere(classement_df, matchs_df, selected_poule="Toutes
 
     return classement_df, mini_classements
 
-def get_matchs_termine(client, champ_id, date_limite):
+def get_poules_temp(client, champ_id):
     query = f"""
-        SELECT *
+        SELECT DISTINCT POULE
         FROM `datafoot-448514.DATAFOOT.DATAFOOT_MATCH_2025`
-        WHERE STATUT = 'TERMINE'
-          AND ID_CHAMPIONNAT = {champ_id}
-          AND DATE <= DATE('{date_limite}')
+        WHERE ID_CHAMPIONNAT = {champ_id}
+          AND POULE IS NOT NULL
+        ORDER BY POULE
     """
     return client.query(query).to_dataframe()
