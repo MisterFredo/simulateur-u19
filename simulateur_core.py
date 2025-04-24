@@ -139,3 +139,13 @@ def get_poules_temp(champ_id):
         ORDER BY POULE
     """
     return client.query(query).to_dataframe()
+
+@st.cache_data(show_spinner=False)
+def load_championnats():
+    query = """
+        SELECT ID_CHAMPIONNAT, NOM_CHAMPIONNAT, CATEGORIE, NIVEAU
+        FROM `datafoot-448514.DATAFOOT.DATAFOOT_CHAMPIONNAT`
+        ORDER BY CATEGORIE, NIVEAU, NOM_CHAMPIONNAT
+    """
+    return client.query(query).to_dataframe()
+
