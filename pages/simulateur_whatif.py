@@ -87,7 +87,7 @@ if st.button("🔁 Recalculer le classement avec ces scores simulés"):
     else:
         from simulateur_core import recalculer_classement_simule
 
-        classement_df = recalculer_classement_simule(df_valid, champ_id, date_limite, selected_poule, type_classement)
+        classement_df = recalculer_classement_simule(df_valid, champ_id, date_limite, selected_poule)
         st.write("🧪 Colonnes dans classement_df :", classement_df.columns.tolist())
 
         if classement_df.empty:
