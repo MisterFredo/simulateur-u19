@@ -5,7 +5,8 @@ from google.oauth2 import service_account
 
 from simulateur_core import recalculer_classement_simule
 from simulateur_core import appliquer_penalites
-
+from simulateur_core import load_championnats
+from simulateur_core import get_type_classement
 
 # Configuration Streamlit
 st.set_page_config(page_title="SIMULATEUR - Datafoot", layout="wide")
@@ -17,7 +18,6 @@ credentials = service_account.Credentials.from_service_account_info(
 client = bigquery.Client(credentials=credentials, project=credentials.project_id)
 
 # Chargement des championnats
-from simulateur_core import load_championnats
 championnats_df = load_championnats()
 type_classement = get_type_classement(champ_id)
 
