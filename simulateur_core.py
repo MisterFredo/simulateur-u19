@@ -414,6 +414,10 @@ def recalculer_classement_simule(matchs_simules, champ_id, date_limite, selected
     ext["POINTS"] = ext.apply(lambda r: 3 if r.BUTS_POUR > r.BUTS_CONTRE else 1 if r.BUTS_POUR == r.BUTS_CONTRE else 0, axis=1)
 
     full = pd.concat([dom, ext])
+    # 🧪 DEBUG - Vérification des points attribués
+    st.write("🧪 Exemple de lignes concaténées :", full.head())
+    st.write("🧪 Distribution des points :", full["POINTS"].value_counts())
+
 
     classement_df = full.groupby(["POULE", "ID_EQUIPE", "NOM_EQUIPE"]).agg(
         MJ=("POINTS", "count"),
