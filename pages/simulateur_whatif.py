@@ -87,6 +87,8 @@ if st.button("🔁 Recalculer le classement avec ces scores simulés"):
 
         classement_df = recalculer_classement_simule(df_valid, champ_id, date_limite, selected_poule)
         classement_df = appliquer_penalites(classement_df, date_limite)
+        st.write("🧪 Colonnes dans classement_df :", classement_df.columns.tolist())
+
 
         if classement_df.empty:
             st.warning("🚫 Aucun classement n'a pu être généré.")
