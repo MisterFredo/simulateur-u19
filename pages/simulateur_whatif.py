@@ -95,8 +95,9 @@ if st.button("🔁 Recalculer le classement avec ces scores simulés"):
     else:
         from simulateur_core import recalculer_classement_simule
 
-        classement_df = recalculer_classement_simule(df_valid, champ_id, date_limite, selected_poule)
+        classement_df = recalculer_classement_simule(df_valid, champ_id, date_limite, selected_poule, type_classement)
         st.write("🧪 Colonnes dans classement_df :", classement_df.columns.tolist())
+        classement_df, mini_classements = recalculer_classement_simule(df_valid, champ_id, date_limite, selected_poule, type_classement)
 
         if classement_df.empty:
             st.warning("🚫 Aucun classement n'a pu être généré.")
@@ -109,3 +110,13 @@ if st.button("🔁 Recalculer le classement avec ces scores simulés"):
                     ]],
                     use_container_width=True
                 )
+
+if selected_poule != "Toutes les poules" and mini_classements:
+    st.markdown("## Mini-classements (en cas d’égalité)")
+    for (poule, pts), data in mini_classements.items():
+        st.markdown(f"### Poule {poule} — Égalité à {pts} pts")
+        st.markdown("**Mini-classement**")
+        st.dataframe(data["classement"])
+        st.markdown("**Matchs concernés**")
+        st.dataframe(data["matchs"])
+
