@@ -444,5 +444,11 @@ def recalculer_classement_simule(matchs_simules, champ_id, date_limite, selected
     if selected_poule != "Toutes les poules":
         classement_df = classement_df[classement_df["POULE"] == selected_poule]
 
+    # DEBUG : Vérification des matchs avant et après concaténation
+st.write("🧪 Matchs simulés (transmis) :", matchs_simules[["ID_MATCH", "NB_BUT_DOM", "NB_BUT_EXT"]])
+st.write("🧪 Matchs historiques :", matchs_historiques[["ID_MATCH"]].head())
+st.write("🧪 Tous les matchs (concaténés) :", matchs_complets[["ID_MATCH", "NB_BUT_DOM", "NB_BUT_EXT"]].head())
+
+
     return classement_df, mini_classements
 
