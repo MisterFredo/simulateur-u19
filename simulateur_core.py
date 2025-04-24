@@ -433,12 +433,9 @@ def recalculer_classement_simule(matchs_simules, champ_id, date_limite, selected
     ).reset_index()
 
     classement["DIFF"] = classement["BP"] - classement["BC"]
-
-    # Tri + numérotation
     classement = trier_et_numeroter(classement, "GENERALE")
-
-    # Application des pénalités
     classement = appliquer_penalites(classement, date_limite)
+
 
     if selected_poule != "Toutes les poules":
         classement = classement[classement["POULE"] == selected_poule]
