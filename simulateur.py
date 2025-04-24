@@ -50,7 +50,7 @@ champ_id = champ_options[champ_options["NOM_CHAMPIONNAT"] == selected_nom]["ID_C
 st.title(f"Classement – {selected_nom}")
 
 # Chargement temporaire des poules
-poules_temp = get_poules_temp(client, champ_id)
+poules_temp = get_poules_temp(champ_id)
 all_poules = sorted(poules_temp["POULE"].dropna().unique())
 if len(all_poules) > 1:
     selected_poule = st.sidebar.selectbox("Poule", ["Toutes les poules"] + all_poules)
@@ -63,7 +63,7 @@ date_limite = st.sidebar.date_input("Date de simulation", value=pd.to_datetime("
 afficher_debug = selected_poule != "Toutes les poules"
 
 # 🔢 0. Récupération du classement brut
-classement_complet = get_classement_dynamique(client, champ_id, date_limite)
+classement_complet = get_classement_dynamique(champ_id, date_limite)
 classement_df = classement_complet.copy()
 
 # 🧮 1. Application des pénalités
@@ -81,7 +81,7 @@ classement_df["PENALITES"] = classement_df["PENALITES"].fillna(0).astype(int)
 classement_df["POINTS"] = classement_df["POINTS"] - classement_df["PENALITES"]
 
 # 📌 2. Chargement du type de classement
-type_classement = get_type_classement(client, champ_id)
+type_classement = get_type_classement(champ_id)
 
 # 🗨️ 3. Messages d’info si PARTICULIERE
 if type_classement == "PARTICULIERE":
@@ -90,7 +90,7 @@ if type_classement == "PARTICULIERE":
 
 # 🔁 4. Application des égalités particulières
 if type_classement == "PARTICULIERE":
-    matchs = get_matchs_termine(client, champ_id, date_limite)
+    matchs = get_matchs_termine(champ_id, date_limite)
     classement_df, mini_classements = appliquer_diff_particuliere(classement_df, matchs, selected_poule)
 else:
     mini_classements = {}
