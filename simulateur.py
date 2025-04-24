@@ -15,20 +15,19 @@ from simulateur_core import (
     trier_et_numeroter,
 )
 
-
-# Configuration de la page
+# 🎛️ Configuration
 st.set_page_config(page_title="Classement - Datafoot", layout="wide")
 
-# Connexion à BigQuery via secrets
+# 🔌 Connexion BigQuery
 credentials = service_account.Credentials.from_service_account_info(
     st.secrets["gcp_service_account"]
 )
 client = bigquery.Client(credentials=credentials, project=credentials.project_id)
 
-# Chargement des championnats
+# 📋 Chargement des championnats
 championnats_df = load_championnats()
 
-# Filtres latéraux
+# 🎚️ Filtres utilisateurs
 st.sidebar.header("Filtres")
 selected_categorie = st.sidebar.selectbox("Catégorie", sorted(championnats_df["CATEGORIE"].unique()))
 selected_niveau = st.sidebar.selectbox(
@@ -41,10 +40,10 @@ champ_options = championnats_df[
 selected_nom = st.sidebar.selectbox("Championnat", champ_options["NOM_CHAMPIONNAT"])
 champ_id = champ_options[champ_options["NOM_CHAMPIONNAT"] == selected_nom]["ID_CHAMPIONNAT"].values[0]
 
-# Affichage du nom du championnat en titre
+# 🏷️ Affichage du titre
 st.title(f"Classement – {selected_nom}")
 
-# Chargement temporaire des poules
+# 🧾 Chargement des poules
 poules_temp = get_poules_temp(champ_id)
 all_poules = sorted(poules_temp["POULE"].dropna().unique())
 if len(all_poules) > 1:
@@ -52,41 +51,39 @@ if len(all_poules) > 1:
 else:
     selected_poule = all_poules[0] if all_poules else "Toutes les poules"
 
-# Date limite
+# 🗓️ Date limite
 date_limite = st.sidebar.date_input("Date de simulation", value=pd.to_datetime("2025-06-30"))
 
-afficher_debug = selected_poule != "Toutes les poules"
-
-# 🔢 0. Récupération du classement brut
+# 🔢 Classement brut
 classement_complet = get_classement_dynamique(champ_id, date_limite)
 classement_df = classement_complet.copy()
 
-# 🧮 1. Application des pénalités
+# 🧮 Application des pénalités
 classement_df = appliquer_penalites(classement_df, date_limite)
 
-
-# 📌 2. Chargement du type de classement
+# 📌 Détection du type de classement
 type_classement = get_type_classement(champ_id)
 
-# 🗨️ 3. Messages d’info si PARTICULIERE
+# 💬 Message d'information
 if type_classement == "PARTICULIERE":
     st.caption("📌 Les égalités sont traitées selon le principe de la différence particulière (points puis différence de buts).")
     st.caption("📌 Pour le détail du calcul des départages des égalités, sélectionner une Poule.")
 
-# 🔁 4. Application des égalités particulières
+# 🧪 Application des égalités particulières si besoin
+matchs = get_matchs_termine(champ_id, date_limite)
 if type_classement == "PARTICULIERE":
-    matchs = get_matchs_termine(champ_id, date_limite)
     classement_df, mini_classements = appliquer_diff_particuliere(classement_df, matchs, selected_poule)
 else:
     mini_classements = {}
 
+# 🧮 Tri et numérotation finale
 classement_df = trier_et_numeroter(classement_df, type_classement)
 
-# 🔍 7. Filtrage si une seule poule est sélectionnée
+# 🔍 Filtrage si une seule poule est sélectionnée
 if selected_poule != "Toutes les poules":
     classement_df = classement_df[classement_df["POULE"] == selected_poule]
 
-# 📊 8. Affichage du classement principal
+# 📊 Affichage du classement principal
 if classement_df.empty:
     st.warning("Aucun classement disponible pour ces critères.")
 else:
@@ -97,7 +94,7 @@ else:
         ]].rename(columns={"MJ": "J."})
         st.dataframe(df, use_container_width=True)
 
-# 📌 9. Affichage des mini-classements si applicable
+# 📌 Mini-classements détaillés
 if selected_poule != "Toutes les poules" and mini_classements:
     st.markdown("## Mini-classements (en cas d’égalité)")
     for (poule, pts), data in mini_classements.items():
@@ -106,6 +103,7 @@ if selected_poule != "Toutes les poules" and mini_classements:
         st.dataframe(data["classement"])
         st.markdown("**Matchs concernés**")
         st.dataframe(data["matchs"])
+
 
 
 # Cas particuliers (U19 / U17 / N2)
