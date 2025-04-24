@@ -3,14 +3,15 @@ import pandas as pd
 from google.cloud import bigquery
 from google.oauth2 import service_account
 
-from simulateur_core import recalculer_classement_simule
-from simulateur_core import appliquer_penalites
-from simulateur_core import load_championnats
-from simulateur_core import get_type_classement
-from simulateur_core import trier_et_numeroter
-from simulateur_core import trier_et_numeroter
-
-
+# Fonctions locales importées depuis simulateur_core.py
+from simulateur_core import (
+    recalculer_classement_simule,
+    appliquer_penalites,
+    load_championnats,
+    get_type_classement,
+    get_poules_temp,
+    trier_et_numeroter,
+    appliquer_diff_particuliere,
 
 # Configuration Streamlit
 st.set_page_config(page_title="SIMULATEUR - Datafoot", layout="wide")
