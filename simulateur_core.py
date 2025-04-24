@@ -391,3 +391,44 @@ def get_matchs_modifiables(champ_id, date_limite, non_joues_only=True):
     """
     return client.query(query).to_dataframe()
 
+def recalculer_classement_simule(df_scores, champ_id, date_limite):
+    import pandas as pd
+
+    query = f"""
+        SELECT ID_MATCH, JOURNEE, POULE, DATE,
+               ID_EQUIPE_DOM, EQUIPE_DOM, NB_BUT_DOM,
+               ID_EQUIPE_EXT, EQUIPE_EXT, NB_BUT_EXT
+        FROM `datafoot-448514.DATAFOOT.DATAFOOT_MATCH_2025`
+        WHERE ID_CHAMPIONNAT = {champ_id}
+          AND STATUT = 'TERMINE'
+          AND DATE <= DATE('{date_limite}')
+          AND ID_MATCH NOT IN UNNEST({list(df_scores['ID_MATCH'].unique())})
+    """
+    matchs_termines = client.query(query).to_dataframe()
+    matchs_complets = pd.concat([matchs_termines, df_scores], ignore_index=True)
+
+    dom = matchs_complets[[
+        "POULE", "ID_EQUIPE_DOM", "EQUIPE_DOM", "NB_BUT_DOM", "NB_BUT_EXT"
+    ]].copy()
+    dom.columns = ["POULE", "ID_EQUIPE", "NOM_EQUIPE", "BUTS_POUR", "BUTS_CONTRE"]
+    dom["POINTS"] = dom.apply(lambda r: 3 if r.BUTS_POUR > r.BUTS_CONTRE else 1 if r.BUTS_POUR == r.BUTS_CONTRE else 0, axis=1)
+
+    ext = matchs_complets[[
+        "POULE", "ID_EQUIPE_EXT", "EQUIPE_EXT", "NB_BUT_EXT", "NB_BUT_DOM"
+    ]].copy()
+    ext.columns = ["POULE", "ID_EQUIPE", "NOM_EQUIPE", "BUTS_POUR", "BUTS_CONTRE"]
+    ext["POINTS"] = ext.apply(lambda r: 3 if r.BUTS_POUR > r.BUTS_CONTRE else 1 if r.BUTS_POUR == r.BUTS_CONTRE else 0, axis=1)
+
+    full = pd.concat([dom, ext])
+    classement = full.groupby(["POULE", "ID_EQUIPE", "NOM_EQUIPE"]).agg(
+        MJ=("POINTS", "count"),
+        G=("POINTS", lambda x: (x == 3).sum()),
+        N=("POINTS", lambda x: (x == 1).sum()),
+        P=("POINTS", lambda x: (x == 0).sum()),
+        BP=("BUTS_POUR", "sum"),
+        BC=("BUTS_CONTRE", "sum"),
+        POINTS=("POINTS", "sum")
+    ).reset_index()
+
+    classement["DIFF"] = classement["BP"] - classement["BC"]
+    return classement
