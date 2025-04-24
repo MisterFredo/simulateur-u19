@@ -12,6 +12,11 @@ from simulateur_core import (
     get_poules_temp,
     trier_et_numeroter,
     appliquer_diff_particuliere,
+    classement_special_u19,
+    classement_special_u17,
+    classement_special_n2,
+    classement_special_n3,
+)
 
 # Configuration Streamlit
 st.set_page_config(page_title="SIMULATEUR - Datafoot", layout="wide")
@@ -59,8 +64,6 @@ else:
 # Date de simulation
 import datetime
 date_limite = st.sidebar.date_input("Date de simulation", value=datetime.date.today())
-
-from simulateur_core import get_matchs_modifiables
 
 # Titre principal
 filtrer_non_joues = st.checkbox("Afficher uniquement les matchs non joués", value=True)
