@@ -94,6 +94,8 @@ else:
     key="simulation_scores"
 )
 
+classement_df = None
+mini_classements = {}
 
 if st.button("🔁 Recalculer le classement avec ces scores simulés"):
     st.session_state["simulated_scores"] = edited_df
@@ -129,8 +131,7 @@ if selected_poule != "Toutes les poules" and mini_classements:
             st.dataframe(data["matchs"], use_container_width=True)
 
 # 📌 Cas particuliers (U19 / U17 / N2 / N3)
-if selected_poule == "Toutes les poules":
-
+if classement_df is not None and selected_poule == "Toutes les poules":
     if champ_id == 6 and not classement_df.empty:
         st.markdown("### 🚨 Classement spécial des 11èmes (règle U19 National)")
         df_11e_comp = classement_special_u19(classement_df, champ_id, date_limite)
