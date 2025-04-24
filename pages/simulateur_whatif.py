@@ -19,6 +19,8 @@ client = bigquery.Client(credentials=credentials, project=credentials.project_id
 # Chargement des championnats
 from simulateur_core import load_championnats
 championnats_df = load_championnats()
+type_classement = get_type_classement(champ_id)
+
 
 # Filtres latéraux
 st.sidebar.header("Filtres")
