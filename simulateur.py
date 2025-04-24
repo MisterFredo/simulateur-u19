@@ -209,7 +209,7 @@ classement_df["PENALITES"] = classement_df["PENALITES"].fillna(0).astype(int)
 classement_df["POINTS"] = classement_df["POINTS"] - classement_df["PENALITES"]
 
 # 📌 2. Chargement du type de classement
-type_classement = get_type_classement(champ_id)
+type_classement = get_type_classement(client, champ_id)
 
 # 🗨️ 3. Messages d’info si PARTICULIERE
 if type_classement == "PARTICULIERE":
