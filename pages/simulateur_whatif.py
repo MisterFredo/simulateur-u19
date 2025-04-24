@@ -84,11 +84,16 @@ else:
     st.markdown("### Matchs simulables")
     df_simulation = matchs_simulables.copy()
     edited_df = st.data_editor(
-        df_simulation[["ID_MATCH", "JOURNEE", "POULE", "DATE", "EQUIPE_DOM", "NB_BUT_DOM", "EQUIPE_EXT", "NB_BUT_EXT"]],
-        num_rows="dynamic",
-        use_container_width=True,
-        key="simulation_scores"
-    )
+    df_simulation[[
+        "ID_MATCH", "JOURNEE", "POULE", "DATE",
+        "ID_EQUIPE_DOM", "EQUIPE_DOM", "NB_BUT_DOM",
+        "ID_EQUIPE_EXT", "EQUIPE_EXT", "NB_BUT_EXT"
+    ]],
+    num_rows="dynamic",
+    use_container_width=True,
+    key="simulation_scores"
+)
+
 
 if st.button("🔁 Recalculer le classement avec ces scores simulés"):
     st.session_state["simulated_scores"] = edited_df
