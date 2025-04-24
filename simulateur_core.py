@@ -164,3 +164,18 @@ def appliquer_penalites(classement_df, date_limite):
     classement_df["POINTS"] = classement_df["POINTS"] - classement_df["PENALITES"]
     
     return classement_df
+
+def trier_et_numeroter(classement_df, type_classement):
+    if type_classement == "PARTICULIERE":
+        classement_df["RANG_CONFRONT"] = classement_df.get("RANG_CONFRONT", 999)
+        classement_df = classement_df.sort_values(
+            by=["POULE", "POINTS", "RANG_CONFRONT", "DIFF", "BP"],
+            ascending=[True, False, True, False, False]
+        )
+    else:
+        classement_df = classement_df.sort_values(
+            by=["POULE", "POINTS", "DIFF", "BP"],
+            ascending=[True, False, False, False]
+        )
+    classement_df["CLASSEMENT"] = classement_df.groupby("POULE").cumcount() + 1
+    return classement_df
