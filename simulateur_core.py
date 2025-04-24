@@ -1,3 +1,5 @@
+import pandas as pd
+
 def get_type_classement(client, champ_id):
     query = f"""
         SELECT CLASSEMENT
