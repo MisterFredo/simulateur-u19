@@ -68,15 +68,7 @@ from simulateur_core import get_classement_dynamique
 
 afficher_debug = selected_poule != "Toutes les poules"
 
-def get_matchs_termine(champ_id, date_limite):
-    query = f"""
-        SELECT *
-        FROM `datafoot-448514.DATAFOOT.DATAFOOT_MATCH_2025`
-        WHERE STATUT = 'TERMINE'
-          AND ID_CHAMPIONNAT = {champ_id}
-          AND DATE <= DATE('{date_limite}')
-    """
-    return client.query(query).to_dataframe()
+from simulateur_core import get_matchs_termine
 
 def appliquer_diff_particuliere(classement_df, matchs_df, selected_poule="Toutes les poules"):
     classement_df["RANG_CONFRONT"] = 999  # Valeur par défaut globale
@@ -179,7 +171,7 @@ if type_classement == "PARTICULIERE":
 
 # 🔁 4. Application des égalités particulières
 if type_classement == "PARTICULIERE":
-    matchs = get_matchs_termine(champ_id, date_limite)
+    matchs = get_matchs_termine(client, champ_id, date_limite)
     classement_df, mini_classements = appliquer_diff_particuliere(classement_df, matchs, selected_poule)
 else:
     mini_classements = {}
