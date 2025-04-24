@@ -56,3 +56,66 @@ def get_matchs_termine(client, champ_id, date_limite):
           AND DATE <= DATE('{date_limite}')
     """
     return client.query(query).to_dataframe()
+
+def appliquer_diff_particuliere(classement_df, matchs_df, selected_poule="Toutes les poules"):
+    classement_df["RANG_CONFRONT"] = 999
+    mini_classements = {}
+
+    groupes = classement_df.copy()
+    groupes = groupes[groupes.duplicated(subset=["POULE", "POINTS"], keep=False)]
+    groupes = groupes.groupby(["POULE", "POINTS"])
+
+    for (poule, pts), groupe in groupes:
+        if selected_poule != "Toutes les poules" and poule != selected_poule:
+            continue
+
+        equipes_concernees = groupe["ID_EQUIPE"].tolist()
+
+        matchs_confrontations = matchs_df[
+            (matchs_df["ID_EQUIPE_DOM"].isin(equipes_concernees)) &
+            (matchs_df["ID_EQUIPE_EXT"].isin(equipes_concernees))
+        ]
+
+        mini_classement = []
+        for equipe_id in equipes_concernees:
+            matchs_eq = matchs_confrontations[
+                (matchs_confrontations["ID_EQUIPE_DOM"] == equipe_id) |
+                (matchs_confrontations["ID_EQUIPE_EXT"] == equipe_id)
+            ]
+
+            points = 0
+            diff_buts = 0
+            for _, row in matchs_eq.iterrows():
+                if row["ID_EQUIPE_DOM"] == equipe_id:
+                    bp, bc = row["NB_BUT_DOM"], row["NB_BUT_EXT"]
+                else:
+                    bp, bc = row["NB_BUT_EXT"], row["NB_BUT_DOM"]
+
+                if bp > bc:
+                    points += 3
+                elif bp == bc:
+                    points += 1
+                diff_buts += bp - bc
+
+            nom_equipe = groupe[groupe["ID_EQUIPE"] == equipe_id]["NOM_EQUIPE"].values[0]
+            mini_classement.append({
+                "ID_EQUIPE": equipe_id,
+                "NOM_EQUIPE": nom_equipe,
+                "PTS_CONFRONT": points,
+                "DIFF_CONFRONT": diff_buts
+            })
+
+        mini_df = pd.DataFrame(mini_classement)
+        mini_df = mini_df.sort_values(by=["PTS_CONFRONT", "DIFF_CONFRONT"], ascending=[False, False])
+        mini_df["RANG_CONFRONT"] = range(1, len(mini_df) + 1)
+
+        for _, row in mini_df.iterrows():
+            classement_df.loc[classement_df["ID_EQUIPE"] == row["ID_EQUIPE"], "RANG_CONFRONT"] = row["RANG_CONFRONT"]
+
+        mini_classements[(poule, pts)] = {
+            "classement": mini_df.drop(columns=["ID_EQUIPE"]),
+            "matchs": matchs_confrontations[["DATE", "EQUIPE_DOM", "EQUIPE_EXT", "NB_BUT_DOM", "NB_BUT_EXT"]].sort_values("DATE")
+        }
+
+    return classement_df, mini_classements
+
