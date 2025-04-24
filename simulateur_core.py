@@ -149,3 +149,18 @@ def load_championnats():
     """
     return client.query(query).to_dataframe()
 
+def appliquer_penalites(classement_df, date_limite):
+    penalites_actives = client.query(f"""
+        SELECT ID_EQUIPE, POINTS
+        FROM `datafoot-448514.DATAFOOT.DATAFOOT_PENALITE`
+        WHERE DATE <= DATE('{date_limite}')
+    """).to_dataframe()
+
+    penalites_agg = penalites_actives.groupby("ID_EQUIPE")["POINTS"].sum().reset_index()
+    penalites_agg.rename(columns={"POINTS": "PENALITES"}, inplace=True)
+
+    classement_df = classement_df.merge(penalites_agg, on="ID_EQUIPE", how="left")
+    classement_df["PENALITES"] = classement_df["PENALITES"].fillna(0).astype(int)
+    classement_df["POINTS"] = classement_df["POINTS"] - classement_df["PENALITES"]
+    
+    return classement_df
