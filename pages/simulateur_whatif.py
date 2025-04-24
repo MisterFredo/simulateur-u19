@@ -128,3 +128,33 @@ if selected_poule != "Toutes les poules" and mini_classements:
             st.markdown("**Matchs concernés :**")
             st.dataframe(data["matchs"], use_container_width=True)
 
+# 📌 Cas particuliers (U19 / U17 / N2 / N3)
+if selected_poule == "Toutes les poules":
+
+    if champ_id == 6 and not classement_df.empty:
+        st.markdown("### 🚨 Classement spécial des 11èmes (règle U19 National)")
+        df_11e_comp = classement_special_u19(classement_df, champ_id, date_limite)
+        if df_11e_comp is not None:
+            st.dataframe(df_11e_comp, use_container_width=True)
+
+    if champ_id == 7 and not classement_df.empty:
+        st.markdown("### 🥈 Comparatif des 2e (règle U17 National)")
+        df_2e_comp = classement_special_u17(classement_df, champ_id, date_limite)
+        if df_2e_comp is not None:
+            st.dataframe(df_2e_comp, use_container_width=True)
+
+    if champ_id == 4 and not classement_df.empty:
+        st.markdown("### 🚨 Comparatif des 13e (règle N2)")
+        df_13e_comp = classement_special_n2(classement_df, champ_id, date_limite)
+        if df_13e_comp is not None:
+            st.dataframe(df_13e_comp, use_container_width=True)
+
+    if champ_id == 5 and not classement_df.empty:
+        st.markdown("### ⚠️ Comparatif des 10e (règle N3)")
+        df_10e_comp = classement_special_n3(classement_df, champ_id, date_limite)
+        if df_10e_comp is not None:
+            st.dataframe(df_10e_comp, use_container_width=True)
+
+else:
+    if champ_id in [4, 5, 6, 7]:
+        st.info("🔒 Les règles spécifiques (U19, U17, N2, N3) ne sont disponibles que si toutes les poules sont affichées.")
