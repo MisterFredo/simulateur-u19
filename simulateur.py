@@ -12,6 +12,7 @@ from simulateur_core import (
     get_poules_temp,
     load_championnats,
     appliquer_penalites,
+    trier_et_numeroter,
 )
 
 
@@ -79,21 +80,7 @@ if type_classement == "PARTICULIERE":
 else:
     mini_classements = {}
 
-# 🔽 5. Tri final
-if type_classement == "PARTICULIERE":
-    classement_df["RANG_CONFRONT"] = classement_df.get("RANG_CONFRONT", 999)
-    classement_df = classement_df.sort_values(
-        by=["POULE", "POINTS", "RANG_CONFRONT", "DIFF", "BP"],
-        ascending=[True, False, True, False, False]
-    )
-else:
-    classement_df = classement_df.sort_values(
-        by=["POULE", "POINTS", "DIFF", "BP"],
-        ascending=[True, False, False, False]
-    )
-
-# 🔢 6. Numérotation
-classement_df["CLASSEMENT"] = classement_df.groupby("POULE").cumcount() + 1
+classement_df = trier_et_numeroter(classement_df, type_classement)
 
 # 🔍 7. Filtrage si une seule poule est sélectionnée
 if selected_poule != "Toutes les poules":
