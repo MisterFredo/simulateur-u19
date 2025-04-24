@@ -3,6 +3,15 @@ import pandas as pd
 from google.cloud import bigquery
 from google.oauth2 import service_account
 
+# Fonctions locales importées depuis simulateur_core.py
+from simulateur_core import (
+    get_classement_dynamique,
+    get_type_classement,
+    appliquer_diff_particuliere,
+    get_matchs_termine,
+    get_poules_temp,
+)
+
 # Configuration de la page
 st.set_page_config(page_title="Classement - Datafoot", layout="wide")
 
@@ -42,9 +51,6 @@ st.title(f"Classement – {selected_nom}")
 
 # Chargement temporaire des poules
 @st.cache_data(show_spinner=False)
-
-from simulateur_core import get_poules_temp
-
 poules_temp = get_poules_temp(client, champ_id)
 all_poules = sorted(poules_temp["POULE"].dropna().unique())
 if len(all_poules) > 1:
@@ -55,17 +61,7 @@ else:
 # Date limite
 date_limite = st.sidebar.date_input("Date de simulation", value=pd.to_datetime("2025-06-30"))
 
-# Fonctions utilitaires
-
-from simulateur_core import get_classement_dynamique
-
 afficher_debug = selected_poule != "Toutes les poules"
-
-from simulateur_core import get_matchs_termine
-
-from simulateur_core import appliquer_diff_particuliere
-
-from simulateur_core import get_type_classement
 
 # 🔢 0. Récupération du classement brut
 classement_complet = get_classement_dynamique(client, champ_id, date_limite)
