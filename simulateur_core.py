@@ -1,7 +1,7 @@
 import pandas as pd
 import streamlit as st
 
-def get_type_classement(client, champ_id):
+def get_type_classement(champ_id):
     query = f"""
         SELECT CLASSEMENT
         FROM `datafoot-448514.DATAFOOT.DATAFOOT_CHAMPIONNAT`
@@ -11,7 +11,7 @@ def get_type_classement(client, champ_id):
     result = client.query(query).to_dataframe()
     return result.iloc[0]["CLASSEMENT"] if not result.empty else "GENERALE"
 
-def get_classement_dynamique(client, champ_id, date_limite):
+def get_classement_dynamique(champ_id, date_limite):
     query = f"""
         WITH matchs_termine AS (
           SELECT *
@@ -50,7 +50,7 @@ def get_classement_dynamique(client, champ_id, date_limite):
     df = client.query(query).to_dataframe()
     return df.rename(columns={"PTS": "POINTS"})
 
-def get_matchs_termine(client, champ_id, date_limite):
+def get_matchs_termine(champ_id, date_limite):
     query = f"""
         SELECT *
         FROM `datafoot-448514.DATAFOOT.DATAFOOT_MATCH_2025`
@@ -123,7 +123,7 @@ def appliquer_diff_particuliere(classement_df, matchs_df, selected_poule="Toutes
     return classement_df, mini_classements
 
 @st.cache_data(show_spinner=False)
-def get_poules_temp(client, champ_id):
+def get_poules_temp(champ_id):
     query = f"""
         SELECT DISTINCT POULE
         FROM `datafoot-448514.DATAFOOT.DATAFOOT_MATCH_2025`
