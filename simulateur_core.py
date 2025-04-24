@@ -46,3 +46,13 @@ def get_classement_dynamique(client, champ_id, date_limite):
     """
     df = client.query(query).to_dataframe()
     return df.rename(columns={"PTS": "POINTS"})
+
+def get_matchs_termine(client, champ_id, date_limite):
+    query = f"""
+        SELECT *
+        FROM `datafoot-448514.DATAFOOT.DATAFOOT_MATCH_2025`
+        WHERE STATUT = 'TERMINE'
+          AND ID_CHAMPIONNAT = {champ_id}
+          AND DATE <= DATE('{date_limite}')
+    """
+    return client.query(query).to_dataframe()
