@@ -42,17 +42,10 @@ st.title(f"Classement – {selected_nom}")
 
 # Chargement temporaire des poules
 @st.cache_data(show_spinner=False)
-def get_poules_temp(champ_id):
-    query = f"""
-        SELECT DISTINCT POULE
-        FROM `datafoot-448514.DATAFOOT.DATAFOOT_MATCH_2025`
-        WHERE ID_CHAMPIONNAT = {champ_id}
-          AND POULE IS NOT NULL
-        ORDER BY POULE
-    """
-    return client.query(query).to_dataframe()
 
-poules_temp = get_poules_temp(champ_id)
+from simulateur_core import get_poules_temp
+
+poules_temp = get_poules_temp(client, champ_id)
 all_poules = sorted(poules_temp["POULE"].dropna().unique())
 if len(all_poules) > 1:
     selected_poule = st.sidebar.selectbox("Poule", ["Toutes les poules"] + all_poules)
