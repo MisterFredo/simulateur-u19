@@ -397,7 +397,9 @@ def get_matchs_modifiables(champ_id, date_limite, non_joues_only=True):
     return client.query(query).to_dataframe()
 
 def recalculer_classement_simule(matchs_simules, champ_id, date_limite, selected_poule):
-    # On récupère les matchs terminés pour le championnat, à la même date
+    type_classement = get_type_classement(champ_id)
+
+    # Récupération des matchs terminés à date, hors ceux qu'on va simuler
     matchs_historiques = get_matchs_termine(champ_id, date_limite)
     matchs_historiques = matchs_historiques[~matchs_historiques["ID_MATCH"].isin(matchs_simules["ID_MATCH"])]
 
@@ -415,7 +417,7 @@ def recalculer_classement_simule(matchs_simules, champ_id, date_limite, selected
 
     full = pd.concat([dom, ext])
 
-    classement = full.groupby(["POULE", "ID_EQUIPE", "NOM_EQUIPE"]).agg(
+    classement_df = full.groupby(["POULE", "ID_EQUIPE", "NOM_EQUIPE"]).agg(
         MJ=("POINTS", "count"),
         G=("POINTS", lambda x: (x == 3).sum()),
         N=("POINTS", lambda x: (x == 1).sum()),
@@ -425,12 +427,23 @@ def recalculer_classement_simule(matchs_simules, champ_id, date_limite, selected
         POINTS=("POINTS", "sum")
     ).reset_index()
 
-    classement["DIFF"] = classement["BP"] - classement["BC"]
-    classement = trier_et_numeroter(classement, "GENERALE")
-    classement = appliquer_penalites(classement, date_limite)
+    classement_df["DIFF"] = classement_df["BP"] - classement_df["BC"]
 
+    # Application des pénalités
+    classement_df = appliquer_penalites(classement_df, date_limite)
 
+    # Application des égalités particulières si besoin
+    if type_classement == "PARTICULIERE":
+        matchs_termine = get_matchs_termine(champ_id, date_limite)
+        classement_df, mini_classements = appliquer_diff_particuliere(classement_df, matchs_termine, selected_poule)
+    else:
+        mini_classements = {}
+
+    # Tri final
+    classement_df = trier_et_numeroter(classement_df, type_classement)
+
+    # Filtrage par poule si sélectionnée
     if selected_poule != "Toutes les poules":
-        classement = classement[classement["POULE"] == selected_poule]
+        classement_df = classement_df[classement_df["POULE"] == selected_poule]
 
-    return classement
+    return classement_df, mini_classements
