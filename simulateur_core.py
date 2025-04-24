@@ -121,6 +121,7 @@ def appliquer_diff_particuliere(classement_df, matchs_df, selected_poule="Toutes
 
     return classement_df, mini_classements
 
+@st.cache_data(show_spinner=False)
 def get_poules_temp(client, champ_id):
     query = f"""
         SELECT DISTINCT POULE
