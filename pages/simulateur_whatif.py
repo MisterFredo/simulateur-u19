@@ -99,6 +99,7 @@ if st.button("🔁 Recalculer le classement avec ces scores simulés"):
     st.session_state["simulated_scores"] = edited_df
 
     df_valid = edited_df.dropna(subset=["NB_BUT_DOM", "NB_BUT_EXT"])
+    df_valid["ID_CHAMPIONNAT"] = champ_id
     st.write("🧪 Scores simulés transmis :", df_valid)
 
     if df_valid.empty:
