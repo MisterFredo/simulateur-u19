@@ -65,26 +65,6 @@ else:
 import datetime
 date_limite = st.sidebar.date_input("Date de simulation", value=datetime.date.today())
 
-# Titre principal
-filtrer_non_joues = st.checkbox("Afficher uniquement les matchs non joués", value=True)
-
-matchs_simulables = get_matchs_modifiables(champ_id, date_limite, filtrer_non_joues)
-
-if selected_poule != "Toutes les poules":
-    matchs_simulables = matchs_simulables[matchs_simulables["POULE"] == selected_poule]
-
-if matchs_simulables.empty:
-    st.info("Aucun match à afficher pour cette configuration.")
-else:
-    st.markdown("### Matchs simulables")
-    df_simulation = matchs_simulables.copy()
-    edited_df = st.data_editor(
-        df_simulation[["ID_MATCH", "JOURNEE", "POULE", "DATE", "EQUIPE_DOM", "NB_BUT_DOM", "EQUIPE_EXT", "NB_BUT_EXT"]],
-        num_rows="dynamic",
-        use_container_width=True,
-        key="simulation_scores"
-    )
-
 if st.button("🔁 Recalculer le classement avec ces scores simulés"):
     st.session_state["simulated_scores"] = edited_df
 
@@ -93,11 +73,8 @@ if st.button("🔁 Recalculer le classement avec ces scores simulés"):
     if df_valid.empty:
         st.warning("🚫 Aucun score simulé valide.")
     else:
-        from simulateur_core import recalculer_classement_simule
-
-        classement_df = recalculer_classement_simule(df_valid, champ_id, date_limite, selected_poule, type_classement)
+        classement_df, mini_classements = recalculer_classement_simule(df_valid, champ_id, date_limite, selected_poule)
         st.write("🧪 Colonnes dans classement_df :", classement_df.columns.tolist())
-        classement_df, mini_classements = recalculer_classement_simule(df_valid, champ_id, date_limite, selected_poule, type_classement)
 
         if classement_df.empty:
             st.warning("🚫 Aucun classement n'a pu être généré.")
@@ -111,12 +88,11 @@ if st.button("🔁 Recalculer le classement avec ces scores simulés"):
                     use_container_width=True
                 )
 
-if selected_poule != "Toutes les poules" and mini_classements:
-    st.markdown("## Mini-classements (en cas d’égalité)")
-    for (poule, pts), data in mini_classements.items():
-        st.markdown(f"### Poule {poule} — Égalité à {pts} pts")
-        st.markdown("**Mini-classement**")
-        st.dataframe(data["classement"])
-        st.markdown("**Matchs concernés**")
-        st.dataframe(data["matchs"])
-
+        if selected_poule != "Toutes les poules" and mini_classements:
+            st.markdown("## Mini-classements (en cas d’égalité)")
+            for (poule, pts), data in mini_classements.items():
+                st.markdown(f"### Poule {poule} — Égalité à {pts} pts")
+                st.markdown("**Mini-classement**")
+                st.dataframe(data["classement"])
+                st.markdown("**Matchs concernés**")
+                st.dataframe(data["matchs"])
