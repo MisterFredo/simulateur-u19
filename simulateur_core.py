@@ -446,8 +446,9 @@ def recalculer_classement_simule(matchs_simules, champ_id, date_limite, selected
 
     # DEBUG : Vérification des matchs avant et après concaténation
     st.write("🧪 Matchs simulés (transmis) :", matchs_simules[["ID_MATCH", "NB_BUT_DOM", "NB_BUT_EXT"]])
-    st.write("🧪 Matchs historiques :", matchs_historiques[["ID_MATCH"]].head())
-    st.write("🧪 Tous les matchs (concaténés) :", matchs_complets[["ID_MATCH", "NB_BUT_DOM", "NB_BUT_EXT"]].head())
+    st.write("🧪 Tableau complet (dom+ext) :", full.head())
+    st.write("🧪 Exemple points calculés :", full[["ID_EQUIPE", "NOM_EQUIPE", "BUTS_POUR", "BUTS_CONTRE", "POINTS"]].head())
+
 
 
     return classement_df, mini_classements
