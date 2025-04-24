@@ -7,6 +7,10 @@ from simulateur_core import recalculer_classement_simule
 from simulateur_core import appliquer_penalites
 from simulateur_core import load_championnats
 from simulateur_core import get_type_classement
+from simulateur_core import trier_et_numeroter
+from simulateur_core import trier_et_numeroter
+
+
 
 # Configuration Streamlit
 st.set_page_config(page_title="SIMULATEUR - Datafoot", layout="wide")
