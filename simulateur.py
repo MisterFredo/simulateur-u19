@@ -15,6 +15,8 @@ from simulateur_core import (
     trier_et_numeroter,
     classement_special_u19,
     classement_special_u17,
+    classement_special_n2,
+    classement_special_n3,
 )
 
 # 🎛️ Configuration
@@ -113,12 +115,20 @@ if selected_poule == "Toutes les poules" and champ_id == 6:
     if df_11e_comp is not None:
         st.dataframe(df_11e_comp, use_container_width=True)
 
-# 📌 U17 : meilleurs seconds
+# 📌 U17 : meilleurs 2ème
 if selected_poule == "Toutes les poules" and champ_id == 7:
     st.markdown("### 🥈 Comparatif des 2e (règle U17 National)")
     df_2e_comp = classement_special_u17(classement_df, champ_id, client)
     if df_2e_comp is not None:
         st.dataframe(df_2e_comp, use_container_width=True)
+
+# 📌 N2 : moins bon 13ème
+if selected_poule == "Toutes les poules" and champ_id == 4:
+    st.markdown("### 🚨 Comparatif des 13e (règle N2)")
+    df_13e_comp = classement_special_n2(classement_df, champ_id, date_limite)
+    if df_13e_comp is not None:
+        st.dataframe(df_13e_comp, use_container_width=True)
+
 
 
 
@@ -128,58 +138,7 @@ if selected_poule == "Toutes les poules" and champ_id == 7:
 if selected_poule == "Toutes les poules":
 
    
-    # N2 - 13e
-    if champ_id == 4 and not classement_df.empty:
-        st.markdown("### 🚨 Comparatif des 13e (règle N2)")
-
-        df_13e = classement_df[classement_df["CLASSEMENT"] == 13]
-        comparatif_13e = []
-
-        @st.cache_data(show_spinner=False)
-        def get_matchs_n2(champ_id, date_limite):
-            query = f"""
-                SELECT *
-                FROM `datafoot-448514.DATAFOOT.DATAFOOT_MATCH_2025`
-                WHERE STATUT = 'TERMINE'
-                  AND ID_CHAMPIONNAT = {champ_id}
-                  AND DATE <= DATE('{date_limite}')
-            """
-            return client.query(query).to_dataframe()
-
-        matchs_n2 = get_matchs_n2(champ_id, date_limite)
-
-        for _, row in df_13e.iterrows():
-            poule = row["POULE"]
-            equipe_13e = row["NOM_EQUIPE"]
-
-            adversaires = classement_df[
-                (classement_df["POULE"] == poule) &
-                (classement_df["CLASSEMENT"].between(8, 12))
-            ]["NOM_EQUIPE"].tolist()
-
-            confrontations = matchs_n2[
-                ((matchs_n2["EQUIPE_DOM"] == equipe_13e) & (matchs_n2["EQUIPE_EXT"].isin(adversaires))) |
-                ((matchs_n2["EQUIPE_EXT"] == equipe_13e) & (matchs_n2["EQUIPE_DOM"].isin(adversaires)))
-            ]
-
-            pts = 0
-            for _, m in confrontations.iterrows():
-                if m["EQUIPE_DOM"] == equipe_13e:
-                    if m["NB_BUT_DOM"] > m["NB_BUT_EXT"]: pts += 3
-                    elif m["NB_BUT_DOM"] == m["NB_BUT_EXT"]: pts += 1
-                elif m["EQUIPE_EXT"] == equipe_13e:
-                    if m["NB_BUT_EXT"] > m["NB_BUT_DOM"]: pts += 3
-                    elif m["NB_BUT_EXT"] == m["NB_BUT_DOM"]: pts += 1
-
-            comparatif_13e.append({
-                "POULE": poule,
-                "EQUIPE": equipe_13e,
-                "PTS_CONFRONT_8_12": pts
-            })
-
-        df_13e_comp = pd.DataFrame(comparatif_13e).sort_values("PTS_CONFRONT_8_12", ascending=False)
-        df_13e_comp["RANG"] = df_13e_comp["PTS_CONFRONT_8_12"].rank(method="min", ascending=False)
-        st.dataframe(df_13e_comp, use_container_width=True)
+   
     # N3 - 10e
     if champ_id == 5 and not classement_df.empty:
         st.markdown("### ⚠️ Comparatif des 10e (règle N3)")
