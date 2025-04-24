@@ -11,6 +11,7 @@ from simulateur_core import (
     get_matchs_termine,
     get_poules_temp,
     load_championnats,
+    appliquer_penalites,
 )
 
 
@@ -60,18 +61,8 @@ classement_complet = get_classement_dynamique(champ_id, date_limite)
 classement_df = classement_complet.copy()
 
 # 🧮 1. Application des pénalités
-penalites_actives = client.query(f"""
-    SELECT ID_EQUIPE, POINTS
-    FROM `datafoot-448514.DATAFOOT.DATAFOOT_PENALITE`
-    WHERE DATE <= DATE('{date_limite}')
-""").to_dataframe()
+classement_df = appliquer_penalites(classement_df, date_limite)
 
-penalites_agg = penalites_actives.groupby("ID_EQUIPE")["POINTS"].sum().reset_index()
-penalites_agg.rename(columns={"POINTS": "PENALITES"}, inplace=True)
-
-classement_df = classement_df.merge(penalites_agg, on="ID_EQUIPE", how="left")
-classement_df["PENALITES"] = classement_df["PENALITES"].fillna(0).astype(int)
-classement_df["POINTS"] = classement_df["POINTS"] - classement_df["PENALITES"]
 
 # 📌 2. Chargement du type de classement
 type_classement = get_type_classement(champ_id)
