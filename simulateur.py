@@ -188,15 +188,7 @@ def appliquer_diff_particuliere(classement_df, matchs_df, selected_poule="Toutes
 
     return classement_df, mini_classements
 
-def get_type_classement(champ_id):
-    query = f"""
-        SELECT CLASSEMENT
-        FROM `datafoot-448514.DATAFOOT.DATAFOOT_CHAMPIONNAT`
-        WHERE ID_CHAMPIONNAT = {champ_id}
-        LIMIT 1
-    """
-    result = client.query(query).to_dataframe()
-    return result.iloc[0]["CLASSEMENT"] if not result.empty else "GENERALE"
+from simulateur_core import get_type_classement
 
 # 🔢 0. Récupération du classement brut
 classement_complet = get_classement_dynamique(champ_id, date_limite)
