@@ -19,8 +19,6 @@ client = bigquery.Client(credentials=credentials, project=credentials.project_id
 
 # Chargement des championnats
 championnats_df = load_championnats()
-type_classement = get_type_classement(champ_id)
-
 
 # Filtres latéraux
 st.sidebar.header("Filtres")
@@ -34,6 +32,10 @@ champ_options = championnats_df[
 ]
 selected_nom = st.sidebar.selectbox("Championnat", champ_options["NOM_CHAMPIONNAT"])
 champ_id = champ_options[champ_options["NOM_CHAMPIONNAT"] == selected_nom]["ID_CHAMPIONNAT"].values[0]
+
+# On peut maintenant appeler la fonction qui a besoin de champ_id
+type_classement = get_type_classement(champ_id)
+
 
 # Affichage du titre
 st.title(f"🧪 Simulateur – {selected_nom}")
