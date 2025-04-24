@@ -65,6 +65,9 @@ else:
 import datetime
 date_limite = st.sidebar.date_input("Date de simulation", value=datetime.date.today())
 
+# 🔐 Initialisation pour éviter les erreurs si bouton pas cliqué
+mini_classements = {}
+
 # Affichage des matchs modifiables
 from simulateur_core import get_matchs_modifiables
 
