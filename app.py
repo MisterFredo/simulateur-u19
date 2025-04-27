@@ -110,7 +110,7 @@ def afficher_championnat():
         date_limite = date.today().isoformat()
 
         st.title(f"🏆 Championnat ID {id_championnat}")
-        st.info(f"Chargement des données pour championnat ID {id_championnat} à la date {date_limite}...")
+        st.info(f"Chargement des données pour championnat ID {id_championnat} (à la date {date_limite})...")
 
         import simulateur_core as core
 
