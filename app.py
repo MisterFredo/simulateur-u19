@@ -18,12 +18,12 @@ def afficher_accueil():
     with col1:
         if st.button("📊 Voir Classement Officiel"):
             st.session_state.page = "classement"
-            st.experimental_rerun()
+            st.rerun()
 
     with col2:
         if st.button("🔮 Lancer une Simulation"):
             st.session_state.page = "simulation"
-            st.experimental_rerun()
+            st.rerun()
 
     st.markdown("---")
     st.subheader("⚡ Accès rapides aux championnats")
@@ -32,44 +32,44 @@ def afficher_accueil():
     if st.button("🏆 National"):
         st.session_state.page = "championnat"
         st.session_state.selected_id_championnat = 3
-        st.experimental_rerun()
+        st.rerun()
 
     if st.button("🏆 National 2 (3 Poules)"):
         st.session_state.page = "championnat"
         st.session_state.selected_id_championnat = 4
-        st.experimental_rerun()
+        st.rerun()
 
     if st.button("🏆 National 3 (10 Poules)"):
         st.session_state.page = "championnat"
         st.session_state.selected_id_championnat = 5
-        st.experimental_rerun()
+        st.rerun()
 
     st.markdown("**Jeunes Nationaux**")
     if st.button("🎯 U19 National"):
         st.session_state.page = "championnat"
         st.session_state.selected_id_championnat = 6
-        st.experimental_rerun()
+        st.rerun()
 
     if st.button("🎯 U17 National"):
         st.session_state.page = "championnat"
         st.session_state.selected_id_championnat = 7
-        st.experimental_rerun()
+        st.rerun()
 
     st.markdown("**Jeunes Régionaux**")
     if st.button("🧢 U17 R1 HDF"):
         st.session_state.page = "championnat"
         st.session_state.selected_id_championnat = 35
-        st.experimental_rerun()
+        st.rerun()
 
     if st.button("🧢 U18 R1 HDF"):
         st.session_state.page = "championnat"
         st.session_state.selected_id_championnat = 27
-        st.experimental_rerun()
+        st.rerun()
 
     if st.button("🧢 U18 R1 IDF"):
         st.session_state.page = "championnat"
         st.session_state.selected_id_championnat = 32
-        st.experimental_rerun()
+        st.rerun()
 
 def afficher_simulateur():
     import simulateur_core
