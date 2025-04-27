@@ -58,7 +58,6 @@ def afficher_accueil():
         st.session_state.selected_championnat = "U18 R1"
 
 def afficher_simulateur():
-    import simulateur
     import simulateur_core
 
     st.title("Classements Officiels ⚽")
@@ -80,12 +79,19 @@ def afficher_simulateur():
 
     if selected_nom:
         selected_id = championnats_dict[selected_nom]
+
+        # --- Importer simulateur seulement après sélection ---
+        import simulateur
+
         simulateur.afficher_classement(selected_id)
 
 def afficher_classements_speciaux():
-    # >>> Ici tu vas appeler la logique de simulateur_whatif.py <<<
+    st.title("Simulations de Classements 🔮")
+
+    # --- Importer simulateur_whatif seulement après ouverture ---
     import pages.simulateur_whatif as simulateur_whatif
-    simulateur_whatif.afficher_simulateur_whatif()  # Ou la fonction principale que tu veux utiliser
+
+    simulateur_whatif.afficher_simulateur_whatif()
 
 def afficher_championnat():
     if "selected_championnat" in st.session_state:
