@@ -106,19 +106,26 @@ def afficher_championnat():
     if "selected_id_championnat" in st.session_state:
         id_championnat = st.session_state.selected_id_championnat
 
+        from datetime import date
+        date_limite = date.today().isoformat()
+
         st.title(f"🏆 Championnat ID {id_championnat}")
-        st.info(f"Chargement des données pour championnat ID {id_championnat}...")
+        st.info(f"Chargement des données pour championnat ID {id_championnat} à la date {date_limite}...")
 
         import simulateur_core as core
 
-        matchs = core.get_matchs_termine(id_championnat)
-        classement = core.get_classement_dynamique(matchs)
-        classement = core.appliquer_penalites(classement)
-        classement = core.appliquer_diff_particuliere(classement)
-        classement = core.trier_et_numeroter(classement)
+        matchs = core.get_matchs_termine(id_championnat, date_limite)
 
-        st.markdown("### Classement actuel 📊")
-        st.dataframe(classement, use_container_width=True)
+        if matchs is None or matchs.empty:
+            st.warning("Aucun match trouvé pour ce championnat.")
+        else:
+            classement = core.get_classement_dynamique(matchs)
+            classement = core.appliquer_penalites(classement)
+            classement = core.appliquer_diff_particuliere(classement)
+            classement = core.trier_et_numeroter(classement)
+
+            st.markdown("### Classement actuel 📊")
+            st.dataframe(classement, use_container_width=True)
 
         # --- Retour à l'accueil ---
         st.markdown("---")
@@ -129,7 +136,6 @@ def afficher_championnat():
         st.error("Aucun championnat sélectionné. Retour à l'accueil.")
         if st.button("⬅️ Retour à l'accueil"):
             st.session_state.page = "home"
-
 
 # --- Bloc navigation principale ---
 if st.session_state.page == "home":
