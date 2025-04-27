@@ -103,29 +103,22 @@ def afficher_classements_speciaux():
         st.session_state.page = "home"
 
 def afficher_championnat():
-    if "selected_championnat" in st.session_state:
-        championnat = st.session_state.selected_championnat
-        st.title(f"🏆 Championnat : {championnat}")
-        st.info(f"Chargement des données pour {championnat}...")
+    if "selected_id_championnat" in st.session_state:
+        id_championnat = st.session_state.selected_id_championnat
 
-        # --- Charger et afficher un premier classement réel ---
+        st.title(f"🏆 Championnat ID {id_championnat}")
+        st.info(f"Chargement des données pour championnat ID {id_championnat}...")
+
         import simulateur_core as core
-        championnats = core.load_championnats()
-        selected_row = championnats[championnats['NOM_CHAMPIONNAT'] == championnat]
 
-        if not selected_row.empty:
-            id_championnat = selected_row['ID_CHAMPIONNAT'].values[0]
+        matchs = core.get_matchs_termine(id_championnat)
+        classement = core.get_classement_dynamique(matchs)
+        classement = core.appliquer_penalites(classement)
+        classement = core.appliquer_diff_particuliere(classement)
+        classement = core.trier_et_numeroter(classement)
 
-            matchs = core.get_matchs_termine(id_championnat)
-            classement = core.get_classement_dynamique(matchs)
-            classement = core.appliquer_penalites(classement)
-            classement = core.appliquer_diff_particuliere(classement)
-            classement = core.trier_et_numeroter(classement)
-
-            st.markdown("### Classement actuel 📊")
-            st.dataframe(classement, use_container_width=True)
-        else:
-            st.warning("Championnat introuvable.")
+        st.markdown("### Classement actuel 📊")
+        st.dataframe(classement, use_container_width=True)
 
         # --- Retour à l'accueil ---
         st.markdown("---")
