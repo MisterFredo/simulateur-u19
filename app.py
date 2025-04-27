@@ -197,7 +197,9 @@ def afficher_championnat():
 
 # --- Navigation principale ---
 if st.session_state.page == "home":
-    afficher_accueil()
+    st.title("Bienvenue sur Datafoot 👋")
+    st.subheader("Accès rapides aux championnats 📈")
+    # >>> ici on ne remet PAS les boutons, ils sont déjà en haut
 
 elif st.session_state.page == "classement":
     afficher_simulateur()
@@ -210,5 +212,4 @@ elif st.session_state.page == "championnat":
         afficher_championnat()
     else:
         st.error("Aucun championnat sélectionné.")
-
 
