@@ -19,9 +19,6 @@ from simulateur_core import (
     classement_special_n3,
 )
 
-# 🎛️ Configuration
-st.set_page_config(page_title="Classement - Datafoot", layout="wide")
-
 # 🔌 Connexion BigQuery
 credentials = service_account.Credentials.from_service_account_info(
     st.secrets["gcp_service_account"]
