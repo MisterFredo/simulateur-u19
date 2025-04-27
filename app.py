@@ -119,7 +119,7 @@ def afficher_championnat():
         if classement is None or classement.empty:
             st.warning("Aucun match trouvé pour ce championnat.")
         else:
-            classement = core.appliquer_penalites(classement)
+            classement = core.appliquer_penalites(classement, date_limite)
             classement = core.appliquer_diff_particuliere(classement)
             classement = core.trier_et_numeroter(classement)
 
@@ -135,7 +135,6 @@ def afficher_championnat():
         st.error("Aucun championnat sélectionné. Retour à l'accueil.")
         if st.button("⬅️ Retour à l'accueil"):
             st.session_state.page = "home"
-
 
 # --- Bloc navigation principale ---
 if st.session_state.page == "home":
