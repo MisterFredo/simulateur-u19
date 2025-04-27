@@ -20,6 +20,7 @@ with st.sidebar:
     selected_championnat_sidebar = st.selectbox("Choisissez un championnat", options=championnats_list)
     selected_date_sidebar = st.date_input("Sélectionnez la date limite", value=date.today())
 
+if st.button("🔎 Afficher ce championnat"):
     if selected_championnat_sidebar:
         selected_row = championnats_df[championnats_df['NOM_CHAMPIONNAT'] == selected_championnat_sidebar]
         if not selected_row.empty:
@@ -28,6 +29,7 @@ with st.sidebar:
             st.session_state.selected_date_limite = selected_date_sidebar
             st.session_state.page = "championnat"
             st.experimental_rerun()
+
 
 # --- PAGE PRINCIPALE ---
 if st.session_state.page == "home":
