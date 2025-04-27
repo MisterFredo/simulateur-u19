@@ -13,13 +13,16 @@ def afficher_accueil():
     
     st.markdown("### Que souhaitez-vous faire ?")
 
-    col1, col2 = st.columns(2)
-    with col1:
-        if st.button("🔮 Lancer une Simulation"):
-            st.session_state.page = "simulation"
-    with col2:
-        if st.button("📊 Voir les Classements Spéciaux"):
-            st.session_state.page = "classements_speciaux"
+col1, col2 = st.columns(2)
+
+with col1:
+    if st.button("📊 Voir Classement Officiel"):
+        st.session_state.page = "classement"
+
+with col2:
+    if st.button("🔮 Lancer une Simulation"):
+        st.session_state.page = "simulation"
+
 
     st.markdown("---")
     st.subheader("⚡ Accès rapides aux championnats")
@@ -64,10 +67,10 @@ def afficher_championnat(championnat):
 if st.session_state.page == "home":
     afficher_accueil()
 
-elif st.session_state.page == "simulation":
+elif st.session_state.page == "classement":
     afficher_simulateur()
 
-elif st.session_state.page == "classements_speciaux":
+elif st.session_state.page == "simulation":
     afficher_classements_speciaux()
 
 elif st.session_state.page == "championnat_national":
