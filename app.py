@@ -124,8 +124,9 @@ def afficher_championnat():
             st.warning("Aucun match trouvé pour ce championnat.")
         else:
             classement = core.appliquer_penalites(classement, date_limite)
-            classement, _ = core.appliquer_diff_particuliere(classement, matchs)  # <<<<<< ICI
-            classement = core.trier_et_numeroter(classement)
+            classement, _ = core.appliquer_diff_particuliere(classement, matchs)
+            type_classement = core.get_type_classement(id_championnat)
+            classement = core.trier_et_numeroter(classement, type_classement)
 
             st.markdown("### Classement actuel 📊")
             st.dataframe(classement, use_container_width=True)
