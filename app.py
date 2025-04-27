@@ -154,28 +154,25 @@ def afficher_championnat():
             else:
                 selected_poule = poules_dispo[0]
 
-            # --- Filtrer sur la poule sélectionnée ---
             if selected_poule != "Toutes les poules":
                 classement = classement[classement["POULE"] == selected_poule]
 
-            # --- Réorganisation stricte des colonnes pour affichage style Simulateur ---
-            colonnes_souhaitées = [
-                "CLASSEMENT", "NOM_EQUIPE", "POINTS",
-                "PENALITES",  # Peut être absente
-                "G", "N", "P",
-                "BP", "BC", "DIFF"
-            ]
-            colonnes_finales = [col for col in colonnes_souhaitées if col in classement.columns]
-            classement = classement[colonnes_finales]
-
             # --- Affichage par poule ---
             st.markdown("### Classement actuel 📊")
-
             poules = classement['POULE'].unique()
 
             for poule in poules:
                 st.markdown(f"#### 🏅 Poule {poule}")
                 classement_poule = classement[classement['POULE'] == poule]
+
+                # --- Réorganisation stricte dans l'affichage, PAS AVANT
+                colonnes_souhaitées = [
+                    "CLASSEMENT", "NOM_EQUIPE", "POINTS",
+                    "PENALITES", "G", "N", "P", "BP", "BC", "DIFF"
+                ]
+                colonnes_finales = [col for col in colonnes_souhaitées if col in classement_poule.columns]
+                classement_poule = classement_poule[colonnes_finales]
+
                 st.dataframe(classement_poule, use_container_width=True)
 
         # --- Retour à l'accueil ---
