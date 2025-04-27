@@ -1,75 +1,93 @@
 import streamlit as st
+from datetime import date
+import simulateur_core as core
 
 # --- Définir la configuration de la page principale ---
-st.set_page_config(page_title="Datafoot", page_icon="⚽", layout="centered")
+st.set_page_config(page_title="Datafoot", page_icon="⚽", layout="wide")
 
 # --- Initialiser la page courante ---
 if "page" not in st.session_state:
     st.session_state.page = "home"
 
-# --- Fonctions pour afficher les différentes sections ---
-def afficher_accueil():
-    st.title("Bienvenue sur Datafoot 👋")
+# --- Chargement des championnats disponibles ---
+championnats_df = core.load_championnats()
+championnats_list = championnats_df['NOM_CHAMPIONNAT'].tolist()
+
+# --- SIDEBAR NAVIGATION ---
+with st.sidebar:
+    st.header("📚 Navigation")
     
-    st.markdown("### Que souhaitez-vous faire ?")
+    selected_championnat_sidebar = st.selectbox("Choisissez un championnat", options=championnats_list)
+    selected_date_sidebar = st.date_input("Sélectionnez la date limite", value=date.today())
+
+    if selected_championnat_sidebar:
+        selected_row = championnats_df[championnats_df['NOM_CHAMPIONNAT'] == selected_championnat_sidebar]
+        if not selected_row.empty:
+            id_championnat_sidebar = selected_row['ID_CHAMPIONNAT'].values[0]
+            st.session_state.selected_id_championnat = id_championnat_sidebar
+            st.session_state.selected_date_limite = selected_date_sidebar
+            st.session_state.page = "championnat"
+            st.experimental_rerun()
+
+# --- PAGE PRINCIPALE ---
+if st.session_state.page == "home":
+    st.title("Bienvenue sur Datafoot 👋")
+    st.subheader("Accès rapides aux championnats 📈")
 
     col1, col2 = st.columns(2)
 
     with col1:
-        if st.button("📊 Voir Classement Officiel"):
-            st.session_state.page = "classement"
-            st.rerun()
+        if st.button("🏆 National"):
+            st.session_state.selected_id_championnat = 3
+            st.session_state.selected_date_limite = date.today()
+            st.session_state.page = "championnat"
+            st.experimental_rerun()
+
+        if st.button("🏆 National 2"):
+            st.session_state.selected_id_championnat = 4
+            st.session_state.selected_date_limite = date.today()
+            st.session_state.page = "championnat"
+            st.experimental_rerun()
+
+        if st.button("🏆 National 3"):
+            st.session_state.selected_id_championnat = 5
+            st.session_state.selected_date_limite = date.today()
+            st.session_state.page = "championnat"
+            st.experimental_rerun()
 
     with col2:
-        if st.button("🔮 Lancer une Simulation"):
-            st.session_state.page = "simulation"
-            st.rerun()
+        if st.button("🎯 U19 National"):
+            st.session_state.selected_id_championnat = 6
+            st.session_state.selected_date_limite = date.today()
+            st.session_state.page = "championnat"
+            st.experimental_rerun()
 
-    st.markdown("---")
-    st.subheader("⚡ Accès rapides aux championnats")
+        if st.button("🎯 U17 National"):
+            st.session_state.selected_id_championnat = 7
+            st.session_state.selected_date_limite = date.today()
+            st.session_state.page = "championnat"
+            st.experimental_rerun()
 
-    st.markdown("**Séniors**")
-    if st.button("🏆 National"):
-        st.session_state.page = "championnat"
-        st.session_state.selected_id_championnat = 3
-        st.rerun()
+        if st.button("🧢 U17 R1 HDF"):
+            st.session_state.selected_id_championnat = 35
+            st.session_state.selected_date_limite = date.today()
+            st.session_state.page = "championnat"
+            st.experimental_rerun()
 
-    if st.button("🏆 National 2 (3 Poules)"):
-        st.session_state.page = "championnat"
-        st.session_state.selected_id_championnat = 4
-        st.rerun()
+        if st.button("🧢 U18 R1 IDF"):
+            st.session_state.selected_id_championnat = 32
+            st.session_state.selected_date_limite = date.today()
+            st.session_state.page = "championnat"
+            st.experimental_rerun()
 
-    if st.button("🏆 National 3 (10 Poules)"):
-        st.session_state.page = "championnat"
-        st.session_state.selected_id_championnat = 5
-        st.rerun()
+# --- AFFICHAGE CLASSEMENT ---
+elif st.session_state.page == "championnat" and "selected_id_championnat" in st.session_state:
+    from simulateur import afficher_classement
+    afficher_classement(
+        st.session_state.selected_id_championnat,
+        st.session_state.selected_date_limite
+    )
 
-    st.markdown("**Jeunes Nationaux**")
-    if st.button("🎯 U19 National"):
-        st.session_state.page = "championnat"
-        st.session_state.selected_id_championnat = 6
-        st.rerun()
-
-    if st.button("🎯 U17 National"):
-        st.session_state.page = "championnat"
-        st.session_state.selected_id_championnat = 7
-        st.rerun()
-
-    st.markdown("**Jeunes Régionaux**")
-    if st.button("🧢 U17 R1 HDF"):
-        st.session_state.page = "championnat"
-        st.session_state.selected_id_championnat = 35
-        st.rerun()
-
-    if st.button("🧢 U18 R1 HDF"):
-        st.session_state.page = "championnat"
-        st.session_state.selected_id_championnat = 27
-        st.rerun()
-
-    if st.button("🧢 U18 R1 IDF"):
-        st.session_state.page = "championnat"
-        st.session_state.selected_id_championnat = 32
-        st.rerun()
 
 def afficher_simulateur():
     import simulateur_core
