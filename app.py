@@ -120,7 +120,6 @@ def afficher_championnat():
 
         import simulateur_core as core
 
-        # --- Charger les championnats pour récupérer le NOM ---
         championnats = core.load_championnats()
         selected_row = championnats[championnats['ID_CHAMPIONNAT'] == id_championnat]
 
@@ -132,10 +131,7 @@ def afficher_championnat():
         st.title(f"🏆 {nom_championnat}")
         st.info(f"Chargement du classement pour {nom_championnat} (à la date {date_limite})...")
 
-        # --- Chargement des matchs terminés ---
         matchs = core.get_matchs_termine(id_championnat, date_limite)
-
-        # --- Calcul du classement dynamique ---
         classement = core.get_classement_dynamique(id_championnat, date_limite)
 
         if classement is None or classement.empty:
@@ -146,26 +142,13 @@ def afficher_championnat():
             type_classement = core.get_type_classement(id_championnat)
             classement = core.trier_et_numeroter(classement, type_classement)
 
-            # --- Sélection de la poule ---
             poules_dispo = classement['POULE'].unique()
 
-            if len(poules_dispo) > 1:
-                selected_poule = st.selectbox("Sélectionnez une poule :", ["Toutes les poules"] + list(poules_dispo))
-            else:
-                selected_poule = poules_dispo[0]
+            for poule in sorted(poules_dispo):
+                st.markdown(f"### Poule {poule}")
 
-            if selected_poule != "Toutes les poules":
-                classement = classement[classement["POULE"] == selected_poule]
+                classement_poule = classement[classement["POULE"] == poule]
 
-            # --- Affichage par poule ---
-            st.markdown("### Classement actuel 📊")
-            poules = classement['POULE'].unique()
-
-            for poule in poules:
-                st.markdown(f"#### 🏅 Poule {poule}")
-                classement_poule = classement[classement['POULE'] == poule]
-
-                # --- Réorganisation stricte dans l'affichage, PAS AVANT
                 colonnes_souhaitées = [
                     "CLASSEMENT", "NOM_EQUIPE", "POINTS",
                     "PENALITES", "G", "N", "P", "BP", "BC", "DIFF"
@@ -175,17 +158,16 @@ def afficher_championnat():
 
                 st.dataframe(classement_poule, use_container_width=True)
 
-        # --- Retour à l'accueil ---
         st.markdown("---")
         if st.button("⬅️ Retour à l'accueil"):
             st.session_state.page = "home"
-            st.rerun()
 
     else:
         st.error("Aucun championnat sélectionné. Retour à l'accueil.")
         if st.button("⬅️ Retour à l'accueil"):
             st.session_state.page = "home"
-            st.rerun()
+            st.experimental_rerun()
+
 
 # --- Bloc navigation principale ---
 if st.session_state.page == "home":
