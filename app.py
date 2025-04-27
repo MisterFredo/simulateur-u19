@@ -203,3 +203,4 @@ elif st.session_state.page == "championnat":
         afficher_championnat()
     else:
         st.error("Aucun championnat sélectionné.")
+
