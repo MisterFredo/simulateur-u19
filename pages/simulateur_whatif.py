@@ -182,13 +182,16 @@ def afficher_simulateur_whatif():
         st.markdown("### Modifiez les scores si nécessaire :")
 
         if not matchs.empty:
-            # Ici tu peux afficher les matchs et autoriser la modification des scores
             st.dataframe(matchs, use_container_width=True)
-            # >>> Ajoute ici plus tard tes sliders ou input pour simulation si tu veux
-
         else:
             st.warning("Aucun match disponible pour simulation dans ce championnat.")
 
         # --- Recalcul du classement simulé (quand ce sera intégré) ---
-        # recalculer_classement_simule(matchs)  --> pas encore mis ici volontairement pour simplifier
+        # recalculer_classement_simule(matchs)
+
+    # --- Retour à l'accueil (toujours accessible, même si aucun championnat sélectionné) ---
+    st.markdown("---")
+    if st.button("⬅️ Retour à l'accueil"):
+        st.session_state.page = "home"
+
 
