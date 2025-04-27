@@ -80,16 +80,6 @@ with col2:
         st.session_state.selected_date_limite = date.today().isoformat()
         st.session_state.page = "championnat"
 
-
-# --- AFFICHAGE CLASSEMENT ---
-elif st.session_state.page == "championnat" and "selected_id_championnat" in st.session_state:
-    from simulateur import afficher_classement
-    afficher_classement(
-        st.session_state.selected_id_championnat,
-        st.session_state.selected_date_limite
-    )
-
-
 def afficher_simulateur():
     import simulateur_core
 
