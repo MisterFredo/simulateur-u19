@@ -143,10 +143,16 @@ else:
 
 # === Fonction d'entrée pour app.py ===
 
-def afficher_classement(selected_championnat):
-    # --- Chargement des championnats pour retrouver l'ID ---
-    championnats = load_championnats()
-    id_championnat = championnats.loc[championnats['NOM_CHAMPIONNAT'] == selected_championnat, 'ID_CHAMPIONNAT'].values[0]
+def afficher_classement(id_championnat):
+    from simulateur_core import (
+        load_championnats,
+        get_matchs_termine,
+        get_classement_dynamique,
+        appliquer_penalites,
+        appliquer_diff_particuliere,
+        trier_et_numeroter,
+    )
+    import streamlit as st
 
     # --- Chargement des matchs terminés ---
     matchs = get_matchs_termine(id_championnat)
