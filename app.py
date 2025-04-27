@@ -62,7 +62,6 @@ def afficher_simulateur():
 
     st.title("Classements Officiels ⚽")
 
-    # --- Dictionnaire de tes championnats officiels ---
     championnats_dict = {
         "🏆 National": 3,
         "🏆 National 2": 4,
@@ -74,24 +73,29 @@ def afficher_simulateur():
         "🧢 17 R1 HDF": 35,
     }
 
-    # --- Sélection du championnat ---
     selected_nom = st.selectbox("Sélectionnez un championnat :", list(championnats_dict.keys()))
 
     if selected_nom:
         selected_id = championnats_dict[selected_nom]
 
-        # --- Importer simulateur seulement après sélection ---
         import simulateur
-
         simulateur.afficher_classement(selected_id)
 
+    # --- Retour à l'accueil ---
+    st.markdown("---")
+    if st.button("⬅️ Retour à l'accueil"):
+        st.session_state.page = "home"
+        
 def afficher_classements_speciaux():
     st.title("Simulations de Classements 🔮")
 
-    # --- Importer simulateur_whatif seulement après ouverture ---
     import pages.simulateur_whatif as simulateur_whatif
-
     simulateur_whatif.afficher_simulateur_whatif()
+
+    # --- Retour à l'accueil ---
+    st.markdown("---")
+    if st.button("⬅️ Retour à l'accueil"):
+        st.session_state.page = "home"
 
 def afficher_championnat():
     if "selected_championnat" in st.session_state:
