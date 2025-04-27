@@ -109,7 +109,7 @@ def afficher_championnat():
         from datetime import date
         date_limite = date.today().isoformat()
 
-        import simulateur_core as core  # <<< Import une seule fois
+        import simulateur_core as core
 
         # --- Charger les championnats pour récupérer le NOM ---
         championnats = core.load_championnats()
@@ -143,23 +143,21 @@ def afficher_championnat():
             if len(poules_dispo) > 1:
                 selected_poule = st.selectbox("Sélectionnez une poule :", ["Toutes les poules"] + list(poules_dispo))
             else:
-                selected_poule = poules_dispo[0]  # S'il n'y a qu'une seule poule
+                selected_poule = poules_dispo[0]
 
             # --- Filtrer sur la poule sélectionnée ---
             if selected_poule != "Toutes les poules":
                 classement = classement[classement["POULE"] == selected_poule]
 
             # --- Réorganisation des colonnes pour l'affichage ---
-            colonnes_affichage = [
-                "CLASSEMENT", "POULE", "NOM_EQUIPE", 
-                "MJ", "G", "N", "P", 
-                "BP", "BC", "DIFF", "POINTS"
+            colonnes_souhaitées = [
+                "CLASSEMENT", "POULE", "NOM_EQUIPE",
+                "MJ", "G", "N", "P",
+                "BP", "BC", "DIFF", "POINTS", "PENALITES"
             ]
 
-            if "PENALITES" in classement.columns:
-                colonnes_affichage.append("PENALITES")
-
-            classement = classement[colonnes_affichage]
+            colonnes_finales = [col for col in colonnes_souhaitées if col in classement.columns]
+            classement = classement[colonnes_finales]
 
             # --- Affichage du classement filtré ---
             st.markdown("### Classement actuel 📊")
