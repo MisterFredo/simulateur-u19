@@ -29,37 +29,38 @@ def afficher_accueil():
     st.markdown("**Séniors**")
     if st.button("🏆 National"):
         st.session_state.page = "championnat"
-        st.session_state.selected_championnat = "National"
+        st.session_state.selected_id_championnat = 3  # NATIONAL
 
     if st.button("🏆 National 2 (3 Poules)"):
         st.session_state.page = "championnat"
-        st.session_state.selected_championnat = "National 2"
+        st.session_state.selected_id_championnat = 4  # NATIONAL 2
 
     if st.button("🏆 National 3 (10 Poules)"):
         st.session_state.page = "championnat"
-        st.session_state.selected_championnat = "National 3"
+        st.session_state.selected_id_championnat = 5  # NATIONAL 3
 
     st.markdown("**Jeunes Nationaux**")
-    if st.button("🎯 U19 National"):
+    if st.button("🎯 19 NAT"):
         st.session_state.page = "championnat"
-        st.session_state.selected_championnat = "U19 National"
+        st.session_state.selected_id_championnat = 6  # 19 NAT
 
-    if st.button("🎯 U17 National"):
+    if st.button("🎯 17 NAT"):
         st.session_state.page = "championnat"
-        st.session_state.selected_championnat = "U17 National"
-        
+        st.session_state.selected_id_championnat = 7  # 17 NAT
+
     st.markdown("**Jeunes Régionaux**")
     if st.button("🧢 18 R1 HDF"):
         st.session_state.page = "championnat"
-        st.session_state.selected_championnat = "18 R1 HDF"
+        st.session_state.selected_id_championnat = 27  # 18 R1 HDF
 
     if st.button("🧢 18 R1 IDF"):
         st.session_state.page = "championnat"
-        st.session_state.selected_championnat = "18 R1 IDF"
+        st.session_state.selected_id_championnat = 32  # 18 R1 IDF
 
     if st.button("🧢 17 R1 HDF"):
         st.session_state.page = "championnat"
-        st.session_state.selected_championnat = "17 R1 HDF"
+        st.session_state.selected_id_championnat = 35  # 17 R1 HDF
+
 
 def afficher_simulateur():
     import simulateur_core
