@@ -173,6 +173,7 @@ def afficher_championnat():
         if st.button("⬅️ Retour à l'accueil"):
             st.session_state.page = "home"
 
+
 # --- Bloc navigation principale ---
 if st.session_state.page == "home":
     afficher_accueil()
