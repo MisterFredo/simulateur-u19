@@ -36,51 +36,51 @@ if st.session_state.page == "home":
     st.title("Bienvenue sur Datafoot 👋")
     st.subheader("Accès rapides aux championnats 📈")
 
-    col1, col2 = st.columns(2)
+    # --- Raccourcis championnats depuis la page d'accueil ---
+col1, col2 = st.columns(2)
 
-    with col1:
-        if st.button("🏆 National"):
-            st.session_state.selected_id_championnat = 3
-            st.session_state.selected_date_limite = date.today()
-            st.session_state.page = "championnat"
-            st.experimental_rerun()
+with col1:
+    if st.button("🏆 National"):
+        st.session_state.selected_id_championnat = 3
+        st.session_state.selected_date_limite = date.today().isoformat()
+        st.session_state.page = "championnat"
 
-        if st.button("🏆 National 2"):
-            st.session_state.selected_id_championnat = 4
-            st.session_state.selected_date_limite = date.today()
-            st.session_state.page = "championnat"
-            st.experimental_rerun()
+    if st.button("🏆 National 2"):
+        st.session_state.selected_id_championnat = 4
+        st.session_state.selected_date_limite = date.today().isoformat()
+        st.session_state.page = "championnat"
 
-        if st.button("🏆 National 3"):
-            st.session_state.selected_id_championnat = 5
-            st.session_state.selected_date_limite = date.today()
-            st.session_state.page = "championnat"
-            st.experimental_rerun()
+    if st.button("🏆 National 3"):
+        st.session_state.selected_id_championnat = 5
+        st.session_state.selected_date_limite = date.today().isoformat()
+        st.session_state.page = "championnat"
 
-    with col2:
-        if st.button("🎯 U19 National"):
-            st.session_state.selected_id_championnat = 6
-            st.session_state.selected_date_limite = date.today()
-            st.session_state.page = "championnat"
-            st.experimental_rerun()
+with col2:
+    if st.button("🎯 U19 National"):
+        st.session_state.selected_id_championnat = 6
+        st.session_state.selected_date_limite = date.today().isoformat()
+        st.session_state.page = "championnat"
 
-        if st.button("🎯 U17 National"):
-            st.session_state.selected_id_championnat = 7
-            st.session_state.selected_date_limite = date.today()
-            st.session_state.page = "championnat"
-            st.experimental_rerun()
+    if st.button("🎯 U17 National"):
+        st.session_state.selected_id_championnat = 7
+        st.session_state.selected_date_limite = date.today().isoformat()
+        st.session_state.page = "championnat"
 
-        if st.button("🧢 U17 R1 HDF"):
-            st.session_state.selected_id_championnat = 35
-            st.session_state.selected_date_limite = date.today()
-            st.session_state.page = "championnat"
-            st.experimental_rerun()
+    if st.button("🧢 18 R1 HDF"):
+        st.session_state.selected_id_championnat = 27
+        st.session_state.selected_date_limite = date.today().isoformat()
+        st.session_state.page = "championnat"
 
-        if st.button("🧢 U18 R1 IDF"):
-            st.session_state.selected_id_championnat = 32
-            st.session_state.selected_date_limite = date.today()
-            st.session_state.page = "championnat"
-            st.experimental_rerun()
+    if st.button("🧢 18 R1 IDF"):
+        st.session_state.selected_id_championnat = 32
+        st.session_state.selected_date_limite = date.today().isoformat()
+        st.session_state.page = "championnat"
+
+    if st.button("🧢 17 R1 HDF"):
+        st.session_state.selected_id_championnat = 35
+        st.session_state.selected_date_limite = date.today().isoformat()
+        st.session_state.page = "championnat"
+
 
 # --- AFFICHAGE CLASSEMENT ---
 elif st.session_state.page == "championnat" and "selected_id_championnat" in st.session_state:
