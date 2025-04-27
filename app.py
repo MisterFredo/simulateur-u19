@@ -63,14 +63,24 @@ def afficher_simulateur():
 
     st.title("Classements Officiels ⚽")
 
-    # --- Chargement des championnats disponibles ---
-    championnats = simulateur_core.load_championnats()
+    # --- Dictionnaire de tes championnats officiels ---
+    championnats_dict = {
+        "🏆 National": 3,
+        "🏆 National 2": 4,
+        "🏆 National 3": 5,
+        "🎯 19 NAT": 6,
+        "🎯 17 NAT": 7,
+        "🧢 18 R1 HDF": 27,
+        "🧢 18 R1 IDF": 32,
+        "🧢 17 R1 HDF": 35,
+    }
 
     # --- Sélection du championnat ---
-    selected_championnat = st.selectbox("Sélectionnez un championnat :", championnats['NOM_CHAMPIONNAT'])
+    selected_nom = st.selectbox("Sélectionnez un championnat :", list(championnats_dict.keys()))
 
-    if selected_championnat:
-        simulateur.afficher_classement(selected_championnat)
+    if selected_nom:
+        selected_id = championnats_dict[selected_nom]
+        simulateur.afficher_classement(selected_id)
 
 def afficher_classements_speciaux():
     # >>> Ici tu vas appeler la logique de simulateur_whatif.py <<<
