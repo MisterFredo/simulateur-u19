@@ -114,13 +114,17 @@ def afficher_championnat():
 
         import simulateur_core as core
 
+        # --- Chargement des matchs terminés ---
+        matchs = core.get_matchs_termine(id_championnat, date_limite)
+
+        # --- Calcul du classement dynamique ---
         classement = core.get_classement_dynamique(id_championnat, date_limite)
 
         if classement is None or classement.empty:
             st.warning("Aucun match trouvé pour ce championnat.")
         else:
             classement = core.appliquer_penalites(classement, date_limite)
-            classement = core.appliquer_diff_particuliere(classement)
+            classement, _ = core.appliquer_diff_particuliere(classement, matchs)  # <<<<<< ICI
             classement = core.trier_et_numeroter(classement)
 
             st.markdown("### Classement actuel 📊")
@@ -135,6 +139,7 @@ def afficher_championnat():
         st.error("Aucun championnat sélectionné. Retour à l'accueil.")
         if st.button("⬅️ Retour à l'accueil"):
             st.session_state.page = "home"
+
 
 # --- Bloc navigation principale ---
 if st.session_state.page == "home":
