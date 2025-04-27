@@ -144,6 +144,10 @@ else:
 # === Fonction d'entrée pour app.py ===
 
 def afficher_classement(id_championnat):
+    import streamlit as st
+    from datetime import date
+    date_limite = date.today().isoformat()
+
     from simulateur_core import (
         load_championnats,
         get_matchs_termine,
@@ -151,17 +155,29 @@ def afficher_classement(id_championnat):
         appliquer_penalites,
         appliquer_diff_particuliere,
         trier_et_numeroter,
+        get_type_classement,
     )
-    import streamlit as st
+
+    # --- Chargement du nom du championnat ---
+    championnats = load_championnats()
+    selected_row = championnats[championnats['ID_CHAMPIONNAT'] == id_championnat]
+
+    if not selected_row.empty:
+        nom_championnat = selected_row['NOM_CHAMPIONNAT'].values[0]
+    else:
+        nom_championnat = f"ID {id_championnat}"
+
+    st.title(f"🏆 {nom_championnat}")
 
     # --- Chargement des matchs terminés ---
-    matchs = get_matchs_termine(id_championnat)
+    matchs = get_matchs_termine(id_championnat, date_limite)
 
     # --- Calcul du classement dynamique ---
-    classement = get_classement_dynamique(matchs)
-    classement = appliquer_penalites(classement)
-    classement = appliquer_diff_particuliere(classement)
-    classement = trier_et_numeroter(classement)
+    classement = get_classement_dynamique(id_championnat, date_limite)
+    classement = appliquer_penalites(classement, date_limite)
+    classement, _ = appliquer_diff_particuliere(classement, matchs)
+    type_classement = get_type_classement(id_championnat)
+    classement = trier_et_numeroter(classement, type_classement)
 
     # --- Affichage ---
     st.dataframe(classement, use_container_width=True)
