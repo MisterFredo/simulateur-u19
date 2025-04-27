@@ -13,39 +13,49 @@ def afficher_accueil():
     
     st.markdown("### Que souhaitez-vous faire ?")
 
-col1, col2 = st.columns(2)
+    col1, col2 = st.columns(2)
 
-with col1:
-    if st.button("📊 Voir Classement Officiel"):
-        st.session_state.page = "classement"
+    with col1:
+        if st.button("📊 Voir Classement Officiel"):
+            st.session_state.page = "classement"
 
-with col2:
-    if st.button("🔮 Lancer une Simulation"):
-        st.session_state.page = "simulation"
-
+    with col2:
+        if st.button("🔮 Lancer une Simulation"):
+            st.session_state.page = "simulation"
 
     st.markdown("---")
     st.subheader("⚡ Accès rapides aux championnats")
 
     st.markdown("**Séniors**")
     if st.button("🏆 National"):
-        st.session_state.page = "championnat_national"
+        st.session_state.page = "championnat"
+        st.session_state.selected_championnat = "National"
+
     if st.button("🏆 National 2 (3 Poules)"):
-        st.session_state.page = "championnat_n2"
+        st.session_state.page = "championnat"
+        st.session_state.selected_championnat = "National 2"
+
     if st.button("🏆 National 3 (10 Poules)"):
-        st.session_state.page = "championnat_n3"
+        st.session_state.page = "championnat"
+        st.session_state.selected_championnat = "National 3"
 
     st.markdown("**Jeunes Nationaux**")
     if st.button("🎯 U19 National"):
-        st.session_state.page = "championnat_u19"
+        st.session_state.page = "championnat"
+        st.session_state.selected_championnat = "U19 National"
+
     if st.button("🎯 U17 National"):
-        st.session_state.page = "championnat_u17"
+        st.session_state.page = "championnat"
+        st.session_state.selected_championnat = "U17 National"
 
     st.markdown("**Jeunes Régionaux**")
     if st.button("🧢 U17 R1"):
-        st.session_state.page = "championnat_u17r1"
+        st.session_state.page = "championnat"
+        st.session_state.selected_championnat = "U17 R1"
+
     if st.button("🧢 U18 R1"):
-        st.session_state.page = "championnat_u18r1"
+        st.session_state.page = "championnat"
+        st.session_state.selected_championnat = "U18 R1"
 
 def afficher_simulateur():
     # >>> Ici tu vas appeler la logique de simulateur.py <<<
@@ -57,13 +67,43 @@ def afficher_classements_speciaux():
     import pages.simulateur_whatif as simulateur_whatif
     simulateur_whatif.afficher_simulateur_whatif()  # Ou la fonction principale que tu veux utiliser
 
-def afficher_championnat(championnat):
-    st.title(f"🏆 Championnat : {championnat}")
-    st.info(f"Chargement du championnat {championnat}...")
-    # Tu pourras brancher ici ta logique spécifique par championnat
-    # (Simuler directement, afficher classement, etc.)
+def afficher_championnat():
+    if "selected_championnat" in st.session_state:
+        championnat = st.session_state.selected_championnat
+        st.title(f"🏆 Championnat : {championnat}")
+        st.info(f"Chargement des données pour {championnat}...")
 
-# --- Navigation en fonction de la page active ---
+        # --- Charger et afficher un premier classement réel ---
+        import simulateur_core as core
+        championnats = core.load_championnats()
+        selected_row = championnats[championnats['NOM_CHAMPIONNAT'] == championnat]
+
+        if not selected_row.empty:
+            id_championnat = selected_row['ID_CHAMPIONNAT'].values[0]
+
+            matchs = core.get_matchs_termine(id_championnat)
+            classement = core.get_classement_dynamique(matchs)
+            classement = core.appliquer_penalites(classement)
+            classement = core.appliquer_diff_particuliere(classement)
+            classement = core.trier_et_numeroter(classement)
+
+            st.markdown("### Classement actuel 📊")
+            st.dataframe(classement, use_container_width=True)
+        else:
+            st.warning("Championnat introuvable.")
+
+        # --- Retour à l'accueil ---
+        st.markdown("---")
+        if st.button("⬅️ Retour à l'accueil"):
+            st.session_state.page = "home"
+
+    else:
+        st.error("Aucun championnat sélectionné. Retour à l'accueil.")
+        if st.button("⬅️ Retour à l'accueil"):
+            st.session_state.page = "home"
+
+
+# --- Bloc navigation principale ---
 if st.session_state.page == "home":
     afficher_accueil()
 
@@ -73,23 +113,6 @@ elif st.session_state.page == "classement":
 elif st.session_state.page == "simulation":
     afficher_classements_speciaux()
 
-elif st.session_state.page == "championnat_national":
-    afficher_championnat("National")
+elif st.session_state.page == "championnat":
+    afficher_championnat()
 
-elif st.session_state.page == "championnat_n2":
-    afficher_championnat("National 2")
-
-elif st.session_state.page == "championnat_n3":
-    afficher_championnat("National 3")
-
-elif st.session_state.page == "championnat_u19":
-    afficher_championnat("U19 National")
-
-elif st.session_state.page == "championnat_u17":
-    afficher_championnat("U17 National")
-
-elif st.session_state.page == "championnat_u17r1":
-    afficher_championnat("U17 R1")
-
-elif st.session_state.page == "championnat_u18r1":
-    afficher_championnat("U18 R1")
