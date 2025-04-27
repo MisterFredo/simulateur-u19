@@ -149,13 +149,26 @@ def afficher_championnat():
             if selected_poule != "Toutes les poules":
                 classement = classement[classement["POULE"] == selected_poule]
 
-            # --- Réorganisation des colonnes pour l'affichage ---
-            colonnes_souhaitées = [
-                "CLASSEMENT", "POULE", "NOM_EQUIPE",
-                "MJ", "G", "N", "P",
-                "BP", "BC", "DIFF", "POINTS", "PENALITES"
-            ]
+            # --- Sécurisation : Forcer les bons noms de colonnes ---
+            colonnes_map = {
+                "CLASSEMENT": "CLASSEMENT",
+                "POULE": "POULE",
+                "NOM_EQUIPE": "NOM_EQUIPE",
+                "MJ": "MJ",
+                "G": "G",
+                "N": "N",
+                "P": "P",
+                "BP": "BP",
+                "BC": "BC",
+                "DIFF": "DIFF",
+                "POINTS": "POINTS",
+                "PENALITES": "PENALITES"  # Peut être absent
+            }
 
+            classement = classement.rename(columns=colonnes_map)
+
+            # --- Réorganisation stricte des colonnes ---
+            colonnes_souhaitées = list(colonnes_map.values())
             colonnes_finales = [col for col in colonnes_souhaitées if col in classement.columns]
             classement = classement[colonnes_finales]
 
