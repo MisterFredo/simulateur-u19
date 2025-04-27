@@ -3,7 +3,6 @@ import pandas as pd
 from google.cloud import bigquery
 from google.oauth2 import service_account
 
-# Fonctions locales importées depuis simulateur_core.py
 from simulateur_core import (
     recalculer_classement_simule,
     appliquer_penalites,
@@ -16,6 +15,7 @@ from simulateur_core import (
     classement_special_u17,
     classement_special_n2,
     classement_special_n3,
+    get_matchs_modifiables,
 )
 
 # Configuration Streamlit
@@ -159,3 +159,36 @@ if classement_df is not None and selected_poule == "Toutes les poules":
 else:
     if champ_id in [4, 5, 6, 7]:
         st.info("🔒 Les règles spécifiques (U19, U17, N2, N3) ne sont disponibles que si toutes les poules sont affichées.")
+
+# --------------------------------------------------------
+# Fonction utilisée pour l'application Datafoot (app.py)
+# --------------------------------------------------------
+
+def afficher_simulateur_whatif():
+    st.title("Simulation de Classement 🔮")
+
+    # --- Chargement des championnats disponibles ---
+    championnats = load_championnats()
+
+    # --- Sélection du championnat ---
+    selected_championnat = st.selectbox("Sélectionnez un championnat à simuler :", championnats['NOM_CHAMPIONNAT'])
+
+    if selected_championnat:
+        id_championnat = championnats.loc[championnats['NOM_CHAMPIONNAT'] == selected_championnat, 'ID_CHAMPIONNAT'].values[0]
+
+        # --- Chargement des matchs modifiables ---
+        matchs = get_matchs_modifiables(id_championnat)
+
+        st.markdown("### Modifiez les scores si nécessaire :")
+
+        if not matchs.empty:
+            # Ici tu peux afficher les matchs et autoriser la modification des scores
+            st.dataframe(matchs, use_container_width=True)
+            # >>> Ajoute ici plus tard tes sliders ou input pour simulation si tu veux
+
+        else:
+            st.warning("Aucun match disponible pour simulation dans ce championnat.")
+
+        # --- Recalcul du classement simulé (quand ce sera intégré) ---
+        # recalculer_classement_simule(matchs)  --> pas encore mis ici volontairement pour simplifier
+
