@@ -149,6 +149,18 @@ def afficher_championnat():
             if selected_poule != "Toutes les poules":
                 classement = classement[classement["POULE"] == selected_poule]
 
+            # --- Réorganisation des colonnes pour l'affichage ---
+            colonnes_affichage = [
+                "CLASSEMENT", "POULE", "NOM_EQUIPE", 
+                "MJ", "G", "N", "P", 
+                "BP", "BC", "DIFF", "POINTS"
+            ]
+
+            if "PENALITES" in classement.columns:
+                colonnes_affichage.append("PENALITES")
+
+            classement = classement[colonnes_affichage]
+
             # --- Affichage du classement filtré ---
             st.markdown("### Classement actuel 📊")
             st.dataframe(classement, use_container_width=True)
