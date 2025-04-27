@@ -143,27 +143,19 @@ else:
 
 # === Fonction d'entrée pour app.py ===
 
-def afficher_classement():
-    st.title("Classements Officiels ⚽")
-
-    # --- Chargement des championnats disponibles ---
+def afficher_classement(selected_championnat):
+    # --- Chargement des championnats pour retrouver l'ID ---
     championnats = load_championnats()
+    id_championnat = championnats.loc[championnats['NOM_CHAMPIONNAT'] == selected_championnat, 'ID_CHAMPIONNAT'].values[0]
 
-    # --- Sélection du championnat ---
-    selected_championnat = st.selectbox("Sélectionnez un championnat :", championnats['NOM_CHAMPIONNAT'])
+    # --- Chargement des matchs terminés ---
+    matchs = get_matchs_termine(id_championnat)
 
-    if selected_championnat:
-        id_championnat = championnats.loc[championnats['NOM_CHAMPIONNAT'] == selected_championnat, 'ID_CHAMPIONNAT'].values[0]
+    # --- Calcul du classement dynamique ---
+    classement = get_classement_dynamique(matchs)
+    classement = appliquer_penalites(classement)
+    classement = appliquer_diff_particuliere(classement)
+    classement = trier_et_numeroter(classement)
 
-        # --- Récupération des matchs terminés ---
-        matchs = get_matchs_termine(id_championnat)
-
-        # --- Calcul du classement dynamique ---
-        classement = get_classement_dynamique(matchs)
-        classement = appliquer_penalites(classement)
-        classement = appliquer_diff_particuliere(classement)
-        classement = trier_et_numeroter(classement)
-
-        # --- Affichage du classement ---
-        st.dataframe(classement, use_container_width=True)
-
+    # --- Affichage ---
+    st.dataframe(classement, use_container_width=True)
