@@ -28,7 +28,6 @@ if st.button("🔎 Afficher ce championnat"):
             st.session_state.selected_id_championnat = id_championnat_sidebar
             st.session_state.selected_date_limite = selected_date_sidebar
             st.session_state.page = "championnat"
-            st.experimental_rerun()
 
 
 # --- PAGE PRINCIPALE ---
@@ -186,7 +185,6 @@ def afficher_championnat():
         st.error("Aucun championnat sélectionné. Retour à l'accueil.")
         if st.button("⬅️ Retour à l'accueil"):
             st.session_state.page = "home"
-            st.experimental_rerun()
 
 # --- Navigation principale ---
 if st.session_state.page == "home":
