@@ -166,5 +166,17 @@ def afficher_classement():
         classement = trier_et_numeroter(classement)
 
         st.dataframe(classement, use_container_width=True)
+        def afficher_classement():
+    st.title("Classements Officiels ⚽")
+    ...
+
+    # --- Affichage du classement ---
+    st.dataframe(classement, use_container_width=True)
+
+    # --- Retour à l'accueil ---
+    st.markdown("---")
+    if st.button("⬅️ Retour à l'accueil"):
+        st.session_state.page = "home"
+
 
 
