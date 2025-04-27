@@ -161,30 +161,34 @@ def afficher_championnat():
             # --- Réorganisation stricte des colonnes pour affichage style Simulateur ---
             colonnes_souhaitées = [
                 "CLASSEMENT", "NOM_EQUIPE", "POINTS",
-                "PENALITES",  # S'il existe
+                "PENALITES",  # Peut être absente
                 "G", "N", "P",
                 "BP", "BC", "DIFF"
             ]
-
             colonnes_finales = [col for col in colonnes_souhaitées if col in classement.columns]
             classement = classement[colonnes_finales]
 
-            # --- Affichage du classement filtré ---
+            # --- Affichage par poule ---
             st.markdown("### Classement actuel 📊")
-            st.dataframe(classement, use_container_width=True)
+
+            poules = classement['POULE'].unique()
+
+            for poule in poules:
+                st.markdown(f"#### 🏅 Poule {poule}")
+                classement_poule = classement[classement['POULE'] == poule]
+                st.dataframe(classement_poule, use_container_width=True)
 
         # --- Retour à l'accueil ---
         st.markdown("---")
         if st.button("⬅️ Retour à l'accueil"):
             st.session_state.page = "home"
+            st.rerun()
 
     else:
         st.error("Aucun championnat sélectionné. Retour à l'accueil.")
         if st.button("⬅️ Retour à l'accueil"):
             st.session_state.page = "home"
-            st.experimental_rerun()
-
-
+            st.rerun()
 
 # --- Bloc navigation principale ---
 if st.session_state.page == "home":
