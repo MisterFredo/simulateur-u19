@@ -144,3 +144,27 @@ else:
     if champ_id in [4, 5, 6, 7]:
         st.info("🔒 Les règles spécifiques (U19, U17, N2, N3) ne sont disponibles que si toutes les poules sont affichées.")
 
+# === Fonction d'entrée pour app.py ===
+def afficher_classement():
+    st.title("Classements Officiels ⚽")
+
+    championnats = load_championnats()
+
+    selected_championnat = st.selectbox("Sélectionnez un championnat :", championnats['NOM_CHAMPIONNAT'])
+
+    if selected_championnat:
+        id_championnat = championnats.loc[championnats['NOM_CHAMPIONNAT'] == selected_championnat, 'ID_CHAMPIONNAT'].values[0]
+
+        matchs = get_matchs_termine(id_championnat)
+
+        classement = get_classement_dynamique(matchs)
+
+        classement = appliquer_penalites(classement)
+
+        classement = appliquer_diff_particuliere(classement)
+
+        classement = trier_et_numeroter(classement)
+
+        st.dataframe(classement, use_container_width=True)
+
+
