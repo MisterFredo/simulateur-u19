@@ -58,9 +58,19 @@ def afficher_accueil():
         st.session_state.selected_championnat = "U18 R1"
 
 def afficher_simulateur():
-    # >>> Ici tu vas appeler la logique de simulateur.py <<<
     import simulateur
-    simulateur.afficher_classement()  # Ou la fonction principale que tu veux utiliser
+    import simulateur_core
+
+    st.title("Classements Officiels ⚽")
+
+    # --- Chargement des championnats disponibles ---
+    championnats = simulateur_core.load_championnats()
+
+    # --- Sélection du championnat ---
+    selected_championnat = st.selectbox("Sélectionnez un championnat :", championnats['NOM_CHAMPIONNAT'])
+
+    if selected_championnat:
+        simulateur.afficher_classement(selected_championnat)
 
 def afficher_classements_speciaux():
     # >>> Ici tu vas appeler la logique de simulateur_whatif.py <<<
