@@ -109,10 +109,19 @@ def afficher_championnat():
         from datetime import date
         date_limite = date.today().isoformat()
 
-        st.title(f"🏆 Championnat ID {id_championnat}")
-        st.info(f"Chargement du classement pour championnat ID {id_championnat} (à la date {date_limite})...")
+        import simulateur_core as core  # <<< ici UNE SEULE FOIS
 
-        import simulateur_core as core
+        # --- Charger les championnats pour récupérer le NOM ---
+        championnats = core.load_championnats()
+        selected_row = championnats[championnats['ID_CHAMPIONNAT'] == id_championnat]
+
+        if not selected_row.empty:
+            nom_championnat = selected_row['NOM_CHAMPIONNAT'].values[0]
+        else:
+            nom_championnat = f"ID {id_championnat}"
+
+        st.title(f"🏆 {nom_championnat}")
+        st.info(f"Chargement du classement pour {nom_championnat} (à la date {date_limite})...")
 
         # --- Chargement des matchs terminés ---
         matchs = core.get_matchs_termine(id_championnat, date_limite)
@@ -140,6 +149,7 @@ def afficher_championnat():
         st.error("Aucun championnat sélectionné. Retour à l'accueil.")
         if st.button("⬅️ Retour à l'accueil"):
             st.session_state.page = "home"
+
 
 
 # --- Bloc navigation principale ---
