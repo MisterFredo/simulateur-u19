@@ -149,26 +149,14 @@ def afficher_championnat():
             if selected_poule != "Toutes les poules":
                 classement = classement[classement["POULE"] == selected_poule]
 
-            # --- Sécurisation : Forcer les bons noms de colonnes ---
-            colonnes_map = {
-                "CLASSEMENT": "CLASSEMENT",
-                "POULE": "POULE",
-                "NOM_EQUIPE": "NOM_EQUIPE",
-                "MJ": "MJ",
-                "G": "G",
-                "N": "N",
-                "P": "P",
-                "BP": "BP",
-                "BC": "BC",
-                "DIFF": "DIFF",
-                "POINTS": "POINTS",
-                "PENALITES": "PENALITES"  # Peut être absent
-            }
+            # --- Réorganisation stricte des colonnes pour affichage style Simulateur ---
+            colonnes_souhaitées = [
+                "CLASSEMENT", "NOM_EQUIPE", "POINTS",
+                "PENALITES",  # S'il existe
+                "G", "N", "P",
+                "BP", "BC", "DIFF"
+            ]
 
-            classement = classement.rename(columns=colonnes_map)
-
-            # --- Réorganisation stricte des colonnes ---
-            colonnes_souhaitées = list(colonnes_map.values())
             colonnes_finales = [col for col in colonnes_souhaitées if col in classement.columns]
             classement = classement[colonnes_finales]
 
@@ -185,6 +173,7 @@ def afficher_championnat():
         st.error("Aucun championnat sélectionné. Retour à l'accueil.")
         if st.button("⬅️ Retour à l'accueil"):
             st.session_state.page = "home"
+
 
 
 # --- Bloc navigation principale ---
