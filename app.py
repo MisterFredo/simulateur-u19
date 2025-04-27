@@ -188,17 +188,17 @@ def afficher_championnat():
             st.session_state.page = "home"
             st.experimental_rerun()
 
+# --- Navigation principale ---
+page = st.session_state.page
 
-# --- Bloc navigation principale ---
-if st.session_state.page == "home":
-    afficher_accueil()
+if page == "home":
+    st.write("")  # Plus d'accueil (on reste vide, c'est la sidebar qui contrôle)
 
-elif st.session_state.page == "classement":
+elif page == "classement":
     afficher_simulateur()
 
-elif st.session_state.page == "simulation":
+elif page == "simulation":
     afficher_classements_speciaux()
 
-elif st.session_state.page == "championnat":
+elif page == "championnat":
     afficher_championnat()
-
