@@ -188,7 +188,7 @@ def afficher_championnat():
 
 # --- Navigation principale ---
 if st.session_state.page == "home":
-    st.write("")  # Accueil neutre, tout passe par les boutons
+    afficher_accueil()
 
 elif st.session_state.page == "classement":
     afficher_simulateur()
@@ -201,4 +201,5 @@ elif st.session_state.page == "championnat":
         afficher_championnat()
     else:
         st.error("Aucun championnat sélectionné.")
+
 
