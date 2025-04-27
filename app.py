@@ -47,15 +47,19 @@ def afficher_accueil():
     if st.button("🎯 U17 National"):
         st.session_state.page = "championnat"
         st.session_state.selected_championnat = "U17 National"
-
+        
     st.markdown("**Jeunes Régionaux**")
-    if st.button("🧢 U17 R1"):
+    if st.button("🧢 18 R1 HDF"):
         st.session_state.page = "championnat"
-        st.session_state.selected_championnat = "U17 R1"
+        st.session_state.selected_championnat = "18 R1 HDF"
 
-    if st.button("🧢 U18 R1"):
+    if st.button("🧢 18 R1 IDF"):
         st.session_state.page = "championnat"
-        st.session_state.selected_championnat = "U18 R1"
+        st.session_state.selected_championnat = "18 R1 IDF"
+
+    if st.button("🧢 17 R1 HDF"):
+        st.session_state.page = "championnat"
+        st.session_state.selected_championnat = "17 R1 HDF"
 
 def afficher_simulateur():
     import simulateur_core
