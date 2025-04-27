@@ -109,7 +109,7 @@ def afficher_championnat():
         from datetime import date
         date_limite = date.today().isoformat()
 
-        import simulateur_core as core  # <<< ici UNE SEULE FOIS
+        import simulateur_core as core  # <<< Import une seule fois
 
         # --- Charger les championnats pour récupérer le NOM ---
         championnats = core.load_championnats()
@@ -137,6 +137,19 @@ def afficher_championnat():
             type_classement = core.get_type_classement(id_championnat)
             classement = core.trier_et_numeroter(classement, type_classement)
 
+            # --- Sélection de la poule ---
+            poules_dispo = classement['POULE'].unique()
+
+            if len(poules_dispo) > 1:
+                selected_poule = st.selectbox("Sélectionnez une poule :", ["Toutes les poules"] + list(poules_dispo))
+            else:
+                selected_poule = poules_dispo[0]  # S'il n'y a qu'une seule poule
+
+            # --- Filtrer sur la poule sélectionnée ---
+            if selected_poule != "Toutes les poules":
+                classement = classement[classement["POULE"] == selected_poule]
+
+            # --- Affichage du classement filtré ---
             st.markdown("### Classement actuel 📊")
             st.dataframe(classement, use_container_width=True)
 
@@ -149,8 +162,6 @@ def afficher_championnat():
         st.error("Aucun championnat sélectionné. Retour à l'accueil.")
         if st.button("⬅️ Retour à l'accueil"):
             st.session_state.page = "home"
-
-
 
 # --- Bloc navigation principale ---
 if st.session_state.page == "home":
