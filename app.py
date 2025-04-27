@@ -189,16 +189,17 @@ def afficher_championnat():
             st.experimental_rerun()
 
 # --- Navigation principale ---
-page = st.session_state.page
+if st.session_state.page == "home":
+    st.write("")  # Accueil neutre, tout passe par les boutons
 
-if page == "home":
-    st.write("")  # Plus d'accueil (on reste vide, c'est la sidebar qui contrôle)
-
-elif page == "classement":
+elif st.session_state.page == "classement":
     afficher_simulateur()
 
-elif page == "simulation":
+elif st.session_state.page == "simulation":
     afficher_classements_speciaux()
 
-elif page == "championnat":
-    afficher_championnat()
+elif st.session_state.page == "championnat":
+    if "selected_id_championnat" in st.session_state:
+        afficher_championnat()
+    else:
+        st.error("Aucun championnat sélectionné.")
