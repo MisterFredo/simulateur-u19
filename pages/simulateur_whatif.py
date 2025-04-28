@@ -108,8 +108,8 @@ if st.button("🔁 Recalculer le classement avec ces scores simulés"):
                 matchs_simules.loc[matchs_simules["ID_MATCH"] == id_match, "NB_BUT_DOM"] = row["NB_BUT_DOM"]
                 matchs_simules.loc[matchs_simules["ID_MATCH"] == id_match, "NB_BUT_EXT"] = row["NB_BUT_EXT"]
 
-        # --- Calcul du classement
-        classement_df = get_classement_dynamique(champ_id, date_limite, matchs_simules)
+        # --- Calcul du classement sur les matchs modifiés
+        classement_df = get_classement_dynamique(champ_id, date_limite, matchs_override=matchs_simules)
         classement_df = appliquer_penalites(classement_df, date_limite)
         classement_df, mini_classements = appliquer_diff_particuliere(classement_df, matchs_simules)
         classement_df = trier_et_numeroter(classement_df, type_classement)
@@ -157,4 +157,3 @@ if classement_df is not None and selected_poule == "Toutes les poules":
         df_10e = classement_special_n3(classement_df, champ_id, date_limite)
         if df_10e is not None:
             st.dataframe(df_10e, use_container_width=True)
-
