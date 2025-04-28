@@ -9,6 +9,9 @@ st.set_page_config(page_title="Datafoot", page_icon="⚽", layout="wide")
 if "page" not in st.session_state:
     st.session_state.page = "home"
 
+# Afficher le statut de la page dans la session_state
+st.write(f"Page actuelle : {st.session_state.page}")
+
 # --- SIDEBAR : Identification ---
 with st.sidebar:
     st.header("📚 Identification")
@@ -18,7 +21,7 @@ with st.sidebar:
         if user_name and user_email:
             st.session_state.user_name = user_name
             st.session_state.user_email = user_email
-            st.session_state.page = "home"
+            st.session_state.page = "home"  # Revenir à "home" après connexion
         else:
             st.warning("Veuillez entrer votre nom et email.")
 
@@ -66,4 +69,3 @@ elif st.session_state.page == "simulation":
 
 elif st.session_state.page == "classement":
     afficher_simulateur()
-
