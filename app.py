@@ -3,7 +3,7 @@ from datetime import date
 import simulateur_core as core
 
 # --- Configuration de la page principale ---
-st.set_page_config(page_title="Datafoot", page_icon="⚽", layout="wide", initial_sidebar_state="collapsed")
+st.set_page_config(page_title="Datafoot", page_icon="⚽", layout="wide")
 
 # --- Désactivation de la barre de navigation globale Streamlit (menu en haut) ---
 st.markdown(
@@ -15,30 +15,27 @@ st.markdown(
     </style>
     """, unsafe_allow_html=True)
 
-
 # --- Initialiser la page courante ---
 if "page" not in st.session_state:
     st.session_state.page = "home"
 
-# --- SIDEBAR : Navigation interne ---
+# --- SIDEBAR : Identification ---
 with st.sidebar:
-    st.header("📚 Navigation")
-    selection = st.radio("Sélectionner une fonctionnalité", ["Accueil", "Simulateur", "Classements"])
+    st.header("📚 Identification")
+    user_name = st.text_input("Nom de l'utilisateur")
+    user_email = st.text_input("Email")
+    if st.button("Se connecter"):
+        if user_name and user_email:
+            st.session_state.user_name = user_name
+            st.session_state.user_email = user_email
+            st.session_state.page = "home"  # Revenir à "home" après connexion
+        else:
+            st.warning("Veuillez entrer votre nom et email.")
 
-# --- Afficher la page sélectionnée ---
-if selection == "Accueil":
-    st.title("Bienvenue sur Datafoot 👋")
-    # ... Afficher le contenu de la page d'accueil ici ...
-
-elif selection == "Simulateur":
-    # Naviguer vers la page Simulateur
-    import pages.simulateur_whatif as simulateur_whatif
-    simulateur_whatif.afficher_simulateur_whatif()
-
-elif selection == "Classements":
-    # Naviguer vers la page Classements (ex: afficher les classements actuels)
-    afficher_classements_speciaux()
-
+    # --- Menu de navigation : METTRE À JOUR ICI ---
+    st.header("📂 Menu")
+    # Suppression de "app" et "Simulateur Whatif", et ajout de "SIMULATEUR"
+    st.selectbox("Naviguer", ["SIMULATEUR"])  # "SIMULATEUR" comme seule option dans le menu
     
 # --- PAGE D'ACCUEIL ---
 if st.session_state.page == "home":
@@ -78,4 +75,5 @@ if st.session_state.page == "home":
 # --- Navigation principale ---
 elif st.session_state.page == "simulation":
     afficher_classements_speciaux()
+
 
