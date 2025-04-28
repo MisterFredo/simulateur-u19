@@ -164,52 +164,59 @@ else:
 # Fonction utilisée pour l'application Datafoot (app.py)
 # --------------------------------------------------------
 
-def afficher_simulateur_whatif():
-    st.title("Simulation de Classement 🔮")
+def recalculer_classement_simule(matchs_modifies, id_championnat):
+    # --- Recalcul du classement simulé à partir des matchs modifiés ---
+    if matchs_modifies.empty:
+        st.warning("Aucun match pour recalculer le classement.")
+        return None, None
 
-    championnats = load_championnats()
-    selected_championnat = st.selectbox("Sélectionnez un championnat à simuler :", championnats['NOM_CHAMPIONNAT'])
+    # --- Recréer le classement dynamique simulé ---
+    # Recalcule directement sur les matchs simulés
+    match_equipes = pd.concat([
+        matchs_modifies.assign(
+            ID_EQUIPE=matchs_modifies["ID_EQUIPE_DOM"],
+            NOM_EQUIPE=matchs_modifies["EQUIPE_DOM"],
+            BUTS_POUR=matchs_modifies["NB_BUT_DOM"],
+            BUTS_CONTRE=matchs_modifies["NB_BUT_EXT"],
+            POINTS=matchs_modifies.apply(
+                lambda row: 3 if row["NB_BUT_DOM"] > row["NB_BUT_EXT"]
+                else (1 if row["NB_BUT_DOM"] == row["NB_BUT_EXT"] else 0),
+                axis=1,
+            )
+        ),
+        matchs_modifies.assign(
+            ID_EQUIPE=matchs_modifies["ID_EQUIPE_EXT"],
+            NOM_EQUIPE=matchs_modifies["EQUIPE_EXT"],
+            BUTS_POUR=matchs_modifies["NB_BUT_EXT"],
+            BUTS_CONTRE=matchs_modifies["NB_BUT_DOM"],
+            POINTS=matchs_modifies.apply(
+                lambda row: 3 if row["NB_BUT_EXT"] > row["NB_BUT_DOM"]
+                else (1 if row["NB_BUT_EXT"] == row["NB_BUT_DOM"] else 0),
+                axis=1,
+            )
+        )
+    ])
 
-    if selected_championnat:
-        id_championnat = championnats.loc[championnats['NOM_CHAMPIONNAT'] == selected_championnat, 'ID_CHAMPIONNAT'].values[0]
+    classement = match_equipes.groupby(["POULE", "ID_EQUIPE", "NOM_EQUIPE"]).agg(
+        MJ=('ID_EQUIPE', 'count'),
+        G=('POINTS', lambda x: (x == 3).sum()),
+        N=('POINTS', lambda x: (x == 1).sum()),
+        P=('POINTS', lambda x: (x == 0).sum()),
+        BP=('BUTS_POUR', 'sum'),
+        BC=('BUTS_CONTRE', 'sum'),
+        DIFF=('BPTS_POUR', 'sum') - match_equipes.groupby(["POULE", "ID_EQUIPE", "NOM_EQUIPE"])['BPTS_CONTRE'].sum(),
+        POINTS=('POINTS', 'sum')
+    ).reset_index()
 
-        matchs = get_matchs_modifiables(id_championnat)
+    # --- Appliquer les pénalités ---
+    from datetime import date
+    classement = appliquer_penalites(classement, date.today().isoformat())
 
-        if not matchs.empty:
-            st.markdown("### Modifiez les scores si nécessaire :")
-            matchs_modifies = appliquer_scores_simules(matchs)
+    # --- Appliquer les différences particulières avec les matchs simulés ---
+    classement, _ = appliquer_diff_particuliere(classement, matchs_modifies)
 
-            if st.button("🔄 Recalculer le Classement Simulé"):
-                classement, mini_classements = recalculer_classement_simule(matchs_modifies, id_championnat)
+    # --- Trier et numéroter ---
+    type_classement = get_type_classement(id_championnat)
+    classement = trier_et_numeroter(classement, type_classement)
 
-                if classement is not None and not classement.empty:
-                    st.success("Classement simulé recalculé avec succès !")
-
-                    poules_dispo = classement['POULE'].unique()
-                    for poule in sorted(poules_dispo):
-                        st.markdown(f"### Poule {poule}")
-                        classement_poule = classement[classement["POULE"] == poule]
-
-                        colonnes_souhaitées = [
-                            "CLASSEMENT", "NOM_EQUIPE", "POINTS",
-                            "PENALITES", "G", "N", "P", "BP", "BC", "DIFF"
-                        ]
-                        colonnes_finales = [col for col in colonnes_souhaitées if col in classement_poule.columns]
-                        st.dataframe(classement_poule[colonnes_finales], use_container_width=True)
-
-                    # --- Mini-classements affichés aussi
-                    st.markdown("## 🔥 Détails des Égalités Particulières")
-                    for (poule, pts), mini in mini_classements.items():
-                        st.markdown(f"#### Poule {poule} - {pts} points")
-                        st.dataframe(mini["classement"], use_container_width=True)
-                        st.dataframe(mini["matchs"], use_container_width=True)
-
-                else:
-                    st.warning("Impossible de recalculer le classement simulé.")
-        else:
-            st.warning("Aucun match disponible pour simulation dans ce championnat.")
-
-    # --- Retour à l'accueil ---
-    st.markdown("---")
-    if st.button("⬅️ Retour à l'accueil"):
-        st.session_state.page = "home"
+    return classement, _
