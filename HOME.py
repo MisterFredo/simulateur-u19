@@ -6,7 +6,7 @@ import simulateur_core as core
 st.set_page_config(page_title="Datafoot.ai", page_icon="🏆", layout="wide")
 
 with st.sidebar:
-    st.image("LOGO DATAFOOT CARRE.png", use_column_width=True)
+    st.image("LOGO DATAFOOT CARRE.png", use_container_width=True)
 
 # --- Désactivation de la barre de navigation globale Streamlit (menu en haut) ---
 st.markdown(
