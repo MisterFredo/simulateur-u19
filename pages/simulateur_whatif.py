@@ -23,6 +23,10 @@ from simulateur_core import (
 # --- CONFIG STREAMLIT
 st.set_page_config(page_title="SIMULATEUR - Datafoot", layout="wide")
 
+# --- INIT SESSION STATE
+if "simulation_validee" not in st.session_state:
+    st.session_state.simulation_validee = False
+
 # --- Connexion BigQuery
 credentials = service_account.Credentials.from_service_account_info(
     st.secrets["gcp_service_account"]
@@ -114,11 +118,12 @@ edited_df = st.data_editor(
     key="simulation_scores"
 )
 
-# --- 4. VALIDATION SIMULATION
-valider = st.button("🔁 Recalculer le classement avec ces scores simulés")
+# --- 4. VALIDATION SIMULATION PAR CLIC
+if st.button("🔁 Recalculer le classement avec ces scores simulés"):
+    st.session_state.simulation_validee = True
 
 # --- 5. SIMULATION SEULEMENT SI VALIDATION
-if valider:
+if st.session_state.simulation_validee:
 
     df_valid = edited_df.dropna(subset=["NB_BUT_DOM", "NB_BUT_EXT"])
 
