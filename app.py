@@ -22,9 +22,9 @@ with st.sidebar:
         else:
             st.warning("Veuillez entrer votre nom et email.")
 
-    # --- Menu de gauche : Mettre à jour pour n'afficher que "SIMULATEUR" ---
+    # --- Menu de navigation (SUPPRESSION des éléments inutiles) ---
     st.header("📂 Menu")
-    st.selectbox("Naviguer", ["SIMULATEUR"])  # Suppression de "APP" et "Simulateur Whatif"
+    st.selectbox("Naviguer", ["SIMULATEUR"])  # Remplacé par "SIMULATEUR", pas "APP" ni "Simulateur Whatif"
     
 # --- PAGE D'ACCUEIL ---
 if st.session_state.page == "home":
@@ -63,5 +63,6 @@ if st.session_state.page == "home":
 
 # --- Navigation principale ---
 elif st.session_state.page == "simulation":
-    afficher_classements_speciaux()
+    import pages.simulateur_whatif as simulateur_whatif
+    simulateur_whatif.afficher_simulateur_whatif()  # Remplacer afficher_classements_speciaux() par la fonction correcte
 
