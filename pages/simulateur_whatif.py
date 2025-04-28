@@ -91,11 +91,11 @@ for poule in sorted(classement_initial["POULE"].unique()):
 # --- 2. MINI-CLASSEMENTS ACTUELS (Seulement pour PARTICULIERE)
 if champ_type_classement == "PARTICULIERE":
     classement_initial, mini_classements_initial = appliquer_diff_particuliere(classement_initial, matchs_termine)
-        if selected_poule != "Toutes les poules":
-            mini_classements_initial = {
-                key: mini for key, mini in mini_classements_initial.items() if key[0] == selected_poule
-            }
 
+    if selected_poule != "Toutes les poules":
+        mini_classements_initial = {
+            key: mini for key, mini in mini_classements_initial.items() if key[0] == selected_poule
+        }
 
     if mini_classements_initial:
         st.markdown("### Mini-classements des égalités particulières 🥇 (Classement actuel)")
@@ -152,6 +152,7 @@ if st.session_state.simulation_validee:
     else:
         # --- Affichage des matchs simulés pour rappel
         st.markdown("### 📝 Matchs simulés")
+
         def color_victory(val_dom, val_ext):
             if val_dom > val_ext:
                 return ["background-color: lightgreen", "background-color: lightcoral"]
@@ -194,7 +195,6 @@ if st.session_state.simulation_validee:
         if selected_poule != "Toutes les poules":
             classement_simule = classement_simule[classement_simule["POULE"] == selected_poule]
 
-
         # --- Confirmation
         st.success("✅ Simulation recalculée avec succès !")
 
@@ -209,11 +209,11 @@ if st.session_state.simulation_validee:
         # --- MINI-CLASSEMENTS SIMULÉS (Seulement pour PARTICULIERE)
         if champ_type_classement == "PARTICULIERE":
             classement_simule, mini_classements_simule = appliquer_diff_particuliere(classement_simule, matchs_tous)
-                    if selected_poule != "Toutes les poules":
-                        mini_classements_simule = {
-                            key: mini for key, mini in mini_classements_simule.items() if key[0] == selected_poule
-                    }
 
+            if selected_poule != "Toutes les poules":
+                mini_classements_simule = {
+                    key: mini for key, mini in mini_classements_simule.items() if key[0] == selected_poule
+                }
 
             if mini_classements_simule:
                 st.markdown("### Mini-classements des égalités particulières 🥇 (Simulation)")
@@ -246,6 +246,10 @@ if st.session_state.simulation_validee:
 
             if champ_id == 5:
                 st.markdown("### ⚠️ Comparatif spécial N3")
+                df_10e = classement_special_n3(classement_simule, champ_id, date_limite)
+                if df_10e is not None:
+                    st.dataframe(df_10e, use_container_width=True)
+
                 df_10e = classement_special_n3(classement_simule, champ_id, date_limite)
                 if df_10e is not None:
                     st.dataframe(df_10e, use_container_width=True)
