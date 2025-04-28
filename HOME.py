@@ -71,8 +71,9 @@ if selection == "Accueil":
 # --- PAGE SIMULATEUR ---
 elif selection == "Simulateur":
     # Appeler la fonction qui gère la simulation, par exemple
-    import pages.ANALYSE_CHAMPIONNAT as ANALYSE_CHAMPIONNAT
-    ANALYSE_CHAMPIONNAT.afficher_ANALYSE_CHAMPIONNAT()
+    import pages.ANALYSE_CHAMPIONNAT as analyse_championnat
+    analyse_championnat.afficher_ANALYSE_CHAMPIONNAT()
+
 
 # --- PAGE CLASSEMENTS ---
 elif selection == "Classements":
