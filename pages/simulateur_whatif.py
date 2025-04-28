@@ -121,6 +121,15 @@ if st.button("🔁 Recalculer le classement avec ces scores simulés"):
                     use_container_width=True
                 )
 
+# --- Mini-classements des confrontations directes
+if mini_classements:
+    st.markdown("### Mini-classements des égalités particulières 🥇")
+    for (poule, pts), mini in mini_classements.items():
+        st.markdown(f"**Poule {poule} - {pts} points**")
+        st.dataframe(mini["classement"], use_container_width=True)
+        st.dataframe(mini["matchs"], use_container_width=True)
+
+
 if selected_poule != "Toutes les poules" and mini_classements:
     st.markdown("## ⚖️ Mini-classements (en cas d’égalité)")
     for (poule, pts), data in mini_classements.items():
@@ -165,58 +174,40 @@ else:
 # --------------------------------------------------------
 
 def recalculer_classement_simule(matchs_modifies, id_championnat):
-    # --- Recalcul du classement simulé à partir des matchs modifiés ---
-    if matchs_modifies.empty:
-        st.warning("Aucun match pour recalculer le classement.")
-        return None, None
-
-    # --- Recréer le classement dynamique simulé ---
-    # Recalcule directement sur les matchs simulés
-    match_equipes = pd.concat([
-        matchs_modifies.assign(
-            ID_EQUIPE=matchs_modifies["ID_EQUIPE_DOM"],
-            NOM_EQUIPE=matchs_modifies["EQUIPE_DOM"],
-            BUTS_POUR=matchs_modifies["NB_BUT_DOM"],
-            BUTS_CONTRE=matchs_modifies["NB_BUT_EXT"],
-            POINTS=matchs_modifies.apply(
-                lambda row: 3 if row["NB_BUT_DOM"] > row["NB_BUT_EXT"]
-                else (1 if row["NB_BUT_DOM"] == row["NB_BUT_EXT"] else 0),
-                axis=1,
-            )
-        ),
-        matchs_modifies.assign(
-            ID_EQUIPE=matchs_modifies["ID_EQUIPE_EXT"],
-            NOM_EQUIPE=matchs_modifies["EQUIPE_EXT"],
-            BUTS_POUR=matchs_modifies["NB_BUT_EXT"],
-            BUTS_CONTRE=matchs_modifies["NB_BUT_DOM"],
-            POINTS=matchs_modifies.apply(
-                lambda row: 3 if row["NB_BUT_EXT"] > row["NB_BUT_DOM"]
-                else (1 if row["NB_BUT_EXT"] == row["NB_BUT_DOM"] else 0),
-                axis=1,
-            )
-        )
-    ])
-
-    classement = match_equipes.groupby(["POULE", "ID_EQUIPE", "NOM_EQUIPE"]).agg(
-        MJ=('ID_EQUIPE', 'count'),
-        G=('POINTS', lambda x: (x == 3).sum()),
-        N=('POINTS', lambda x: (x == 1).sum()),
-        P=('POINTS', lambda x: (x == 0).sum()),
-        BP=('BUTS_POUR', 'sum'),
-        BC=('BUTS_CONTRE', 'sum'),
-        DIFF=('BPTS_POUR', 'sum') - match_equipes.groupby(["POULE", "ID_EQUIPE", "NOM_EQUIPE"])['BPTS_CONTRE'].sum(),
-        POINTS=('POINTS', 'sum')
-    ).reset_index()
-
-    # --- Appliquer les pénalités ---
+    from simulateur_core import (
+        get_matchs_termine,
+        get_classement_dynamique,
+        appliquer_penalites,
+        appliquer_diff_particuliere,
+        trier_et_numeroter,
+        get_type_classement
+    )
     from datetime import date
-    classement = appliquer_penalites(classement, date.today().isoformat())
 
-    # --- Appliquer les différences particulières avec les matchs simulés ---
-    classement, _ = appliquer_diff_particuliere(classement, matchs_modifies)
+    date_limite = date.today().isoformat()
 
-    # --- Trier et numéroter ---
+    # --- 1. Charger les vrais matchs terminés
+    matchs_officiels = get_matchs_termine(id_championnat, date_limite)
+
+    # --- 2. Remplacer les scores pour les matchs simulés
+    matchs_simules = matchs_officiels.copy()
+    for idx, row in matchs_modifies.iterrows():
+        id_match = row["ID_MATCH"]
+        if id_match in matchs_simules["ID_MATCH"].values:
+            matchs_simules.loc[matchs_simules["ID_MATCH"] == id_match, "NB_BUT_DOM"] = row["NB_BUT_DOM"]
+            matchs_simules.loc[matchs_simules["ID_MATCH"] == id_match, "NB_BUT_EXT"] = row["NB_BUT_EXT"]
+
+    # --- 3. Recalculer le classement dynamique
+    classement = get_classement_dynamique(id_championnat, date_limite, matchs_simules)
+
+    if classement.empty:
+        return classement, {}
+
+    # --- 4. Appliquer pénalités et égalités particulières
+    classement = appliquer_penalites(classement, date_limite)
+    classement, mini_classements = appliquer_diff_particuliere(classement, matchs_simules)
+
     type_classement = get_type_classement(id_championnat)
     classement = trier_et_numeroter(classement, type_classement)
 
-    return classement, _
+    return classement, mini_classements
