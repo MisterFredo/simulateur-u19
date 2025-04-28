@@ -132,7 +132,7 @@ st.markdown("""
     border: none;
     border-radius: 8px;
     text-decoration: none;
-    text-align: center;
+    text-align: left;
     transition: background-color 0.3s ease;
 }
 .button-simulateur:hover {
