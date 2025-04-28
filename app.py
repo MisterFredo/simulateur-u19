@@ -3,7 +3,7 @@ from datetime import date
 import simulateur_core as core
 
 # --- Configuration de la page principale ---
-st.set_page_config(page_title="Datafoot", page_icon="⚽", layout="wide")
+st.set_page_config(page_title="Datafoot", page_icon="⚽", layout="wide", initial_sidebar_state="collapsed")
 
 # --- Désactivation de la barre de navigation globale Streamlit (menu en haut) ---
 st.markdown(
@@ -75,3 +75,4 @@ if st.session_state.page == "home":
 # --- Navigation principale ---
 elif st.session_state.page == "simulation":
     afficher_classements_speciaux()
+
