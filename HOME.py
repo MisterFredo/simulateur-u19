@@ -35,6 +35,34 @@ with st.sidebar:
         unsafe_allow_html=True,
     )
 
+# --- Style moderne du contenu principal ---
+st.markdown(
+    """
+    <style>
+    [data-testid="stAppViewContainer"] {
+        background-color: #ffffff;
+        padding: 2rem 2rem 2rem 2rem;
+    }
+    h1, h2, h3 {
+        color: #333333;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+    .stButton>button {
+        border-radius: 8px;
+        padding: 0.5rem 1rem;
+        background-color: #0066cc;
+        color: white;
+        border: none;
+    }
+    .stButton>button:hover {
+        background-color: #005bb5;
+        color: #ffffff;
+    }
+    </style>
+    """,
+    unsafe_allow_html=True,
+)
+
 
 # --- Désactivation de la barre de navigation globale Streamlit (menu en haut) ---
 st.markdown(
