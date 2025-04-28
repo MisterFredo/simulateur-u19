@@ -111,14 +111,15 @@ if selection == "Accueil":
     🔒 Connectez-vous pour commencer.
     """)
 
-    # --- Fonctionnalités à venir (explications) ---
-    st.markdown("### Fonctionnalités principales :")
-    st.markdown("""
-    1. **Simulations de résultats** : Vous pouvez simuler des résultats pour les matchs à venir et voir l'impact sur le classement global.
-    2. **Règles spéciales** : Accédez à des classements spécifiques (ex : U19, U17, N2, N3) pour des analyses détaillées.
-    3. **Différences particulières** : Gérez les égalités entre équipes avec des critères comme les confrontations directes.
-    """)
-    # Bouton stylé pour accéder au simulateur
+ # --- Fonctionnalités à venir (explications) ---
+st.markdown("### Fonctionnalités principales :")
+st.markdown("""
+1. **Simulations de résultats** : Vous pouvez simuler des résultats pour les matchs à venir et voir l'impact sur le classement global.
+2. **Règles spéciales** : Accédez à des classements spécifiques (ex : U19, U17, N2, N3) pour des analyses détaillées.
+3. **Différences particulières** : Gérez les égalités entre équipes avec des critères comme les confrontations directes.
+""")
+
+# Bouton stylé pour accéder au simulateur (bien aligné)
 st.markdown("""
 <style>
 .button-simulateur {
@@ -141,19 +142,6 @@ st.markdown("""
 <a href="?page=ANALYSE_CHAMPIONNAT" class="button-simulateur">🚀 Accéder au simulateur</a>
 """, unsafe_allow_html=True)
 
-    
-    # --- Lien vers la documentation ou aide
-    st.markdown("### Aide et Documentation")
-    st.markdown("Pour en savoir plus, consultez notre [guide d'utilisation](#) ou contactez-nous à [support@datafoot.fr](mailto:support@datafoot.fr).")
-
-# --- PAGE SIMULATEUR ---
-elif selection == "Simulateur":
-    # Appeler la fonction qui gère la simulation, par exemple
-    import pages.ANALYSE_CHAMPIONNAT as analyse_championnat
-    analyse_championnat.afficher_ANALYSE_CHAMPIONNAT()
-
-
-# --- PAGE CLASSEMENTS ---
-elif selection == "Classements":
-    # Appeler la fonction qui gère l'affichage des classements
-    afficher_classements_speciaux()
+# --- Lien vers la documentation ou aide
+st.markdown("### Aide et Documentation")
+st.markdown("Pour en savoir plus, consultez notre [guide d'utilisation](#) ou contactez-nous à [support@datafoot.fr](mailto:support@datafoot.fr).")
