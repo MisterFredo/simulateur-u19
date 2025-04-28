@@ -22,9 +22,11 @@ with st.sidebar:
         else:
             st.warning("Veuillez entrer votre nom et email.")
 
-    # --- Menu de navigation (SUPPRESSION des éléments inutiles) ---
+    # --- Menu de navigation : METTRE À JOUR ICI ---
     st.header("📂 Menu")
-    st.selectbox("Naviguer", ["SIMULATEUR"])  # Remplacé par "SIMULATEUR", pas "APP" ni "Simulateur Whatif"
+    # Suppression de "app" et "Simulateur Whatif", et ajout de "SIMULATEUR"
+    st.selectbox("Naviguer", ["SIMULATEUR"])  # "SIMULATEUR" comme seule option dans le menu
+
     
 # --- PAGE D'ACCUEIL ---
 if st.session_state.page == "home":
