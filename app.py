@@ -7,10 +7,7 @@ st.set_page_config(page_title="Datafoot", page_icon="⚽", layout="wide")
 
 # --- Initialiser la page courante ---
 if "page" not in st.session_state:
-    st.session_state.page = "home"
-
-# Afficher le statut de la page dans la session_state
-st.write(f"Page actuelle : {st.session_state.page}")
+    st.session_state.page = "home"  # Assure que "home" est par défaut
 
 # --- SIDEBAR : Identification ---
 with st.sidebar:
