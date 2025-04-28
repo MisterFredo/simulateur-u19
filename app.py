@@ -5,6 +5,16 @@ import simulateur_core as core
 # --- Configuration de la page principale ---
 st.set_page_config(page_title="Datafoot", page_icon="⚽", layout="wide")
 
+# --- Désactivation de la barre de navigation globale Streamlit (menu en haut) ---
+st.markdown(
+    """
+    <style>
+    .css-1l02zws {
+        display: none;
+    }
+    </style>
+    """, unsafe_allow_html=True)
+
 # --- Initialiser la page courante ---
 if "page" not in st.session_state:
     st.session_state.page = "home"
@@ -26,7 +36,6 @@ with st.sidebar:
     st.header("📂 Menu")
     # Suppression de "app" et "Simulateur Whatif", et ajout de "SIMULATEUR"
     st.selectbox("Naviguer", ["SIMULATEUR"])  # "SIMULATEUR" comme seule option dans le menu
-
     
 # --- PAGE D'ACCUEIL ---
 if st.session_state.page == "home":
@@ -65,6 +74,4 @@ if st.session_state.page == "home":
 
 # --- Navigation principale ---
 elif st.session_state.page == "simulation":
-    import pages.simulateur_whatif as simulateur_whatif
-    simulateur_whatif.afficher_simulateur_whatif()  # Remplacer afficher_classements_speciaux() par la fonction correcte
-
+    afficher_classements_speciaux()
