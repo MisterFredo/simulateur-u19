@@ -108,7 +108,7 @@ if st.button("🔁 Recalculer le classement avec ces scores simulés"):
                 matchs_simules.loc[matchs_simules["ID_MATCH"] == id_match, "NB_BUT_DOM"] = row["NB_BUT_DOM"]
                 matchs_simules.loc[matchs_simules["ID_MATCH"] == id_match, "NB_BUT_EXT"] = row["NB_BUT_EXT"]
 
-        # --- Calcul du classement sur les matchs modifiés
+        # --- Calcul du classement à partir des matchs simulés
         classement_df = get_classement_dynamique(champ_id, date_limite, matchs_override=matchs_simules)
         classement_df = appliquer_penalites(classement_df, date_limite)
         classement_df, mini_classements = appliquer_diff_particuliere(classement_df, matchs_simules)
@@ -128,9 +128,11 @@ if st.button("🔁 Recalculer le classement avec ces scores simulés"):
 if mini_classements:
     st.markdown("### Mini-classements des égalités particulières 🥇")
     for (poule, pts), mini in mini_classements.items():
-        st.markdown(f"**Poule {poule} – {pts} points**")
-        st.dataframe(mini["classement"], use_container_width=True)
-        st.dataframe(mini["matchs"], use_container_width=True)
+        with st.expander(f"Poule {poule} – Égalité à {pts} points", expanded=True):
+            st.markdown("**Mini-classement :**")
+            st.dataframe(mini["classement"], use_container_width=True)
+            st.markdown("**Matchs concernés :**")
+            st.dataframe(mini["matchs"], use_container_width=True)
 
 # --- Cas particuliers
 if classement_df is not None and selected_poule == "Toutes les poules":
