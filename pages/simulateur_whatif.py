@@ -101,15 +101,19 @@ def recalculer_classement_simule(matchs_modifies, champ_id, date_limite, selecte
     if matchs_officiels.empty:
         return pd.DataFrame(), {}
 
-    # 2. Appliquer les scores simulés
+    # 2. Fusionner : remplacer les scores simulés dans les matchs officiels
     matchs_simules = matchs_officiels.copy()
-    for idx, row in matchs_modifies.iterrows():
-        id_match = row["ID_MATCH"]
-        if id_match in matchs_simules["ID_MATCH"].values:
-            matchs_simules.loc[matchs_simules["ID_MATCH"] == id_match, "NB_BUT_DOM"] = row["NB_BUT_DOM"]
-            matchs_simules.loc[matchs_simules["ID_MATCH"] == id_match, "NB_BUT_EXT"] = row["NB_BUT_EXT"]
+    matchs_simules = matchs_simules.set_index("ID_MATCH")
+    matchs_modifies = matchs_modifies.set_index("ID_MATCH")
 
-    # 3. Construction du classement sur matchs officiels + scores simulés
+    for id_match, row in matchs_modifies.iterrows():
+        if id_match in matchs_simules.index:
+            matchs_simules.at[id_match, "NB_BUT_DOM"] = row["NB_BUT_DOM"]
+            matchs_simules.at[id_match, "NB_BUT_EXT"] = row["NB_BUT_EXT"]
+
+    matchs_simules = matchs_simules.reset_index()
+
+    # 3. Construction du classement
     match_equipes = pd.concat([
         matchs_simules.assign(
             ID_EQUIPE=matchs_simules["ID_EQUIPE_DOM"],
@@ -153,7 +157,7 @@ def recalculer_classement_simule(matchs_modifies, champ_id, date_limite, selecte
     # 5. Appliquer égalités particulières
     classement_df, mini_classements = appliquer_diff_particuliere(classement_df, matchs_simules)
 
-    # 6. Trier et numéroter
+    # 6. Trier
     classement_df = trier_et_numeroter(classement_df, type_classement)
 
     # 7. Filtrer poule si besoin
@@ -161,6 +165,7 @@ def recalculer_classement_simule(matchs_modifies, champ_id, date_limite, selecte
         classement_df = classement_df[classement_df["POULE"] == selected_poule]
 
     return classement_df, mini_classements
+
 
 # --- Bloc de recalcul avec bouton
 classement_df = None
