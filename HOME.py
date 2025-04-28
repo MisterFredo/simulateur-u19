@@ -8,6 +8,29 @@ st.set_page_config(page_title="Datafoot.ai", page_icon="🏆", layout="wide")
 with st.sidebar:
     st.image("LOGO DATAFOOT CARRE.png", use_container_width=True)
 
+    # --- Petit style visuel ---
+    st.markdown(
+        """
+        <style>
+        [data-testid="stSidebar"] {
+            background-color: #f9f9f9;
+        }
+        [data-testid="stSidebar"] img {
+            margin-bottom: 10px;
+        }
+        hr {
+            margin-top: 0px;
+            margin-bottom: 10px;
+            border: none;
+            height: 1px;
+            background-color: #ddd;
+        }
+        </style>
+        <hr>
+        """,
+        unsafe_allow_html=True,
+    )
+
 # --- Désactivation de la barre de navigation globale Streamlit (menu en haut) ---
 st.markdown(
     """
