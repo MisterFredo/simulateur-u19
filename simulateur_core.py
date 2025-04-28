@@ -154,11 +154,11 @@ def get_poules_temp(champ_id):
 @st.cache_data(show_spinner=False)
 def load_championnats():
     query = """
-        SELECT ID_CHAMPIONNAT, NOM_CHAMPIONNAT, CATEGORIE, NIVEAU
+        SELECT ID_CHAMPIONNAT, NOM_CHAMPIONNAT, CATEGORIE, NIVEAU, CLASSEMENT
         FROM `datafoot-448514.DATAFOOT.DATAFOOT_CHAMPIONNAT`
-        ORDER BY CATEGORIE, NIVEAU, NOM_CHAMPIONNAT
     """
     return client.query(query).to_dataframe()
+
 
 def appliquer_penalites(classement_df, date_limite):
     penalites_actives = client.query(f"""
