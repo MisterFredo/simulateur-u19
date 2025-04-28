@@ -15,27 +15,30 @@ st.markdown(
     </style>
     """, unsafe_allow_html=True)
 
+
 # --- Initialiser la page courante ---
 if "page" not in st.session_state:
     st.session_state.page = "home"
 
-# --- SIDEBAR : Identification ---
+# --- SIDEBAR : Navigation interne ---
 with st.sidebar:
-    st.header("📚 Identification")
-    user_name = st.text_input("Nom de l'utilisateur")
-    user_email = st.text_input("Email")
-    if st.button("Se connecter"):
-        if user_name and user_email:
-            st.session_state.user_name = user_name
-            st.session_state.user_email = user_email
-            st.session_state.page = "home"  # Revenir à "home" après connexion
-        else:
-            st.warning("Veuillez entrer votre nom et email.")
+    st.header("📚 Navigation")
+    selection = st.radio("Sélectionner une fonctionnalité", ["Accueil", "Simulateur", "Classements"])
 
-    # --- Menu de navigation : METTRE À JOUR ICI ---
-    st.header("📂 Menu")
-    # Suppression de "app" et "Simulateur Whatif", et ajout de "SIMULATEUR"
-    st.selectbox("Naviguer", ["SIMULATEUR"])  # "SIMULATEUR" comme seule option dans le menu
+# --- Afficher la page sélectionnée ---
+if selection == "Accueil":
+    st.title("Bienvenue sur Datafoot 👋")
+    # ... Afficher le contenu de la page d'accueil ici ...
+
+elif selection == "Simulateur":
+    # Naviguer vers la page Simulateur
+    import pages.simulateur_whatif as simulateur_whatif
+    simulateur_whatif.afficher_simulateur_whatif()
+
+elif selection == "Classements":
+    # Naviguer vers la page Classements (ex: afficher les classements actuels)
+    afficher_classements_speciaux()
+
     
 # --- PAGE D'ACCUEIL ---
 if st.session_state.page == "home":
