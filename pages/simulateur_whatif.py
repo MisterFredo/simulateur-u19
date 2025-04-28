@@ -76,6 +76,10 @@ classement_initial = get_classement_dynamique(champ_id, date_limite, matchs_over
 classement_initial = appliquer_penalites(classement_initial, date_limite)
 classement_initial = trier_et_numeroter(classement_initial, type_classement)
 
+# --- Filtrer classement initial sur la poule sélectionnée si besoin
+if selected_poule != "Toutes les poules":
+    classement_initial = classement_initial[classement_initial["POULE"] == selected_poule]
+
 st.markdown("### 🏆 Classement actuel")
 for poule in sorted(classement_initial["POULE"].unique()):
     st.subheader(f"Poule {poule}")
@@ -87,6 +91,11 @@ for poule in sorted(classement_initial["POULE"].unique()):
 # --- 2. MINI-CLASSEMENTS ACTUELS (Seulement pour PARTICULIERE)
 if champ_type_classement == "PARTICULIERE":
     classement_initial, mini_classements_initial = appliquer_diff_particuliere(classement_initial, matchs_termine)
+        if selected_poule != "Toutes les poules":
+            mini_classements_initial = {
+                key: mini for key, mini in mini_classements_initial.items() if key[0] == selected_poule
+            }
+
 
     if mini_classements_initial:
         st.markdown("### Mini-classements des égalités particulières 🥇 (Classement actuel)")
@@ -181,6 +190,11 @@ if st.session_state.simulation_validee:
         classement_simule = appliquer_penalites(classement_simule, date_limite)
         classement_simule = trier_et_numeroter(classement_simule, type_classement)
 
+        # --- Filtrer classement simulé sur la poule sélectionnée si besoin
+        if selected_poule != "Toutes les poules":
+            classement_simule = classement_simule[classement_simule["POULE"] == selected_poule]
+
+
         # --- Confirmation
         st.success("✅ Simulation recalculée avec succès !")
 
@@ -195,6 +209,11 @@ if st.session_state.simulation_validee:
         # --- MINI-CLASSEMENTS SIMULÉS (Seulement pour PARTICULIERE)
         if champ_type_classement == "PARTICULIERE":
             classement_simule, mini_classements_simule = appliquer_diff_particuliere(classement_simule, matchs_tous)
+                    if selected_poule != "Toutes les poules":
+                        mini_classements_simule = {
+                            key: mini for key, mini in mini_classements_simule.items() if key[0] == selected_poule
+                    }
+
 
             if mini_classements_simule:
                 st.markdown("### Mini-classements des égalités particulières 🥇 (Simulation)")
