@@ -18,44 +18,65 @@ def get_type_classement(champ_id):
     result = client.query(query).to_dataframe()
     return result.iloc[0]["CLASSEMENT"] if not result.empty else "GENERALE"
 
-def get_classement_dynamique(champ_id, date_limite):
-    query = f"""
-        WITH matchs_termine AS (
-          SELECT *
-          FROM `datafoot-448514.DATAFOOT.DATAFOOT_MATCH_2025`
-          WHERE STATUT = 'TERMINE'
-            AND ID_CHAMPIONNAT = {champ_id}
-            AND DATE <= DATE('{date_limite}')
+def get_classement_dynamique(id_championnat, date_limite, matchs_override=None):
+    if matchs_override is None:
+        # --- Mode normal : on récupère les matchs depuis BigQuery
+        query = f"""
+            SELECT *
+            FROM `datafoot-448514.DATAFOOT.DATAFOOT_MATCH_2025`
+            WHERE STATUT = 'TERMINE'
+              AND ID_CHAMPIONNAT = {id_championnat}
+              AND DATE <= DATE('{date_limite}')
+        """
+        matchs = client.query(query).to_dataframe()
+    else:
+        # --- Mode simulation : on utilise les matchs simulés fournis
+        matchs = matchs_override.copy()
+
+    if matchs.empty:
+        return pd.DataFrame()
+
+    # --- Construction du classement
+    match_equipes = pd.concat([
+        matchs.assign(
+            ID_EQUIPE=matchs["ID_EQUIPE_DOM"],
+            NOM_EQUIPE=matchs["EQUIPE_DOM"],
+            POULE=matchs["POULE"],
+            BUTS_POUR=matchs["NB_BUT_DOM"],
+            BUTS_CONTRE=matchs["NB_BUT_EXT"],
+            POINTS=matchs.apply(
+                lambda row: 3 if row["NB_BUT_DOM"] > row["NB_BUT_EXT"]
+                else (1 if row["NB_BUT_DOM"] == row["NB_BUT_EXT"] else 0),
+                axis=1,
+            )
         ),
-        match_equipes AS (
-          SELECT ID_CHAMPIONNAT, POULE, ID_EQUIPE_DOM AS ID_EQUIPE, EQUIPE_DOM AS NOM_EQUIPE,
-                 NB_BUT_DOM AS BUTS_POUR, NB_BUT_EXT AS BUTS_CONTRE,
-                 CASE WHEN NB_BUT_DOM > NB_BUT_EXT THEN 3 WHEN NB_BUT_DOM = NB_BUT_EXT THEN 1 ELSE 0 END AS POINTS
-          FROM matchs_termine
-          UNION ALL
-          SELECT ID_CHAMPIONNAT, POULE, ID_EQUIPE_EXT, EQUIPE_EXT, NB_BUT_EXT, NB_BUT_DOM,
-                 CASE WHEN NB_BUT_EXT > NB_BUT_DOM THEN 3 WHEN NB_BUT_EXT = NB_BUT_DOM THEN 1 ELSE 0 END
-          FROM matchs_termine
-        ),
-        classement AS (
-          SELECT ID_CHAMPIONNAT, POULE, ID_EQUIPE, NOM_EQUIPE,
-                 COUNT(*) AS MJ,
-                 SUM(CASE WHEN POINTS = 3 THEN 1 ELSE 0 END) AS G,
-                 SUM(CASE WHEN POINTS = 1 THEN 1 ELSE 0 END) AS N,
-                 SUM(CASE WHEN POINTS = 0 THEN 1 ELSE 0 END) AS P,
-                 SUM(BUTS_POUR) AS BP,
-                 SUM(BUTS_CONTRE) AS BC,
-                 SUM(BUTS_POUR - BUTS_CONTRE) AS DIFF,
-                 SUM(POINTS) AS PTS
-          FROM match_equipes
-          GROUP BY ID_CHAMPIONNAT, POULE, ID_EQUIPE, NOM_EQUIPE
+        matchs.assign(
+            ID_EQUIPE=matchs["ID_EQUIPE_EXT"],
+            NOM_EQUIPE=matchs["EQUIPE_EXT"],
+            POULE=matchs["POULE"],
+            BUTS_POUR=matchs["NB_BUT_EXT"],
+            BUTS_CONTRE=matchs["NB_BUT_DOM"],
+            POINTS=matchs.apply(
+                lambda row: 3 if row["NB_BUT_EXT"] > row["NB_BUT_DOM"]
+                else (1 if row["NB_BUT_EXT"] == row["NB_BUT_DOM"] else 0),
+                axis=1,
+            )
         )
-        SELECT *, RANK() OVER (PARTITION BY ID_CHAMPIONNAT, POULE ORDER BY PTS DESC, DIFF DESC, BP DESC) AS CLASSEMENT
-        FROM classement
-        ORDER BY POULE, CLASSEMENT
-    """
-    df = client.query(query).to_dataframe()
-    return df.rename(columns={"PTS": "POINTS"})
+    ])
+
+    classement = match_equipes.groupby(["POULE", "ID_EQUIPE", "NOM_EQUIPE"]).agg(
+        MJ=('ID_EQUIPE', 'count'),
+        G=('POINTS', lambda x: (x == 3).sum()),
+        N=('POINTS', lambda x: (x == 1).sum()),
+        P=('POINTS', lambda x: (x == 0).sum()),
+        BP=('BUTS_POUR', 'sum'),
+        BC=('BUTS_CONTRE', 'sum'),
+        DIFF=('BUTS_POUR', 'sum') - match_equipes.groupby(["POULE", "ID_EQUIPE", "NOM_EQUIPE"])['BUTS_CONTRE'].sum(),
+        POINTS=('POINTS', 'sum')
+    ).reset_index()
+
+    return classement
+
 
 def get_matchs_termine(champ_id, date_limite):
     query = f"""
