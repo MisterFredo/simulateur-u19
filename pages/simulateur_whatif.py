@@ -71,8 +71,8 @@ matchs_simulables = get_matchs_modifiables(champ_id, date_limite, filtrer_non_jo
 if selected_poule != "Toutes les poules":
     matchs_simulables = matchs_simulables[matchs_simulables["POULE"] == selected_poule]
 
-# --- Affichage matchs simulables
-st.markdown("### Matchs à simuler")
+# --- Affichage des matchs simulables
+st.markdown("### 🎯 Matchs à simuler")
 if matchs_simulables.empty:
     st.info("Aucun match disponible pour cette configuration.")
     st.stop()
@@ -92,10 +92,9 @@ edited_df = st.data_editor(
 matchs_termine = get_matchs_termine(champ_id, date_limite)
 classement_initial = get_classement_dynamique(champ_id, date_limite, matchs_override=matchs_termine)
 classement_initial = appliquer_penalites(classement_initial, date_limite)
-type_classement = get_type_classement(champ_id)
 classement_initial = trier_et_numeroter(classement_initial, type_classement)
 
-# --- Affichage du classement initial
+# --- Affichage du classement actuel
 st.markdown("### 🏆 Classement actuel")
 for poule in sorted(classement_initial["POULE"].unique()):
     st.subheader(f"Poule {poule}")
@@ -104,26 +103,42 @@ for poule in sorted(classement_initial["POULE"].unique()):
     colonnes_finales = [col for col in colonnes if col in classement_poule.columns]
     st.dataframe(classement_poule[colonnes_finales], use_container_width=True)
 
+# --- Affichage des mini-classements sur le classement actuel
+classement_initial, mini_classements_initial = appliquer_diff_particuliere(classement_initial, matchs_termine)
+
+if mini_classements_initial:
+    st.markdown("### Mini-classements des égalités particulières 🥇 (Classement actuel)")
+    for (poule, pts), mini in mini_classements_initial.items():
+        with st.expander(f"Poule {poule} – Égalité à {pts} points", expanded=True):
+            st.markdown("**Mini-classement :**")
+            st.dataframe(mini["classement"], use_container_width=True)
+            st.markdown("**Matchs concernés :**")
+            st.dataframe(mini["matchs"], use_container_width=True)
+
 # --- Simulation sur bouton
 if st.button("🔁 Recalculer le classement avec ces scores simulés"):
+
     df_valid = edited_df.dropna(subset=["NB_BUT_DOM", "NB_BUT_EXT"])
 
     if df_valid.empty:
         st.warning("🚫 Aucun score simulé valide.")
     else:
-        # --- Remplacement des scores
-        matchs_simules = matchs_termine.copy()
+        # 1. Fusion de tous les matchs : terminés + modifiables
+        matchs_tous = pd.concat([matchs_termine, matchs_simulables], ignore_index=True)
+
+        # 2. Mise à jour des scores simulés
         for idx, row in df_valid.iterrows():
             id_match = row["ID_MATCH"]
-            if id_match in matchs_simules["ID_MATCH"].values:
-                matchs_simules.loc[matchs_simules["ID_MATCH"] == id_match, "NB_BUT_DOM"] = row["NB_BUT_DOM"]
-                matchs_simules.loc[matchs_simules["ID_MATCH"] == id_match, "NB_BUT_EXT"] = row["NB_BUT_EXT"]
+            matchs_tous.loc[matchs_tous["ID_MATCH"] == id_match, "NB_BUT_DOM"] = row["NB_BUT_DOM"]
+            matchs_tous.loc[matchs_tous["ID_MATCH"] == id_match, "NB_BUT_EXT"] = row["NB_BUT_EXT"]
 
-        classement_simule = get_classement_dynamique(champ_id, date_limite, matchs_override=matchs_simules)
+        # 3. Recalcul du classement simulé
+        classement_simule = get_classement_dynamique(champ_id, date_limite, matchs_override=matchs_tous)
         classement_simule = appliquer_penalites(classement_simule, date_limite)
-        classement_simule, mini_classements = appliquer_diff_particuliere(classement_simule, matchs_simules)
+        classement_simule, mini_classements_simule = appliquer_diff_particuliere(classement_simule, matchs_tous)
         classement_simule = trier_et_numeroter(classement_simule, type_classement)
 
+        # 4. Affichage du classement simulé
         st.markdown("### 🧪 Nouveau Classement simulé")
         for poule in sorted(classement_simule["POULE"].unique()):
             st.subheader(f"Poule {poule}")
@@ -131,17 +146,17 @@ if st.button("🔁 Recalculer le classement avec ces scores simulés"):
             colonnes_finales = [col for col in colonnes if col in classement_poule.columns]
             st.dataframe(classement_poule[colonnes_finales], use_container_width=True)
 
-        # --- Mini-classements
-        if mini_classements:
-            st.markdown("### Mini-classements des égalités particulières 🥇")
-            for (poule, pts), mini in mini_classements.items():
+        # 5. Affichage des mini-classements simulés
+        if mini_classements_simule:
+            st.markdown("### Mini-classements des égalités particulières 🥇 (Simulation)")
+            for (poule, pts), mini in mini_classements_simule.items():
                 with st.expander(f"Poule {poule} – Égalité à {pts} points", expanded=True):
                     st.markdown("**Mini-classement :**")
                     st.dataframe(mini["classement"], use_container_width=True)
                     st.markdown("**Matchs concernés :**")
                     st.dataframe(mini["matchs"], use_container_width=True)
 
-        # --- Cas particuliers
+        # 6. Affichage des comparatifs spéciaux selon championnat
         if selected_poule == "Toutes les poules":
             if champ_id == 6:
                 st.markdown("### 🚨 Comparatif spécial U19")
