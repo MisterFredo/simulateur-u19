@@ -119,29 +119,27 @@ st.markdown("""
 3. **Différences particulières** : Gérez les égalités entre équipes avec des critères comme les confrontations directes.
 """)
 
-# Bouton sobre pour accéder au simulateur
+# Bouton sobre aligné à gauche
 st.markdown("""
 <style>
 .button-simulateur {
     display: inline-block;
-    padding: 0.8rem 1.5rem;
-    font-size: 1.1rem;
-    font-weight: 600;
-    color: white;
-    background-color: #0056b3;
-    border: none;
-    border-radius: 8px;
+    padding: 0.6rem 1.2rem;
+    font-size: 1rem;
+    font-weight: normal;
+    color: #333333;
+    background-color: #f0f0f0;
+    border: 1px solid #cccccc;
+    border-radius: 6px;
     text-decoration: none;
     text-align: left;
     transition: background-color 0.3s ease;
 }
 .button-simulateur:hover {
-    background-color: #004494;
+    background-color: #e6e6e6;
 }
 </style>
-<div style="text-align: center;">
-    <a href="?page=ANALYSE_CHAMPIONNAT" class="button-simulateur">Accéder au simulateur</a>
-</div>
+<a href="?page=ANALYSE_CHAMPIONNAT" class="button-simulateur">Accéder au simulateur</a>
 """, unsafe_allow_html=True)
 
 
