@@ -50,7 +50,10 @@ champ_options = championnats_df[
 ]
 
 selected_nom = st.sidebar.selectbox("Championnat", champ_options["NOM_CHAMPIONNAT"])
-champ_id = champ_options[champ_options["NOM_CHAMPIONNAT"] == selected_nom]["ID_CHAMPIONNAT"].values[0]
+
+champ_selected = champ_options[champ_options["NOM_CHAMPIONNAT"] == selected_nom]
+champ_id = champ_selected["ID_CHAMPIONNAT"].values[0]
+champ_type_classement = champ_selected["CLASSEMENT"].values[0]  # <-- NOUVEAU
 
 type_classement = get_type_classement(champ_id)
 
@@ -81,17 +84,18 @@ for poule in sorted(classement_initial["POULE"].unique()):
     colonnes_finales = [col for col in colonnes if col in classement_poule.columns]
     st.dataframe(classement_poule[colonnes_finales], use_container_width=True)
 
-# --- 2. MINI-CLASSEMENTS ACTUELS
-classement_initial, mini_classements_initial = appliquer_diff_particuliere(classement_initial, matchs_termine)
+# --- 2. MINI-CLASSEMENTS ACTUELS (Seulement pour PARTICULIERE)
+if champ_type_classement == "PARTICULIERE":
+    classement_initial, mini_classements_initial = appliquer_diff_particuliere(classement_initial, matchs_termine)
 
-if mini_classements_initial:
-    st.markdown("### Mini-classements des égalités particulières 🥇 (Classement actuel)")
-    for (poule, pts), mini in mini_classements_initial.items():
-        with st.expander(f"Poule {poule} – Égalité à {pts} points", expanded=True):
-            st.markdown("**Mini-classement :**")
-            st.dataframe(mini["classement"], use_container_width=True)
-            st.markdown("**Matchs concernés :**")
-            st.dataframe(mini["matchs"], use_container_width=True)
+    if mini_classements_initial:
+        st.markdown("### Mini-classements des égalités particulières 🥇 (Classement actuel)")
+        for (poule, pts), mini in mini_classements_initial.items():
+            with st.expander(f"Poule {poule} – Égalité à {pts} points", expanded=True):
+                st.markdown("**Mini-classement :**")
+                st.dataframe(mini["classement"], use_container_width=True)
+                st.markdown("**Matchs concernés :**")
+                st.dataframe(mini["matchs"], use_container_width=True)
 
 # --- 3. MATCHS À SIMULER
 filtrer_non_joues = st.checkbox("Afficher uniquement les matchs non joués", value=True)
@@ -175,7 +179,6 @@ if st.session_state.simulation_validee:
         # --- Recalcul du classement
         classement_simule = get_classement_dynamique(champ_id, date_limite, matchs_override=matchs_tous)
         classement_simule = appliquer_penalites(classement_simule, date_limite)
-        classement_simule, mini_classements_simule = appliquer_diff_particuliere(classement_simule, matchs_tous)
         classement_simule = trier_et_numeroter(classement_simule, type_classement)
 
         # --- Confirmation
@@ -189,15 +192,18 @@ if st.session_state.simulation_validee:
             colonnes_finales = [col for col in colonnes if col in classement_poule.columns]
             st.dataframe(classement_poule[colonnes_finales], use_container_width=True)
 
-        # --- Mini-classements simulés
-        if mini_classements_simule:
-            st.markdown("### Mini-classements des égalités particulières 🥇 (Simulation)")
-            for (poule, pts), mini in mini_classements_simule.items():
-                with st.expander(f"Poule {poule} – Égalité à {pts} points", expanded=True):
-                    st.markdown("**Mini-classement :**")
-                    st.dataframe(mini["classement"], use_container_width=True)
-                    st.markdown("**Matchs concernés :**")
-                    st.dataframe(mini["matchs"], use_container_width=True)
+        # --- MINI-CLASSEMENTS SIMULÉS (Seulement pour PARTICULIERE)
+        if champ_type_classement == "PARTICULIERE":
+            classement_simule, mini_classements_simule = appliquer_diff_particuliere(classement_simule, matchs_tous)
+
+            if mini_classements_simule:
+                st.markdown("### Mini-classements des égalités particulières 🥇 (Simulation)")
+                for (poule, pts), mini in mini_classements_simule.items():
+                    with st.expander(f"Poule {poule} – Égalité à {pts} points", expanded=True):
+                        st.markdown("**Mini-classement :**")
+                        st.dataframe(mini["classement"], use_container_width=True)
+                        st.markdown("**Matchs concernés :**")
+                        st.dataframe(mini["matchs"], use_container_width=True)
 
         # --- Comparatifs spéciaux
         if selected_poule == "Toutes les poules":
