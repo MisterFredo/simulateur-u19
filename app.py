@@ -7,7 +7,7 @@ st.set_page_config(page_title="Datafoot", page_icon="⚽", layout="wide")
 
 # --- Initialiser la page courante ---
 if "page" not in st.session_state:
-    st.session_state.page = "home"  # Assure que "home" est par défaut
+    st.session_state.page = "home"
 
 # --- SIDEBAR : Identification ---
 with st.sidebar:
@@ -22,6 +22,10 @@ with st.sidebar:
         else:
             st.warning("Veuillez entrer votre nom et email.")
 
+    # --- Menu de gauche : Mettre à jour pour n'afficher que "SIMULATEUR" ---
+    st.header("📂 Menu")
+    st.selectbox("Naviguer", ["SIMULATEUR"])  # Suppression de "APP" et "Simulateur Whatif"
+    
 # --- PAGE D'ACCUEIL ---
 if st.session_state.page == "home":
     st.title("Bienvenue sur Datafoot 👋")
@@ -46,15 +50,12 @@ if st.session_state.page == "home":
     3. **Différences particulières** : Gérez les égalités entre équipes avec des critères comme les confrontations directes.
     """)
 
-    # --- Option de navigation vers simulateur ou autres pages ---
+    # --- Option de navigation vers simulateur ---
     st.markdown("---")
     st.markdown("### Que souhaitez-vous faire ?")
     
     if st.button("🎯 Accéder au simulateur"):
         st.session_state.page = "simulation"
-
-    if st.button("🏆 Consulter les classements officiels"):
-        st.session_state.page = "classement"
     
     # --- Lien vers la documentation ou aide
     st.markdown("### Aide et Documentation")
@@ -64,5 +65,3 @@ if st.session_state.page == "home":
 elif st.session_state.page == "simulation":
     afficher_classements_speciaux()
 
-elif st.session_state.page == "classement":
-    afficher_simulateur()
