@@ -124,16 +124,12 @@ if st.button("🔁 Recalculer le classement avec ces scores simulés"):
         # Fusion des matchs terminés + matchs simulables
         matchs_tous = pd.concat([matchs_termine, matchs_simulables], ignore_index=True)
 
-        # Remplacer les scores dans le dataset
+        # Remplacer uniquement les scores réellement simulés
         for idx, row in df_valid.iterrows():
             id_match = row["ID_MATCH"]
-            matchs_tous.loc[matchs_tous["ID_MATCH"] == id_match, "NB_BUT_DOM"] = row["NB_BUT_DOM"]
-            matchs_tous.loc[matchs_tous["ID_MATCH"] == id_match, "NB_BUT_EXT"] = row["NB_BUT_EXT"]
-
-        # --- Sécurisation : éviter NA sur les scores ---
-        matchs_tous["NB_BUT_DOM"] = matchs_tous["NB_BUT_DOM"].fillna(0).astype(int)
-        matchs_tous["NB_BUT_EXT"] = matchs_tous["NB_BUT_EXT"].fillna(0).astype(int)
-        # ----------------------------------------------
+            if not pd.isna(row["NB_BUT_DOM"]) and not pd.isna(row["NB_BUT_EXT"]):
+                matchs_tous.loc[matchs_tous["ID_MATCH"] == id_match, "NB_BUT_DOM"] = int(row["NB_BUT_DOM"])
+                matchs_tous.loc[matchs_tous["ID_MATCH"] == id_match, "NB_BUT_EXT"] = int(row["NB_BUT_EXT"])
 
         # Recalcul du classement
         classement_simule = get_classement_dynamique(champ_id, date_limite, matchs_override=matchs_tous)
