@@ -87,42 +87,40 @@ edited_df = st.data_editor(
     key="simulation_scores"
 )
 
-# --- Recalcul après simulation
-classement_df = None
-mini_classements = {}
+def recalculer_classement_simule(matchs_modifies, champ_id, date_limite, selected_poule, type_classement):
 
-if st.button("🔁 Recalculer le classement avec ces scores simulés"):
-    df_valid = edited_df.dropna(subset=["NB_BUT_DOM", "NB_BUT_EXT"])
+    # 1. Charger les vrais matchs terminés
+    matchs_officiels = get_matchs_termine(champ_id, date_limite)
 
-    if df_valid.empty:
-        st.warning("🚫 Aucun score simulé valide.")
-    else:
-        # --- Charger les matchs officiels
-        matchs_officiels = get_matchs_termine(champ_id, date_limite)
+    if matchs_officiels.empty:
+        return pd.DataFrame(), {}
 
-        # --- Remplacer les scores simulés
-        matchs_simules = matchs_officiels.copy()
-        for idx, row in df_valid.iterrows():
-            id_match = row["ID_MATCH"]
-            if id_match in matchs_simules["ID_MATCH"].values:
-                matchs_simules.loc[matchs_simules["ID_MATCH"] == id_match, "NB_BUT_DOM"] = row["NB_BUT_DOM"]
-                matchs_simules.loc[matchs_simules["ID_MATCH"] == id_match, "NB_BUT_EXT"] = row["NB_BUT_EXT"]
+    # 2. Remplacer les scores pour les matchs simulés
+    matchs_simules = matchs_officiels.copy()
+    for idx, row in matchs_modifies.iterrows():
+        id_match = row["ID_MATCH"]
+        if id_match in matchs_simules["ID_MATCH"].values:
+            matchs_simules.loc[matchs_simules["ID_MATCH"] == id_match, "NB_BUT_DOM"] = row["NB_BUT_DOM"]
+            matchs_simules.loc[matchs_simules["ID_MATCH"] == id_match, "NB_BUT_EXT"] = row["NB_BUT_EXT"]
 
-        # --- Calcul du classement à partir des matchs simulés
-        classement_df = get_classement_dynamique(champ_id, date_limite, matchs_override=matchs_simules)
-        classement_df = appliquer_penalites(classement_df, date_limite)
-        classement_df, mini_classements = appliquer_diff_particuliere(classement_df, matchs_simules)
-        classement_df = trier_et_numeroter(classement_df, type_classement)
+    # 3. Recalculer le classement dynamique basé sur les scores simulés
+    classement_df = get_classement_dynamique(champ_id, date_limite, matchs_override=matchs_simules)
 
-        for poule in sorted(classement_df["POULE"].unique()):
-            st.subheader(f"Poule {poule}")
-            classement_poule = classement_df[classement_df["POULE"] == poule]
-            colonnes_souhaitées = [
-                "CLASSEMENT", "NOM_EQUIPE", "POINTS",
-                "PENALITES", "MJ", "G", "N", "P", "BP", "BC", "DIFF"
-            ]
-            colonnes_finales = [col for col in colonnes_souhaitées if col in classement_poule.columns]
-            st.dataframe(classement_poule[colonnes_finales], use_container_width=True)
+    if classement_df.empty:
+        return classement_df, {}
+
+    # 4. Appliquer pénalités et égalités particulières
+    classement_df = appliquer_penalites(classement_df, date_limite)
+    classement_df, mini_classements = appliquer_diff_particuliere(classement_df, matchs_simules)
+
+    # 5. Trier et numéroter
+    classement_df = trier_et_numeroter(classement_df, type_classement)
+
+    # 6. Si besoin, filtrer par poule simulée
+    if selected_poule != "Toutes les poules":
+        classement_df = classement_df[classement_df["POULE"] == selected_poule]
+
+    return classement_df, mini_classements
 
 # --- Mini-classements
 if mini_classements:
