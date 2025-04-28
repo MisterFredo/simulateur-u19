@@ -106,21 +106,28 @@ if matchs_simulables.empty:
     st.info("Aucun match disponible pour cette configuration.")
     st.stop()
 
-# --- Data editor simplifié
-edited_df = st.data_editor(
-    matchs_simulables[[
-        "JOURNEE", "POULE", "DATE",
-        "EQUIPE_DOM", "NB_BUT_DOM",
-        "EQUIPE_EXT", "NB_BUT_EXT"
-    ]],
-    num_rows="dynamic",
-    use_container_width=True,
-    key="simulation_scores"
-)
+# --- 3BIS. FORMULAIRE DE SIMULATION
+with st.form("formulaire_simulation"):
 
-# --- 4. VALIDATION SIMULATION PAR CLIC
-if st.button("🔁 Recalculer le classement avec ces scores simulés"):
+    # Data editor dans un formulaire (plus de rechargement à chaque frappe)
+    edited_df = st.data_editor(
+        matchs_simulables[[
+            "JOURNEE", "POULE", "DATE",
+            "EQUIPE_DOM", "NB_BUT_DOM",
+            "EQUIPE_EXT", "NB_BUT_EXT"
+        ]],
+        num_rows="dynamic",
+        use_container_width=True,
+        key="simulation_scores"
+    )
+
+    # Bouton pour soumettre toutes les simulations d'un coup
+    submit = st.form_submit_button("🔁 Valider les scores simulés")
+
+# --- 4. ACTIVATION SIMULATION
+if submit:
     st.session_state.simulation_validee = True
+
 
 # --- 5. SIMULATION SEULEMENT SI VALIDATION
 if st.session_state.simulation_validee:
