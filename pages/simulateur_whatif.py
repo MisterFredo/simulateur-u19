@@ -74,12 +74,19 @@ st.title(f"🧪 Simulateur – {selected_nom}")
 matchs_termine = get_matchs_termine(champ_id, date_limite)
 classement_initial = get_classement_dynamique(champ_id, date_limite, matchs_override=matchs_termine)
 classement_initial = appliquer_penalites(classement_initial, date_limite)
+
+# --- Appliquer égalités particulières si besoin
+if champ_type_classement == "PARTICULIERE":
+    classement_initial, mini_classements_initial = appliquer_diff_particuliere(classement_initial, matchs_termine)
+
+# --- Tri final
 classement_initial = trier_et_numeroter(classement_initial, type_classement)
 
 # --- Filtrer classement initial sur la poule sélectionnée si besoin
 if selected_poule != "Toutes les poules":
     classement_initial = classement_initial[classement_initial["POULE"] == selected_poule]
 
+# --- Affichage du classement actuel
 st.markdown("### 🏆 Classement actuel")
 for poule in sorted(classement_initial["POULE"].unique()):
     st.subheader(f"Poule {poule}")
