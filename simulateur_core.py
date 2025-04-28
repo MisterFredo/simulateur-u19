@@ -18,43 +18,42 @@ def get_type_classement(champ_id):
     result = client.query(query).to_dataframe()
     return result.iloc[0]["CLASSEMENT"] if not result.empty else "GENERALE"
 
-def get_classement_dynamique(champ_id, date_limite, matchs_override=None):
+def get_classement_dynamique(id_championnat, date_limite, matchs_override=None):
     if matchs_override is not None:
         matchs = matchs_override.copy()
     else:
-        query = f"""
-            SELECT *
-            FROM `datafoot-448514.DATAFOOT.DATAFOOT_MATCH_2025`
-            WHERE STATUT = 'TERMINE'
-              AND ID_CHAMPIONNAT = {champ_id}
-              AND DATE <= DATE('{date_limite}')
-        """
-        matchs = client.query(query).to_dataframe()
+        # Charger depuis BigQuery
+        matchs = get_matchs_termine(id_championnat, date_limite)
 
+    # Créer classement
     if matchs.empty:
         return pd.DataFrame()
 
-    # Construire les lignes pour chaque équipe
     match_equipes = pd.concat([
         matchs.assign(
             ID_EQUIPE=matchs["ID_EQUIPE_DOM"],
             NOM_EQUIPE=matchs["EQUIPE_DOM"],
             BUTS_POUR=matchs["NB_BUT_DOM"],
             BUTS_CONTRE=matchs["NB_BUT_EXT"],
-            POINTS=matchs.apply(lambda row: 3 if row["NB_BUT_DOM"] > row["NB_BUT_EXT"]
-                                else (1 if row["NB_BUT_DOM"] == row["NB_BUT_EXT"] else 0), axis=1)
+            POINTS=matchs.apply(
+                lambda row: 3 if row["NB_BUT_DOM"] > row["NB_BUT_EXT"]
+                else (1 if row["NB_BUT_DOM"] == row["NB_BUT_EXT"] else 0),
+                axis=1,
+            )
         ),
         matchs.assign(
             ID_EQUIPE=matchs["ID_EQUIPE_EXT"],
             NOM_EQUIPE=matchs["EQUIPE_EXT"],
             BUTS_POUR=matchs["NB_BUT_EXT"],
             BUTS_CONTRE=matchs["NB_BUT_DOM"],
-            POINTS=matchs.apply(lambda row: 3 if row["NB_BUT_EXT"] > row["NB_BUT_DOM"]
-                                else (1 if row["NB_BUT_EXT"] == row["NB_BUT_DOM"] else 0), axis=1)
+            POINTS=matchs.apply(
+                lambda row: 3 if row["NB_BUT_EXT"] > row["NB_BUT_DOM"]
+                else (1 if row["NB_BUT_EXT"] == row["NB_BUT_DOM"] else 0),
+                axis=1,
+            )
         )
     ])
 
-    # Aggrégation
     classement = match_equipes.groupby(["POULE", "ID_EQUIPE", "NOM_EQUIPE"]).agg(
         MJ=('ID_EQUIPE', 'count'),
         G=('POINTS', lambda x: (x == 3).sum()),
@@ -62,10 +61,9 @@ def get_classement_dynamique(champ_id, date_limite, matchs_override=None):
         P=('POINTS', lambda x: (x == 0).sum()),
         BP=('BUTS_POUR', 'sum'),
         BC=('BUTS_CONTRE', 'sum'),
-        POINTS=('POINTS', 'sum')
+        POINTS=('POINTS', 'sum'),
     ).reset_index()
 
-    # Calcul DIFF après
     classement["DIFF"] = classement["BP"] - classement["BC"]
 
     return classement
