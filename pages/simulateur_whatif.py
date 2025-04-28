@@ -1,3 +1,94 @@
+import streamlit as st
+import pandas as pd
+from datetime import date
+from google.cloud import bigquery
+from google.oauth2 import service_account
+
+from simulateur_core import (
+    load_championnats,
+    get_matchs_modifiables,
+    get_poules_temp,
+    get_matchs_termine,
+    get_classement_dynamique,
+    appliquer_penalites,
+    appliquer_diff_particuliere,
+    trier_et_numeroter,
+    get_type_classement,
+    classement_special_u19,
+    classement_special_u17,
+    classement_special_n2,
+    classement_special_n3,
+)
+
+# --- CONFIG STREAMLIT
+st.set_page_config(page_title="SIMULATEUR - Datafoot", layout="wide")
+
+# --- Connexion BigQuery
+credentials = service_account.Credentials.from_service_account_info(
+    st.secrets["gcp_service_account"]
+)
+client = bigquery.Client(credentials=credentials, project=credentials.project_id)
+
+# --- Chargement championnats
+championnats_df = load_championnats()
+
+# --- SIDEBAR (Filtres)
+st.sidebar.header("Filtres")
+
+selected_categorie = st.sidebar.selectbox("Catégorie", sorted(championnats_df["CATEGORIE"].unique()))
+selected_niveau = st.sidebar.selectbox(
+    "Niveau", sorted(championnats_df[championnats_df["CATEGORIE"] == selected_categorie]["NIVEAU"].unique())
+)
+
+champ_options = championnats_df[
+    (championnats_df["CATEGORIE"] == selected_categorie) &
+    (championnats_df["NIVEAU"] == selected_niveau)
+]
+
+selected_nom = st.sidebar.selectbox("Championnat", champ_options["NOM_CHAMPIONNAT"])
+champ_id = champ_options[champ_options["NOM_CHAMPIONNAT"] == selected_nom]["ID_CHAMPIONNAT"].values[0]
+
+type_classement = get_type_classement(champ_id)
+
+poules_temp = get_poules_temp(champ_id)
+all_poules = sorted(poules_temp["POULE"].dropna().unique())
+
+if len(all_poules) > 1:
+    selected_poule = st.sidebar.selectbox("Poule", ["Toutes les poules"] + all_poules)
+else:
+    selected_poule = all_poules[0] if all_poules else "Toutes les poules"
+
+date_limite = st.sidebar.date_input("Date de simulation", value=date.today())
+
+# --- TITRE
+st.title(f"🧪 Simulateur – {selected_nom}")
+
+# --- 1. CLASSEMENT ACTUEL
+matchs_termine = get_matchs_termine(champ_id, date_limite)
+classement_initial = get_classement_dynamique(champ_id, date_limite, matchs_override=matchs_termine)
+classement_initial = appliquer_penalites(classement_initial, date_limite)
+classement_initial = trier_et_numeroter(classement_initial, type_classement)
+
+st.markdown("### 🏆 Classement actuel")
+for poule in sorted(classement_initial["POULE"].unique()):
+    st.subheader(f"Poule {poule}")
+    classement_poule = classement_initial[classement_initial["POULE"] == poule]
+    colonnes = ["CLASSEMENT", "NOM_EQUIPE", "POINTS", "PENALITES", "MJ", "G", "N", "P", "BP", "BC", "DIFF"]
+    colonnes_finales = [col for col in colonnes if col in classement_poule.columns]
+    st.dataframe(classement_poule[colonnes_finales], use_container_width=True)
+
+# --- 2. MINI-CLASSEMENTS ACTUELS
+classement_initial, mini_classements_initial = appliquer_diff_particuliere(classement_initial, matchs_termine)
+
+if mini_classements_initial:
+    st.markdown("### Mini-classements des égalités particulières 🥇 (Classement actuel)")
+    for (poule, pts), mini in mini_classements_initial.items():
+        with st.expander(f"Poule {poule} – Égalité à {pts} points", expanded=True):
+            st.markdown("**Mini-classement :**")
+            st.dataframe(mini["classement"], use_container_width=True)
+            st.markdown("**Matchs concernés :**")
+            st.dataframe(mini["matchs"], use_container_width=True)
+
 # --- 3. MATCHS À SIMULER
 filtrer_non_joues = st.checkbox("Afficher uniquement les matchs non joués", value=True)
 
@@ -11,7 +102,7 @@ if matchs_simulables.empty:
     st.info("Aucun match disponible pour cette configuration.")
     st.stop()
 
-# --- Data editor simplifié (pas d'ID affichés)
+# --- Data editor simplifié
 edited_df = st.data_editor(
     matchs_simulables[[
         "JOURNEE", "POULE", "DATE",
@@ -61,12 +152,12 @@ if valider:
 
         # --- Remplacer uniquement les scores réellement simulés
         for idx, row in df_valid.iterrows():
-            id_match = matchs_simulables.iloc[idx]["ID_MATCH"]  # récupérer l'ID_MATCH original
+            id_match = matchs_simulables.iloc[idx]["ID_MATCH"]
             if not pd.isna(row["NB_BUT_DOM"]) and not pd.isna(row["NB_BUT_EXT"]):
                 matchs_tous.loc[matchs_tous["ID_MATCH"] == id_match, "NB_BUT_DOM"] = int(row["NB_BUT_DOM"])
                 matchs_tous.loc[matchs_tous["ID_MATCH"] == id_match, "NB_BUT_EXT"] = int(row["NB_BUT_EXT"])
 
-        # --- Sécurisation : ne garder que les matchs avec scores complets
+        # --- Sécurisation
         matchs_tous = matchs_tous.dropna(subset=["NB_BUT_DOM", "NB_BUT_EXT"])
 
         # --- Recalcul du classement
@@ -75,7 +166,7 @@ if valider:
         classement_simule, mini_classements_simule = appliquer_diff_particuliere(classement_simule, matchs_tous)
         classement_simule = trier_et_numeroter(classement_simule, type_classement)
 
-        # --- Confirmation utilisateur
+        # --- Confirmation
         st.success("✅ Simulation recalculée avec succès !")
 
         # --- Affichage du nouveau classement simulé
@@ -86,7 +177,7 @@ if valider:
             colonnes_finales = [col for col in colonnes if col in classement_poule.columns]
             st.dataframe(classement_poule[colonnes_finales], use_container_width=True)
 
-        # --- Mini-classements des égalités
+        # --- Mini-classements simulés
         if mini_classements_simule:
             st.markdown("### Mini-classements des égalités particulières 🥇 (Simulation)")
             for (poule, pts), mini in mini_classements_simule.items():
@@ -96,7 +187,7 @@ if valider:
                     st.markdown("**Matchs concernés :**")
                     st.dataframe(mini["matchs"], use_container_width=True)
 
-        # --- Affichage comparatifs spéciaux
+        # --- Comparatifs spéciaux
         if selected_poule == "Toutes les poules":
             if champ_id == 6:
                 st.markdown("### 🚨 Comparatif spécial U19")
