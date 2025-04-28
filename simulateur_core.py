@@ -19,10 +19,6 @@ def get_type_classement(champ_id):
     return result.iloc[0]["CLASSEMENT"] if not result.empty else "GENERALE"
 
 def get_classement_dynamique(champ_id, date_limite, matchs_override=None):
-    """
-    Récupère le classement dynamique d'un championnat.
-    Si matchs_override est fourni (DataFrame), il est utilisé au lieu de recharger depuis BigQuery.
-    """
     if matchs_override is not None:
         matchs = matchs_override.copy()
     else:
@@ -38,32 +34,27 @@ def get_classement_dynamique(champ_id, date_limite, matchs_override=None):
     if matchs.empty:
         return pd.DataFrame()
 
-    # Construction du classement
+    # Construire les lignes pour chaque équipe
     match_equipes = pd.concat([
         matchs.assign(
             ID_EQUIPE=matchs["ID_EQUIPE_DOM"],
             NOM_EQUIPE=matchs["EQUIPE_DOM"],
             BUTS_POUR=matchs["NB_BUT_DOM"],
             BUTS_CONTRE=matchs["NB_BUT_EXT"],
-            POINTS=matchs.apply(
-                lambda row: 3 if row["NB_BUT_DOM"] > row["NB_BUT_EXT"]
-                else (1 if row["NB_BUT_DOM"] == row["NB_BUT_EXT"] else 0),
-                axis=1,
-            )
+            POINTS=matchs.apply(lambda row: 3 if row["NB_BUT_DOM"] > row["NB_BUT_EXT"]
+                                else (1 if row["NB_BUT_DOM"] == row["NB_BUT_EXT"] else 0), axis=1)
         ),
         matchs.assign(
             ID_EQUIPE=matchs["ID_EQUIPE_EXT"],
             NOM_EQUIPE=matchs["EQUIPE_EXT"],
             BUTS_POUR=matchs["NB_BUT_EXT"],
             BUTS_CONTRE=matchs["NB_BUT_DOM"],
-            POINTS=matchs.apply(
-                lambda row: 3 if row["NB_BUT_EXT"] > row["NB_BUT_DOM"]
-                else (1 if row["NB_BUT_EXT"] == row["NB_BUT_DOM"] else 0),
-                axis=1,
-            )
+            POINTS=matchs.apply(lambda row: 3 if row["NB_BUT_EXT"] > row["NB_BUT_DOM"]
+                                else (1 if row["NB_BUT_EXT"] == row["NB_BUT_DOM"] else 0), axis=1)
         )
     ])
 
+    # Aggrégation
     classement = match_equipes.groupby(["POULE", "ID_EQUIPE", "NOM_EQUIPE"]).agg(
         MJ=('ID_EQUIPE', 'count'),
         G=('POINTS', lambda x: (x == 3).sum()),
@@ -71,9 +62,11 @@ def get_classement_dynamique(champ_id, date_limite, matchs_override=None):
         P=('POINTS', lambda x: (x == 0).sum()),
         BP=('BUTS_POUR', 'sum'),
         BC=('BUTS_CONTRE', 'sum'),
-        DIFF=('BUTS_POUR', 'sum') - match_equipes.groupby(["POULE", "ID_EQUIPE", "NOM_EQUIPE"])['BUTS_CONTRE'].sum(),
         POINTS=('POINTS', 'sum')
     ).reset_index()
+
+    # Calcul DIFF après
+    classement["DIFF"] = classement["BP"] - classement["BC"]
 
     return classement
 
