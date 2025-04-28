@@ -131,6 +131,10 @@ if st.button("🔁 Recalculer le classement avec ces scores simulés"):
                 matchs_tous.loc[matchs_tous["ID_MATCH"] == id_match, "NB_BUT_DOM"] = int(row["NB_BUT_DOM"])
                 matchs_tous.loc[matchs_tous["ID_MATCH"] == id_match, "NB_BUT_EXT"] = int(row["NB_BUT_EXT"])
 
+        # --- AJOUT pour corriger définitivement ---
+        matchs_tous = matchs_tous.dropna(subset=["NB_BUT_DOM", "NB_BUT_EXT"])
+        # --------------------------------------------------
+
         # Recalcul du classement
         classement_simule = get_classement_dynamique(champ_id, date_limite, matchs_override=matchs_tous)
         classement_simule = appliquer_penalites(classement_simule, date_limite)
@@ -145,7 +149,7 @@ if st.button("🔁 Recalculer le classement avec ces scores simulés"):
             colonnes_finales = [col for col in colonnes if col in classement_poule.columns]
             st.dataframe(classement_poule[colonnes_finales], use_container_width=True)
 
-        # Affichage des mini-championnats simulés
+        # Affichage des mini-classements simulés
         if mini_classements_simule:
             st.markdown("### Mini-classements des égalités particulières 🥇 (Simulation)")
             for (poule, pts), mini in mini_classements_simule.items():
