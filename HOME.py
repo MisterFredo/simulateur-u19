@@ -120,8 +120,8 @@ if selection == "Accueil":
     """)
 
     # --- Option de navigation vers simulateur ---
-    if st.button("🎯 Accéder au simulateur"):
-        st.session_state.page = "simulation"
+    st.page_link("pages/ANALYSE_CHAMPIONNAT.py", label="🚀 Accéder au simulateur", icon="🏆")
+
     
     # --- Lien vers la documentation ou aide
     st.markdown("### Aide et Documentation")
