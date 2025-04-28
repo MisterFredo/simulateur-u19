@@ -190,6 +190,17 @@ if st.session_state.simulation_validee:
         # --- Recalcul du classement
         classement_simule = get_classement_dynamique(champ_id, date_limite, matchs_override=matchs_tous)
         classement_simule = appliquer_penalites(classement_simule, date_limite)
+
+        # --- Mini-classements simulés si PARTICULIERE
+        if champ_type_classement == "PARTICULIERE":
+            classement_simule, mini_classements_simule = appliquer_diff_particuliere(classement_simule, matchs_tous)
+
+            if selected_poule != "Toutes les poules":
+                mini_classements_simule = {
+                    key: mini for key, mini in mini_classements_simule.items() if key[0] == selected_poule
+                }
+
+        # --- Tri final après toutes corrections
         classement_simule = trier_et_numeroter(classement_simule, type_classement)
 
         # --- Filtrer classement simulé sur la poule sélectionnée si besoin
@@ -207,25 +218,17 @@ if st.session_state.simulation_validee:
             colonnes_finales = [col for col in colonnes if col in classement_poule.columns]
             st.dataframe(classement_poule[colonnes_finales], use_container_width=True)
 
-        # --- MINI-CLASSEMENTS SIMULÉS (Seulement pour PARTICULIERE)
-        if champ_type_classement == "PARTICULIERE":
-            classement_simule, mini_classements_simule = appliquer_diff_particuliere(classement_simule, matchs_tous)
+        # --- Affichage mini-classements simulés (si PARTICULIERE)
+        if champ_type_classement == "PARTICULIERE" and mini_classements_simule:
+            st.markdown("### Mini-classements des égalités particulières 🥇 (Simulation)")
+            for (poule, pts), mini in mini_classements_simule.items():
+                with st.expander(f"Poule {poule} – Égalité à {pts} points", expanded=True):
+                    st.markdown("**Mini-classement :**")
+                    st.dataframe(mini["classement"], use_container_width=True)
+                    st.markdown("**Matchs concernés :**")
+                    st.dataframe(mini["matchs"], use_container_width=True)
 
-            if selected_poule != "Toutes les poules":
-                mini_classements_simule = {
-                    key: mini for key, mini in mini_classements_simule.items() if key[0] == selected_poule
-                }
-
-            if mini_classements_simule:
-                st.markdown("### Mini-classements des égalités particulières 🥇 (Simulation)")
-                for (poule, pts), mini in mini_classements_simule.items():
-                    with st.expander(f"Poule {poule} – Égalité à {pts} points", expanded=True):
-                        st.markdown("**Mini-classement :**")
-                        st.dataframe(mini["classement"], use_container_width=True)
-                        st.markdown("**Matchs concernés :**")
-                        st.dataframe(mini["matchs"], use_container_width=True)
-
-        # --- Comparatifs spéciaux
+        # --- Comparatifs spéciaux si toutes poules
         if selected_poule == "Toutes les poules":
             if champ_id == 6:
                 st.markdown("### 🚨 Comparatif spécial U19")
@@ -247,10 +250,6 @@ if st.session_state.simulation_validee:
 
             if champ_id == 5:
                 st.markdown("### ⚠️ Comparatif spécial N3")
-                df_10e = classement_special_n3(classement_simule, champ_id, date_limite)
-                if df_10e is not None:
-                    st.dataframe(df_10e, use_container_width=True)
-
                 df_10e = classement_special_n3(classement_simule, champ_id, date_limite)
                 if df_10e is not None:
                     st.dataframe(df_10e, use_container_width=True)
