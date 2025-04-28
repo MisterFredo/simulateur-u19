@@ -23,6 +23,32 @@ from simulateur_core import (
 # --- CONFIG STREAMLIT
 st.set_page_config(page_title="SIMULATEUR - Datafoot", layout="wide")
 
+# --- FONCTION AFFICHAGE COMPARATIFS SPÉCIAUX
+def afficher_comparatifs_speciaux(champ_id, classement_df, date_limite):
+    if champ_id == 6:
+        st.markdown("### 🚨 Comparatif spécial U19")
+        df_11e = classement_special_u19(classement_df, champ_id, date_limite)
+        if df_11e is not None:
+            st.dataframe(df_11e, use_container_width=True)
+
+    if champ_id == 7:
+        st.markdown("### 🥈 Comparatif spécial U17")
+        df_2e = classement_special_u17(classement_df, champ_id, date_limite)
+        if df_2e is not None:
+            st.dataframe(df_2e, use_container_width=True)
+
+    if champ_id == 4:
+        st.markdown("### 🚨 Comparatif spécial N2")
+        df_13e = classement_special_n2(classement_df, champ_id, date_limite)
+        if df_13e is not None:
+            st.dataframe(df_13e, use_container_width=True)
+
+    if champ_id == 5:
+        st.markdown("### ⚠️ Comparatif spécial N3")
+        df_10e = classement_special_n3(classement_df, champ_id, date_limite)
+        if df_10e is not None:
+            st.dataframe(df_10e, use_container_width=True)
+
 # --- INIT SESSION STATE
 if "simulation_validee" not in st.session_state:
     st.session_state.simulation_validee = False
@@ -94,6 +120,9 @@ for poule in sorted(classement_initial["POULE"].unique()):
     colonnes = ["CLASSEMENT", "NOM_EQUIPE", "POINTS", "PENALITES", "MJ", "G", "N", "P", "BP", "BC", "DIFF"]
     colonnes_finales = [col for col in colonnes if col in classement_poule.columns]
     st.dataframe(classement_poule[colonnes_finales], use_container_width=True)
+
+if selected_poule == "Toutes les poules":
+    afficher_comparatifs_speciaux(champ_id, classement_initial, date_limite)
 
 # --- 2. MINI-CLASSEMENTS ACTUELS (Seulement pour PARTICULIERE)
 if champ_type_classement == "PARTICULIERE":
@@ -234,6 +263,10 @@ if st.session_state.simulation_validee:
                     st.dataframe(mini["classement"], use_container_width=True)
                     st.markdown("**Matchs concernés :**")
                     st.dataframe(mini["matchs"], use_container_width=True)
+
+        if selected_poule == "Toutes les poules":
+            afficher_comparatifs_speciaux(champ_id, classement_simule, date_limite)
+
 
         # --- Comparatifs spéciaux si toutes poules
         if selected_poule == "Toutes les poules":
