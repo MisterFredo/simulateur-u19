@@ -4,6 +4,10 @@ from datetime import date
 from google.cloud import bigquery
 from google.oauth2 import service_account
 
+import sys
+import os
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
 from simulateur_core import (
     load_championnats,
     get_matchs_modifiables,
