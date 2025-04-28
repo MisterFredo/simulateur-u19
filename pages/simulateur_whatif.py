@@ -89,28 +89,60 @@ edited_df = st.data_editor(
 
 # --- Fonction recalcul
 def recalculer_classement_simule(matchs_modifies, champ_id, date_limite, selected_poule, type_classement):
+    from simulateur_core import appliquer_penalites, appliquer_diff_particuliere, trier_et_numeroter
+    import pandas as pd
 
-    matchs_officiels = get_matchs_termine(champ_id, date_limite)
-
-    if matchs_officiels.empty:
+    if matchs_modifies.empty:
         return pd.DataFrame(), {}
 
-    matchs_simules = matchs_officiels.copy()
-    for idx, row in matchs_modifies.iterrows():
-        id_match = row["ID_MATCH"]
-        if id_match in matchs_simules["ID_MATCH"].values:
-            matchs_simules.loc[matchs_simules["ID_MATCH"] == id_match, "NB_BUT_DOM"] = row["NB_BUT_DOM"]
-            matchs_simules.loc[matchs_simules["ID_MATCH"] == id_match, "NB_BUT_EXT"] = row["NB_BUT_EXT"]
+    # 1. Construction manuelle du classement simulé (home + away)
+    match_equipes = pd.concat([
+        matchs_modifies.assign(
+            ID_EQUIPE=matchs_modifies["ID_EQUIPE_DOM"],
+            NOM_EQUIPE=matchs_modifies["EQUIPE_DOM"],
+            BUTS_POUR=matchs_modifies["NB_BUT_DOM"],
+            BUTS_CONTRE=matchs_modifies["NB_BUT_EXT"],
+            POINTS=matchs_modifies.apply(
+                lambda row: 3 if row["NB_BUT_DOM"] > row["NB_BUT_EXT"]
+                else (1 if row["NB_BUT_DOM"] == row["NB_BUT_EXT"] else 0),
+                axis=1
+            )
+        ),
+        matchs_modifies.assign(
+            ID_EQUIPE=matchs_modifies["ID_EQUIPE_EXT"],
+            NOM_EQUIPE=matchs_modifies["EQUIPE_EXT"],
+            BUTS_POUR=matchs_modifies["NB_BUT_EXT"],
+            BUTS_CONTRE=matchs_modifies["NB_BUT_DOM"],
+            POINTS=matchs_modifies.apply(
+                lambda row: 3 if row["NB_BUT_EXT"] > row["NB_BUT_DOM"]
+                else (1 if row["NB_BUT_EXT"] == row["NB_BUT_DOM"] else 0),
+                axis=1
+            )
+        )
+    ])
 
-    classement_df = get_classement_dynamique(champ_id, date_limite, matchs_override=matchs_simules)
+    classement_df = match_equipes.groupby(["POULE", "ID_EQUIPE", "NOM_EQUIPE"]).agg(
+        MJ=('ID_EQUIPE', 'count'),
+        G=('POINTS', lambda x: (x == 3).sum()),
+        N=('POINTS', lambda x: (x == 1).sum()),
+        P=('POINTS', lambda x: (x == 0).sum()),
+        BP=('BUTS_POUR', 'sum'),
+        BC=('BUTS_CONTRE', 'sum'),
+        POINTS=('POINTS', 'sum')
+    ).reset_index()
 
-    if classement_df.empty:
-        return classement_df, {}
+    classement_df["DIFF"] = classement_df["BP"] - classement_df["BC"]
 
+    # 2. Appliquer pénalités
     classement_df = appliquer_penalites(classement_df, date_limite)
-    classement_df, mini_classements = appliquer_diff_particuliere(classement_df, matchs_simules)
+
+    # 3. Appliquer égalités particulières
+    classement_df, mini_classements = appliquer_diff_particuliere(classement_df, matchs_modifies)
+
+    # 4. Trier et numéroter
     classement_df = trier_et_numeroter(classement_df, type_classement)
 
+    # 5. Filtrer sur la poule
     if selected_poule != "Toutes les poules":
         classement_df = classement_df[classement_df["POULE"] == selected_poule]
 
