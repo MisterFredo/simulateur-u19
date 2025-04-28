@@ -167,31 +167,49 @@ else:
 def afficher_simulateur_whatif():
     st.title("Simulation de Classement 🔮")
 
-    # --- Chargement des championnats disponibles ---
     championnats = load_championnats()
-
-    # --- Sélection du championnat ---
     selected_championnat = st.selectbox("Sélectionnez un championnat à simuler :", championnats['NOM_CHAMPIONNAT'])
 
     if selected_championnat:
         id_championnat = championnats.loc[championnats['NOM_CHAMPIONNAT'] == selected_championnat, 'ID_CHAMPIONNAT'].values[0]
 
-        # --- Chargement des matchs modifiables ---
         matchs = get_matchs_modifiables(id_championnat)
 
-        st.markdown("### Modifiez les scores si nécessaire :")
-
         if not matchs.empty:
-            st.dataframe(matchs, use_container_width=True)
+            st.markdown("### Modifiez les scores si nécessaire :")
+            matchs_modifies = appliquer_scores_simules(matchs)
+
+            if st.button("🔄 Recalculer le Classement Simulé"):
+                classement, mini_classements = recalculer_classement_simule(matchs_modifies, id_championnat)
+
+                if classement is not None and not classement.empty:
+                    st.success("Classement simulé recalculé avec succès !")
+
+                    poules_dispo = classement['POULE'].unique()
+                    for poule in sorted(poules_dispo):
+                        st.markdown(f"### Poule {poule}")
+                        classement_poule = classement[classement["POULE"] == poule]
+
+                        colonnes_souhaitées = [
+                            "CLASSEMENT", "NOM_EQUIPE", "POINTS",
+                            "PENALITES", "G", "N", "P", "BP", "BC", "DIFF"
+                        ]
+                        colonnes_finales = [col for col in colonnes_souhaitées if col in classement_poule.columns]
+                        st.dataframe(classement_poule[colonnes_finales], use_container_width=True)
+
+                    # --- Mini-classements affichés aussi
+                    st.markdown("## 🔥 Détails des Égalités Particulières")
+                    for (poule, pts), mini in mini_classements.items():
+                        st.markdown(f"#### Poule {poule} - {pts} points")
+                        st.dataframe(mini["classement"], use_container_width=True)
+                        st.dataframe(mini["matchs"], use_container_width=True)
+
+                else:
+                    st.warning("Impossible de recalculer le classement simulé.")
         else:
             st.warning("Aucun match disponible pour simulation dans ce championnat.")
 
-        # --- Recalcul du classement simulé (quand ce sera intégré) ---
-        # recalculer_classement_simule(matchs)
-
-    # --- Retour à l'accueil (toujours accessible, même si aucun championnat sélectionné) ---
+    # --- Retour à l'accueil ---
     st.markdown("---")
     if st.button("⬅️ Retour à l'accueil"):
         st.session_state.page = "home"
-
-
