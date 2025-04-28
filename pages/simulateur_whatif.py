@@ -146,6 +146,7 @@ if submit:
 if st.session_state.simulation_validee:
 
     df_valid = edited_df.dropna(subset=["NB_BUT_DOM", "NB_BUT_EXT"])
+    df_valid = df_valid.reset_index(drop=True)
 
     if df_valid.empty:
         st.warning("🚫 Aucun score simulé valide.")
