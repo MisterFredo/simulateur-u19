@@ -118,9 +118,28 @@ if selection == "Accueil":
     2. **Règles spéciales** : Accédez à des classements spécifiques (ex : U19, U17, N2, N3) pour des analyses détaillées.
     3. **Différences particulières** : Gérez les égalités entre équipes avec des critères comme les confrontations directes.
     """)
-
-    # --- Option de navigation vers simulateur ---
-    st.page_link("pages/ANALYSE_CHAMPIONNAT.py", label="🚀 Accéder au simulateur", icon="🏆")
+    # Bouton stylé pour accéder au simulateur
+st.markdown("""
+<style>
+.button-simulateur {
+    display: inline-block;
+    padding: 1rem 2rem;
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: white;
+    background-color: #0066cc;
+    border: none;
+    border-radius: 12px;
+    text-decoration: none;
+    text-align: center;
+    transition: background-color 0.3s ease;
+}
+.button-simulateur:hover {
+    background-color: #005bb5;
+}
+</style>
+<a href="?page=ANALYSE_CHAMPIONNAT" class="button-simulateur">🚀 Accéder au simulateur</a>
+""", unsafe_allow_html=True)
 
     
     # --- Lien vers la documentation ou aide
