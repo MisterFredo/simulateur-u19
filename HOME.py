@@ -3,7 +3,10 @@ from datetime import date
 import simulateur_core as core
 
 # --- Configuration de la page principale ---
-st.set_page_config(page_title="Datafoot", page_icon="⚽", layout="wide", initial_sidebar_state="collapsed")
+st.set_page_config(page_title="Datafoot.ai", page_icon="🏆", layout="wide")
+
+with st.sidebar:
+    st.image("LOGO DATAFOOT CARRE.png", use_column_width=True)
 
 # --- Désactivation de la barre de navigation globale Streamlit (menu en haut) ---
 st.markdown(
