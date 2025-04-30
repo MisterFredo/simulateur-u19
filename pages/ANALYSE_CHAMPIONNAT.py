@@ -153,16 +153,22 @@ st.markdown("### 🏆 Classement actuel")
 for poule in sorted(classement_initial["POULE"].unique()):
     st.subheader(f"Poule {poule}")
     classement_poule = classement_initial[classement_initial["POULE"] == poule]
-    colonnes_finales = (colonnes_simplifiees + ["DIF_CAL"]) if mode_simplifie else (colonnes_completes + ["DIF_CAL"])
+
+    # Ordre des colonnes
+    colonnes_completes = [
+        "CLASSEMENT", "NOM_EQUIPE", "POINTS", "MJ", "DIF_CAL",
+        "G", "N", "P", "PENALITES", "BP", "BC", "DIFF"
+    ]
+    colonnes_simplifiees = [
+        "CLASSEMENT", "NOM_EQUIPE", "POINTS", "MJ", "DIF_CAL", "DIFF"
+    ]
+
+    colonnes_finales = colonnes_simplifiees if mode_simplifie else colonnes_completes
     colonnes_finales = [col for col in colonnes_finales if col in classement_poule.columns]
+
     st.dataframe(classement_poule[colonnes_finales], use_container_width=True, hide_index=True)
     st.markdown("*La colonne DIF_CAL évalue la difficulté du calendrier à venir.*")
 
-if selected_poule == "Toutes les poules":
-    afficher_comparatifs_speciaux(champ_id, classement_initial, date_limite)
-
-if champ_type_classement == "PARTICULIERE" and mini_classements_initial:
-    afficher_mini_classements_bloc(mini_classements_initial, "### Mini-classements des égalités particulières 🥇 (Classement actuel)")
 
 # --- 3BIS. FORMULAIRE DE SIMULATION
 with st.form("formulaire_simulation"):
