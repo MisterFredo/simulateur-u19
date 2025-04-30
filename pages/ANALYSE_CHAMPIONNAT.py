@@ -134,8 +134,12 @@ for poule in sorted(classement_initial["POULE"].unique()):
     colonnes_finales = colonnes_simplifiees if mode_simplifie else colonnes_completes
     colonnes_finales = [col for col in colonnes_finales if col in classement_poule.columns]
 
-    st.dataframe(classement_poule[colonnes_finales].reset_index(drop=True), use_container_width=True, height=500)
+    # Forcer CLASSEMENT tout devant
+    if "CLASSEMENT" in colonnes_finales:
+        colonnes_finales = ["CLASSEMENT"] + [col for col in colonnes_finales if col != "CLASSEMENT"]
 
+    st.dataframe(classement_poule[colonnes_finales].reset_index(drop=True), use_container_width=True, height=500)
+    
 if selected_poule == "Toutes les poules":
     afficher_comparatifs_speciaux(champ_id, classement_initial, date_limite)
 
