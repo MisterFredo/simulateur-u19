@@ -457,3 +457,33 @@ def recalculer_classement_simule(matchs_simules, champ_id, date_limite, selected
 
     return classement_df, mini_classements
 
+def calculer_difficulte_calendrier(classement_df, matchs_restants):
+    """
+    Ajoute une colonne 'DIF_CAL' à un classement donné, représentant la somme des classements
+    des adversaires encore à jouer pour chaque équipe.
+
+    :param classement_df: DataFrame du classement (avec colonnes 'ID_EQUIPE' et 'CLASSEMENT')
+    :param matchs_restants: DataFrame des matchs non encore joués (avec 'ID_EQUIPE_DOM' et 'ID_EQUIPE_EXT')
+    :return: classement_df avec la colonne 'DIF_CAL' ajoutée
+    """
+    # Créer un dictionnaire {ID_EQUIPE: classement}
+    dico_classement = dict(zip(classement_df["ID_EQUIPE"], classement_df["CLASSEMENT"]))
+
+    # Initialiser une colonne de score
+    classement_df["DIF_CAL"] = 0
+
+    # Pour chaque équipe, repérer ses adversaires restants
+    for equipe in classement_df["ID_EQUIPE"]:
+        adversaires = []
+
+        # Matchs où l’équipe est à domicile
+        adversaires += matchs_restants.loc[matchs_restants["ID_EQUIPE_DOM"] == equipe, "ID_EQUIPE_EXT"].tolist()
+
+        # Matchs où l’équipe est à l’extérieur
+        adversaires += matchs_restants.loc[matchs_restants["ID_EQUIPE_EXT"] == equipe, "ID_EQUIPE_DOM"].tolist()
+
+        # Calculer la somme des classements des adversaires
+        difficulte = sum(dico_classement.get(adv, 0) for adv in adversaires)
+        classement_df.loc[classement_df["ID_EQUIPE"] == equipe, "DIF_CAL"] = difficulte
+
+    return classement_df
