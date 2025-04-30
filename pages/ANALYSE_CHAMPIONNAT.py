@@ -138,11 +138,7 @@ for poule in sorted(classement_initial["POULE"].unique()):
     st.subheader(f"Poule {poule}")
     classement_poule = classement_initial[classement_initial["POULE"] == poule].copy()
 
-    # Forcer l'arrondi de DIF_CAL à 2 chiffres
-    if "DIF_CAL" in classement_poule.columns:
-        classement_poule["DIF_CAL"] = classement_poule["DIF_CAL"].round(2)
-
-    # Définition des colonnes à afficher
+    # Colonnes affichées
     colonnes_completes = [
         "CLASSEMENT", "NOM_EQUIPE", "POINTS", "MJ", "DIF_CAL",
         "G", "N", "P", "PENALITES", "BP", "BC", "DIFF"
@@ -153,35 +149,42 @@ for poule in sorted(classement_initial["POULE"].unique()):
     colonnes_finales = colonnes_simplifiees if mode_simplifie else colonnes_completes
     colonnes_finales = [col for col in colonnes_finales if col in classement_poule.columns]
 
-    # Tri par DIF_CAL pour déterminer les tiers
-    classement_sorted = classement_poule.sort_values(by="DIF_CAL", ascending=False).reset_index(drop=True)
-    total = len(classement_sorted)
-    tiers = [total // 3, total // 3, total - 2 * (total // 3)]
-    couleurs = {}
+    # Si la colonne DIF_CAL existe → on applique le style par tiers
+    if "DIF_CAL" in classement_poule.columns:
+        classement_poule["DIF_CAL"] = classement_poule["DIF_CAL"].round(2)
 
-    for i in range(total):
-        id_equipe = classement_sorted.loc[i, "ID_EQUIPE"]
-        if i < tiers[0]:
-            couleurs[id_equipe] = "#f8d7da"  # rouge clair (plus difficile)
-        elif i < tiers[0] + tiers[1]:
-            couleurs[id_equipe] = "#fff3cd"  # jaune clair (moyen)
-        else:
-            couleurs[id_equipe] = "#d4edda"  # vert clair (plus facile)
+        # Tri pour découpage par tiers
+        classement_sorted = classement_poule.sort_values(by="DIF_CAL", ascending=False).reset_index(drop=True)
+        total = len(classement_sorted)
+        tiers = [total // 3, total // 3, total - 2 * (total // 3)]
+        couleurs = {}
 
-    def style_dif_cal(val, id_eq):
-        return f"background-color: {couleurs.get(id_eq, '')};" if pd.notnull(val) else ""
+        for i in range(total):
+            id_equipe = classement_sorted.loc[i, "ID_EQUIPE"]
+            if i < tiers[0]:
+                couleurs[id_equipe] = "#f8d7da"  # rouge (plus difficile)
+            elif i < tiers[0] + tiers[1]:
+                couleurs[id_equipe] = "#fff3cd"  # orange
+            else:
+                couleurs[id_equipe] = "#d4edda"  # vert (plus facile)
 
-    styled_df = classement_poule[colonnes_finales].style.apply(
-        lambda col: [
-            style_dif_cal(val, classement_poule.iloc[i]["ID_EQUIPE"])
-            if col.name == "DIF_CAL" else ""
-            for i, val in enumerate(col)
-        ],
-        axis=0
-    )
+        def style_dif_cal(val, id_eq):
+            return f"background-color: {couleurs.get(id_eq, '')};" if pd.notnull(val) else ""
 
-    st.dataframe(styled_df, use_container_width=True, hide_index=True)
-    st.markdown("*La colonne DIF_CAL évalue la difficulté du calendrier à venir. Les couleurs indiquent les tiers : vert (facile), orange (moyen), rouge (difficile).*")
+        styled_df = classement_poule[colonnes_finales].style.apply(
+            lambda col: [
+                style_dif_cal(val, classement_poule.iloc[i]["ID_EQUIPE"])
+                if col.name == "DIF_CAL" else ""
+                for i, val in enumerate(col)
+            ],
+            axis=0
+        )
+
+        st.dataframe(styled_df, use_container_width=True, hide_index=True)
+        st.markdown("*La colonne DIF_CAL évalue la difficulté du calendrier à venir. Les couleurs indiquent les tiers : vert (facile), orange (moyen), rouge (difficile).*")
+
+    else:
+        st.dataframe(classement_poule[colonnes_finales], use_container_width=True, hide_index=True)
 
 
 
