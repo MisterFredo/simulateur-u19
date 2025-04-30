@@ -147,7 +147,7 @@ def appliquer_diff_particuliere(classement_df, matchs_df, selected_poule="Toutes
 
     return classement_df, mini_classements
 
-@st.cache_data(show_spinner=False)
+@st.cache
 def get_poules_temp(champ_id):
     query = f"""
         SELECT DISTINCT POULE
@@ -158,14 +158,14 @@ def get_poules_temp(champ_id):
     """
     return client.query(query).to_dataframe()
 
-@st.cache_data(show_spinner=False)
+
+@st.cache
 def load_championnats():
     query = """
         SELECT ID_CHAMPIONNAT, NOM_CHAMPIONNAT, CATEGORIE, NIVEAU, CLASSEMENT
         FROM `datafoot-448514.DATAFOOT.DATAFOOT_CHAMPIONNAT`
     """
     return client.query(query).to_dataframe()
-
 
 def appliquer_penalites(classement_df, date_limite):
     penalites_actives = client.query(f"""
