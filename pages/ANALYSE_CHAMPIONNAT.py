@@ -154,7 +154,7 @@ for poule in sorted(classement_initial["POULE"].unique()):
     st.subheader(f"Poule {poule}")
     classement_poule = classement_initial[classement_initial["POULE"] == poule]
 
-    # Ordre des colonnes
+    # Définition des colonnes à afficher
     colonnes_completes = [
         "CLASSEMENT", "NOM_EQUIPE", "POINTS", "MJ", "DIF_CAL",
         "G", "N", "P", "PENALITES", "BP", "BC", "DIFF"
@@ -162,12 +162,38 @@ for poule in sorted(classement_initial["POULE"].unique()):
     colonnes_simplifiees = [
         "CLASSEMENT", "NOM_EQUIPE", "POINTS", "MJ", "DIF_CAL", "DIFF"
     ]
-
     colonnes_finales = colonnes_simplifiees if mode_simplifie else colonnes_completes
     colonnes_finales = [col for col in colonnes_finales if col in classement_poule.columns]
 
-    st.dataframe(classement_poule[colonnes_finales], use_container_width=True, hide_index=True)
-    st.markdown("*La colonne DIF_CAL évalue la difficulté du calendrier à venir.*")
+    # Tri par DIF_CAL pour déterminer les tiers
+    classement_sorted = classement_poule.sort_values(by="DIF_CAL", ascending=True).reset_index(drop=True)
+    total = len(classement_sorted)
+    tiers = [total // 3, total // 3, total - 2 * (total // 3)]
+    couleurs = {}
+
+    for i in range(total):
+        id_equipe = classement_sorted.loc[i, "ID_EQUIPE"]
+        if i < tiers[0]:
+            couleurs[id_equipe] = "#d4edda"  # vert clair
+        elif i < tiers[0] + tiers[1]:
+            couleurs[id_equipe] = "#fff3cd"  # jaune clair
+        else:
+            couleurs[id_equipe] = "#f8d7da"  # rouge clair
+
+    def style_dif_cal(val, id_eq):
+        return f"background-color: {couleurs.get(id_eq, '')};" if pd.notnull(val) else ""
+
+    styled_df = classement_poule[colonnes_finales].style.apply(
+        lambda col: [
+            style_dif_cal(val, classement_poule.iloc[i]["ID_EQUIPE"])
+            if col.name == "DIF_CAL" else ""
+            for i, val in enumerate(col)
+        ],
+        axis=0
+    )
+
+    st.dataframe(styled_df, use_container_width=True, hide_index=True)
+    st.markdown("*La colonne DIF_CAL évalue la difficulté du calendrier à venir. Les couleurs indiquent les tiers : vert (facile), orange (moyen), rouge (difficile).*")
 
 
 # --- 3BIS. FORMULAIRE DE SIMULATION
