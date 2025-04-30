@@ -132,27 +132,15 @@ if champ_type_classement == "PARTICULIERE":
 
 classement_initial = trier_et_numeroter(classement_initial, type_classement)
 
-# --- 3. MATCHS À SIMULER (anticipé ici pour calcul DIF_CAL)
-filtrer_non_joues = st.checkbox("Afficher uniquement les matchs non joués", value=True)
-
-matchs_simulables = get_matchs_modifiables(champ_id, date_limite, filtrer_non_joues)
-
-if selected_poule != "Toutes les poules":
-    matchs_simulables = matchs_simulables[matchs_simulables["POULE"] == selected_poule]
-    classement_initial = classement_initial[classement_initial["POULE"] == selected_poule]
-
-# --- Colonnes pour l'affichage des matchs (matchs à simuler + simulés)
-colonnes_matchs_simplifiees = ["EQUIPE_DOM", "NB_BUT_DOM", "EQUIPE_EXT", "NB_BUT_EXT"]
-colonnes_matchs_completes = ["JOURNEE", "POULE", "DATE", "EQUIPE_DOM", "NB_BUT_DOM", "EQUIPE_EXT", "NB_BUT_EXT"]
-
-# --- Calcul de la difficulté du calendrier à venir
-classement_initial = calculer_difficulte_calendrier(classement_initial, matchs_simulables)
-
 # --- Affichage du classement actuel
 st.markdown("### 🏆 Classement actuel")
 for poule in sorted(classement_initial["POULE"].unique()):
     st.subheader(f"Poule {poule}")
-    classement_poule = classement_initial[classement_initial["POULE"] == poule]
+    classement_poule = classement_initial[classement_initial["POULE"] == poule].copy()
+
+    # Forcer l'arrondi de DIF_CAL à 2 chiffres
+    if "DIF_CAL" in classement_poule.columns:
+        classement_poule["DIF_CAL"] = classement_poule["DIF_CAL"].round(2)
 
     # Définition des colonnes à afficher
     colonnes_completes = [
@@ -166,7 +154,7 @@ for poule in sorted(classement_initial["POULE"].unique()):
     colonnes_finales = [col for col in colonnes_finales if col in classement_poule.columns]
 
     # Tri par DIF_CAL pour déterminer les tiers
-    classement_sorted = classement_poule.sort_values(by="DIF_CAL", ascending=True).reset_index(drop=True)
+    classement_sorted = classement_poule.sort_values(by="DIF_CAL", ascending=False).reset_index(drop=True)
     total = len(classement_sorted)
     tiers = [total // 3, total // 3, total - 2 * (total // 3)]
     couleurs = {}
@@ -174,11 +162,11 @@ for poule in sorted(classement_initial["POULE"].unique()):
     for i in range(total):
         id_equipe = classement_sorted.loc[i, "ID_EQUIPE"]
         if i < tiers[0]:
-            couleurs[id_equipe] = "#d4edda"  # vert clair
+            couleurs[id_equipe] = "#f8d7da"  # rouge clair (plus difficile)
         elif i < tiers[0] + tiers[1]:
-            couleurs[id_equipe] = "#fff3cd"  # jaune clair
+            couleurs[id_equipe] = "#fff3cd"  # jaune clair (moyen)
         else:
-            couleurs[id_equipe] = "#f8d7da"  # rouge clair
+            couleurs[id_equipe] = "#d4edda"  # vert clair (plus facile)
 
     def style_dif_cal(val, id_eq):
         return f"background-color: {couleurs.get(id_eq, '')};" if pd.notnull(val) else ""
@@ -194,6 +182,7 @@ for poule in sorted(classement_initial["POULE"].unique()):
 
     st.dataframe(styled_df, use_container_width=True, hide_index=True)
     st.markdown("*La colonne DIF_CAL évalue la difficulté du calendrier à venir. Les couleurs indiquent les tiers : vert (facile), orange (moyen), rouge (difficile).*")
+
 
 
 # --- 3BIS. FORMULAIRE DE SIMULATION
