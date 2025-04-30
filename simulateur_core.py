@@ -32,8 +32,8 @@ def get_classement_dynamique(id_championnat, date_limite, matchs_override=None):
         # Charger depuis BigQuery
         matchs = get_matchs_termine(id_championnat, date_limite)
 
-    # Créer classement
-    if matchs.empty:
+    # Sécurité : si aucun match, on retourne un DataFrame vide
+    if matchs is None or matchs.empty:
         return pd.DataFrame()
 
     match_equipes = pd.concat([
