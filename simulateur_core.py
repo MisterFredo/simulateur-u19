@@ -459,14 +459,10 @@ def recalculer_classement_simule(matchs_simules, champ_id, date_limite, selected
 
 def calculer_difficulte_calendrier(df_classement, df_matchs):
     """
-    Calcule la difficulté brute du calendrier à venir pour chaque équipe,
-    basée sur la somme des classements actuels des adversaires restants.
-
-    df_classement : DataFrame avec les colonnes ID_EQUIPE et CLASSEMENT
-    df_matchs : DataFrame des matchs à venir (non joués), avec ID_EQUIPE_DOM et ID_EQUIPE_EXT
+    Calcule la difficulté moyenne du calendrier à venir pour chaque équipe,
+    en se basant sur le classement actuel de leurs adversaires restants.
     """
     classement_dict = df_classement.set_index("ID_EQUIPE")["CLASSEMENT"].to_dict()
-
     confrontations = []
 
     for _, row in df_matchs.iterrows():
@@ -483,7 +479,8 @@ def calculer_difficulte_calendrier(df_classement, df_matchs):
     df_difficulte = (
         df_confrontations
         .groupby("ID_EQUIPE")["CLASSEMENT_ADVERSAIRE"]
-        .sum()
+        .mean()
+        .round(2)
         .reset_index()
         .rename(columns={"CLASSEMENT_ADVERSAIRE": "DIF_CAL"})
     )
