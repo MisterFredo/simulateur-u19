@@ -131,7 +131,7 @@ if champ_type_classement == "PARTICULIERE":
     classement_initial, mini_classements_initial = appliquer_diff_particuliere(classement_initial, matchs_termine)
 
 classement_initial = trier_et_numeroter(classement_initial, type_classement)
-classement_initial = calculer_difficulte_calendrier(classement_initial, matchs_simulables)
+classement_initial = calculer_difficulte_calendrier(classement_initial, matchs_termine)
 
 if selected_poule != "Toutes les poules":
     classement_initial = classement_initial[classement_initial["POULE"] == selected_poule]
@@ -209,9 +209,6 @@ if matchs_simulables.empty:
 # Colonnes pour l'affichage mobile-friendly
 colonnes_matchs_simplifiees = ["EQUIPE_DOM", "NB_BUT_DOM", "EQUIPE_EXT", "NB_BUT_EXT"]
 colonnes_matchs_completes = ["JOURNEE", "POULE", "DATE", "EQUIPE_DOM", "NB_BUT_DOM", "EQUIPE_EXT", "NB_BUT_EXT"]
-
-# --- 3BIS. FORMULAIRE DE SIMULATION
-
 
 # --- 3BIS. FORMULAIRE DE SIMULATION
 with st.form("formulaire_simulation"):
