@@ -457,33 +457,34 @@ def recalculer_classement_simule(matchs_simules, champ_id, date_limite, selected
 
     return classement_df, mini_classements
 
-def calculer_difficulte_calendrier(classement_df, matchs_restants):
-    """
-    Ajoute une colonne 'DIF_CAL' à un classement donné, représentant la somme des classements
-    des adversaires encore à jouer pour chaque équipe.
+def calculer_difficulte_calendrier(df_classement, df_matchs_a_venir):
+    df = df_classement.copy()
+    
+    # Dictionnaire des classements par équipe
+    classement_dict = df.set_index("ID_EQUIPE")["CLASSEMENT"].to_dict()
 
-    :param classement_df: DataFrame du classement (avec colonnes 'ID_EQUIPE' et 'CLASSEMENT')
-    :param matchs_restants: DataFrame des matchs non encore joués (avec 'ID_EQUIPE_DOM' et 'ID_EQUIPE_EXT')
-    :return: classement_df avec la colonne 'DIF_CAL' ajoutée
-    """
-    # Créer un dictionnaire {ID_EQUIPE: classement}
-    dico_classement = dict(zip(classement_df["ID_EQUIPE"], classement_df["CLASSEMENT"]))
+    # Liste de tuples : (ID_EQUIPE, CLASSEMENT de l’adversaire)
+    confrontations = []
 
-    # Initialiser une colonne de score
-    classement_df["DIF_CAL"] = 0
+    for _, row in df_matchs_a_venir.iterrows():
+        id_dom = row["ID_EQUIPE_DOM"]
+        id_ext = row["ID_EQUIPE_EXT"]
 
-    # Pour chaque équipe, repérer ses adversaires restants
-    for equipe in classement_df["ID_EQUIPE"]:
-        adversaires = []
+        classement_ext = classement_dict.get(id_ext)
+        classement_dom = classement_dict.get(id_dom)
 
-        # Matchs où l’équipe est à domicile
-        adversaires += matchs_restants.loc[matchs_restants["ID_EQUIPE_DOM"] == equipe, "ID_EQUIPE_EXT"].tolist()
+        if classement_ext is not None:
+            confrontations.append((id_dom, classement_ext))
+        if classement_dom is not None:
+            confrontations.append((id_ext, classement_dom))
 
-        # Matchs où l’équipe est à l’extérieur
-        adversaires += matchs_restants.loc[matchs_restants["ID_EQUIPE_EXT"] == equipe, "ID_EQUIPE_DOM"].tolist()
+    df_confrontations = pd.DataFrame(confrontations, columns=["ID_EQUIPE", "CLASSEMENT_ADVERSAIRE"])
 
-        # Calculer la somme des classements des adversaires
-        difficulte = sum(dico_classement.get(adv, 0) for adv in adversaires)
-        classement_df.loc[classement_df["ID_EQUIPE"] == equipe, "DIF_CAL"] = difficulte
+    # Calcul moyenne
+    df_difficulte = df_confrontations.groupby("ID_EQUIPE")["CLASSEMENT_ADVERSAIRE"].mean().round(2).reset_index()
+    df_difficulte.rename(columns={"CLASSEMENT_ADVERSAIRE": "DIF_CAL"}, inplace=True)
 
-    return classement_df
+    df = df.merge(df_difficulte, on="ID_EQUIPE", how="left")
+    df["DIF_CAL"] = df["DIF_CAL"].fillna(0.0)
+
+    return df
