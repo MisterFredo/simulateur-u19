@@ -86,8 +86,14 @@ def get_matchs_termine(champ_id, date_limite):
         WHERE STATUT = 'TERMINE'
           AND ID_CHAMPIONNAT = {champ_id}
           AND DATE <= DATE('{date_limite}')
+          AND NB_BUT_DOM IS NOT NULL
+          AND NB_BUT_EXT IS NOT NULL
+          AND ID_EQUIPE_DOM IS NOT NULL
+          AND ID_EQUIPE_EXT IS NOT NULL
+          AND POULE IS NOT NULL
     """
     return client.query(query).to_dataframe()
+
 
 def appliquer_diff_particuliere(classement_df, matchs_df, selected_poule="Toutes les poules"):
     classement_df["RANG_CONFRONT"] = 999
