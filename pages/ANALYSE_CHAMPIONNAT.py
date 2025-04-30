@@ -124,8 +124,16 @@ st.markdown("### 🏆 Classement actuel")
 for poule in sorted(classement_initial["POULE"].unique()):
     st.subheader(f"Poule {poule}")
     classement_poule = classement_initial[classement_initial["POULE"] == poule]
+
+    # Suppression de colonnes parasites éventuelles
+    if "index" in classement_poule.columns:
+        classement_poule = classement_poule.drop(columns=["index"])
+    if "Unnamed: 0" in classement_poule.columns:
+        classement_poule = classement_poule.drop(columns=["Unnamed: 0"])
+
     colonnes_finales = colonnes_simplifiees if mode_simplifie else colonnes_completes
     colonnes_finales = [col for col in colonnes_finales if col in classement_poule.columns]
+
     st.dataframe(classement_poule[colonnes_finales].reset_index(drop=True), use_container_width=True, height=500)
 
 if selected_poule == "Toutes les poules":
