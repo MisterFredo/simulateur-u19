@@ -147,7 +147,6 @@ def appliquer_diff_particuliere(classement_df, matchs_df, selected_poule="Toutes
 
     return classement_df, mini_classements
 
-@st.cache
 def get_poules_temp(champ_id):
     query = f"""
         SELECT DISTINCT POULE
@@ -158,8 +157,6 @@ def get_poules_temp(champ_id):
     """
     return client.query(query).to_dataframe()
 
-
-@st.cache
 def load_championnats():
     query = """
         SELECT ID_CHAMPIONNAT, NOM_CHAMPIONNAT, CATEGORIE, NIVEAU, CLASSEMENT
