@@ -72,12 +72,6 @@ def afficher_mini_classements_bloc(mini_classements, titre_bloc):
 if "simulation_validee" not in st.session_state:
     st.session_state.simulation_validee = False
 
-# --- Connexion BigQuery
-credentials = service_account.Credentials.from_service_account_info(
-    st.secrets["gcp_service_account"]
-)
-client = bigquery.Client(credentials=credentials, project=credentials.project_id)
-
 # --- Chargement championnats
 championnats_df = load_championnats()
 
