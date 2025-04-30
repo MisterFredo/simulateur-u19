@@ -159,11 +159,11 @@ for poule in sorted(classement_initial["POULE"].unique()):
     for i in range(total):
         id_equipe = classement_sorted.loc[i, "ID_EQUIPE"]
         if i < tiers[0]:
-            couleurs[id_equipe] = "#f8d7da"  # rouge clair
+            couleurs[id_equipe] = "#d4edda"  # vert clair
         elif i < tiers[0] + tiers[1]:
             couleurs[id_equipe] = "#fff3cd"  # jaune clair
         else:
-            couleurs[id_equipe] = "#d4edda"  # vert clair
+            couleurs[id_equipe] = "#f8d7da"  # rouge clair
 
     def style_dif_cal(val, id_eq):
         return f"background-color: {couleurs.get(id_eq, '')};" if pd.notnull(val) else ""
