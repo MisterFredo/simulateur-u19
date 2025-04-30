@@ -124,6 +124,8 @@ colonnes_simplifiees = ["CLASSEMENT", "NOM_EQUIPE", "POINTS", "DIFF", "MJ"]
 
 # --- 1. CLASSEMENT ACTUEL
 matchs_termine = get_matchs_termine(champ_id, date_limite)
+matchs_restants = get_matchs_modifiables(champ_id, date_limite, filtrer_non_joues=True)
+
 classement_initial = get_classement_dynamique(champ_id, date_limite, matchs_override=matchs_termine)
 classement_initial = appliquer_penalites(classement_initial, date_limite)
 
@@ -131,7 +133,7 @@ if champ_type_classement == "PARTICULIERE":
     classement_initial, mini_classements_initial = appliquer_diff_particuliere(classement_initial, matchs_termine)
 
 classement_initial = trier_et_numeroter(classement_initial, type_classement)
-classement_initial = calculer_difficulte_calendrier(classement_initial, matchs_termine)
+classement_initial = calculer_difficulte_calendrier(classement_initial, matchs_restants)
 
 if selected_poule != "Toutes les poules":
     classement_initial = classement_initial[classement_initial["POULE"] == selected_poule]
@@ -142,11 +144,9 @@ for poule in sorted(classement_initial["POULE"].unique()):
     st.subheader(f"Poule {poule}")
     classement_poule = classement_initial[classement_initial["POULE"] == poule].copy()
 
-    # Arrondi DIF_CAL à 2 décimales
     if "DIF_CAL" in classement_poule.columns:
         classement_poule["DIF_CAL"] = classement_poule["DIF_CAL"].round(2)
 
-    # Définition des colonnes à afficher
     colonnes_completes = [
         "CLASSEMENT", "NOM_EQUIPE", "POINTS", "MJ", "DIF_CAL",
         "G", "N", "P", "PENALITES", "BP", "BC", "DIFF"
@@ -157,7 +157,6 @@ for poule in sorted(classement_initial["POULE"].unique()):
     colonnes_finales = colonnes_simplifiees if mode_simplifie else colonnes_completes
     colonnes_finales = [col for col in colonnes_finales if col in classement_poule.columns]
 
-    # Tri par DIF_CAL pour découper en tiers
     classement_sorted = classement_poule.sort_values(by="DIF_CAL", ascending=False).reset_index(drop=True)
     total = len(classement_sorted)
     tiers = [total // 3, total // 3, total - 2 * (total // 3)]
@@ -166,11 +165,11 @@ for poule in sorted(classement_initial["POULE"].unique()):
     for i in range(total):
         id_equipe = classement_sorted.loc[i, "ID_EQUIPE"]
         if i < tiers[0]:
-            couleurs[id_equipe] = "#d4edda"  # vert clair
+            couleurs[id_equipe] = "#f8d7da"  # rouge clair
         elif i < tiers[0] + tiers[1]:
             couleurs[id_equipe] = "#fff3cd"  # jaune clair
         else:
-            couleurs[id_equipe] = "#f8d7da"  # rouge clair
+            couleurs[id_equipe] = "#d4edda"  # vert clair
 
     def style_dif_cal(val, id_eq):
         return f"background-color: {couleurs.get(id_eq, '')};" if pd.notnull(val) else ""
@@ -186,7 +185,6 @@ for poule in sorted(classement_initial["POULE"].unique()):
 
     st.dataframe(styled_df, use_container_width=True, hide_index=True)
     st.markdown("*La colonne DIF_CAL évalue la difficulté du calendrier à venir. Les couleurs indiquent les tiers : vert (facile), orange (moyen), rouge (difficile).*")
-
 
 if selected_poule == "Toutes les poules":
     afficher_comparatifs_speciaux(champ_id, classement_initial, date_limite)
