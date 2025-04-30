@@ -252,12 +252,13 @@ if st.session_state.simulation_validee:
                     if "CLASSEMENT" in df_mini.columns:
                         df_mini = df_mini.set_index("CLASSEMENT")
 
-                    st.table(df_mini[colonnes_mini])
+                    st.dataframe(df_mini[colonnes_mini], use_container_width=True, hide_index=True)
 
                     st.markdown("**Matchs concernés :**")
                     df_matchs = mini["matchs"].copy()
                     df_matchs = df_matchs.drop(columns=[col for col in ["index", "Unnamed: 0"] if col in df_matchs.columns])
-                    st.table(df_matchs.reset_index(drop=True))
+                    st.dataframe(df_matchs.reset_index(drop=True), use_container_width=True, hide_index=True)
+
 
         if selected_poule == "Toutes les poules":
             afficher_comparatifs_speciaux(champ_id, classement_simule, date_limite)
