@@ -131,6 +131,7 @@ if champ_type_classement == "PARTICULIERE":
     classement_initial, mini_classements_initial = appliquer_diff_particuliere(classement_initial, matchs_termine)
 
 classement_initial = trier_et_numeroter(classement_initial, type_classement)
+classement_initial = calculer_difficulte_calendrier(classement_initial, matchs_simulables)
 
 if selected_poule != "Toutes les poules":
     classement_initial = classement_initial[classement_initial["POULE"] == selected_poule]
@@ -139,9 +140,10 @@ st.markdown("### 🏆 Classement actuel")
 for poule in sorted(classement_initial["POULE"].unique()):
     st.subheader(f"Poule {poule}")
     classement_poule = classement_initial[classement_initial["POULE"] == poule]
-    colonnes_finales = colonnes_simplifiees if mode_simplifie else colonnes_completes
+    colonnes_finales = (colonnes_simplifiees + ["DIF_CAL"]) if mode_simplifie else (colonnes_completes + ["DIF_CAL"])
     colonnes_finales = [col for col in colonnes_finales if col in classement_poule.columns]
     st.dataframe(classement_poule[colonnes_finales], use_container_width=True, hide_index=True)
+    st.markdown("*La colonne DIF_CAL évalue la difficulté du calendrier à venir.*")
 
 if selected_poule == "Toutes les poules":
     afficher_comparatifs_speciaux(champ_id, classement_initial, date_limite)
