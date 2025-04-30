@@ -1,12 +1,19 @@
-import pandas as pd
-import streamlit as st
 from google.cloud import bigquery
-from google.oauth2 import service_account
+import os
+import json
+import tempfile
 
-credentials = service_account.Credentials.from_service_account_info(
-    st.secrets["gcp_service_account"]
-)
-client = bigquery.Client(credentials=credentials, project=credentials.project_id)
+# Lire le JSON de la variable d’environnement (Render)
+creds_json = os.environ.get("GOOGLE_APPLICATION_CREDENTIALS_JSON")
+
+if creds_json:
+    with tempfile.NamedTemporaryFile(delete=False, suffix=".json", mode="w") as tmp:
+        tmp.write(creds_json)
+        os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = tmp.name
+
+# Créer le client BigQuery à partir des variables d’environnement
+client = bigquery.Client()
+
 
 def get_type_classement(champ_id):
     query = f"""
