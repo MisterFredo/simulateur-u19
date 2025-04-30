@@ -457,34 +457,39 @@ def recalculer_classement_simule(matchs_simules, champ_id, date_limite, selected
 
     return classement_df, mini_classements
 
-def calculer_difficulte_calendrier(df_classement, df_matchs_a_venir):
-    df = df_classement.copy()
-    
-    # Dictionnaire des classements par équipe
-    classement_dict = df.set_index("ID_EQUIPE")["CLASSEMENT"].to_dict()
+def calculer_difficulte_calendrier(df_classement, df_matchs):
+    """
+    Calcule la difficulté moyenne du calendrier à venir pour chaque équipe,
+    basée sur le classement actuel des adversaires.
 
-    # Liste de tuples : (ID_EQUIPE, CLASSEMENT de l’adversaire)
+    df_classement : DataFrame contenant au moins ID_EQUIPE et CLASSEMENT
+    df_matchs : DataFrame contenant les matchs restants (avec ID_EQUIPE_DOM et ID_EQUIPE_EXT)
+    """
+    classement_dict = df_classement.set_index("ID_EQUIPE")["CLASSEMENT"].to_dict()
+
     confrontations = []
 
-    for _, row in df_matchs_a_venir.iterrows():
+    for _, row in df_matchs.iterrows():
         id_dom = row["ID_EQUIPE_DOM"]
         id_ext = row["ID_EQUIPE_EXT"]
 
-        classement_ext = classement_dict.get(id_ext)
-        classement_dom = classement_dict.get(id_dom)
-
-        if classement_ext is not None:
-            confrontations.append((id_dom, classement_ext))
-        if classement_dom is not None:
-            confrontations.append((id_ext, classement_dom))
+        if id_ext in classement_dict:
+            confrontations.append((id_dom, classement_dict[id_ext]))
+        if id_dom in classement_dict:
+            confrontations.append((id_ext, classement_dict[id_dom]))
 
     df_confrontations = pd.DataFrame(confrontations, columns=["ID_EQUIPE", "CLASSEMENT_ADVERSAIRE"])
 
-    # Calcul moyenne
-    df_difficulte = df_confrontations.groupby("ID_EQUIPE")["CLASSEMENT_ADVERSAIRE"].mean().round(2).reset_index()
-    df_difficulte.rename(columns={"CLASSEMENT_ADVERSAIRE": "DIF_CAL"}, inplace=True)
+    df_difficulte = (
+        df_confrontations
+        .groupby("ID_EQUIPE")["CLASSEMENT_ADVERSAIRE"]
+        .mean()
+        .round(2)
+        .reset_index()
+        .rename(columns={"CLASSEMENT_ADVERSAIRE": "DIF_CAL"})
+    )
 
-    df = df.merge(df_difficulte, on="ID_EQUIPE", how="left")
-    df["DIF_CAL"] = df["DIF_CAL"].fillna(0.0)
+    df_final = df_classement.merge(df_difficulte, on="ID_EQUIPE", how="left")
+    df_final["DIF_CAL"] = df_final["DIF_CAL"].fillna(0.0)
 
-    return df
+    return df_final
