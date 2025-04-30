@@ -105,7 +105,7 @@ st.title(f"🧪 Simulateur – {selected_nom}")
 mode_simplifie = st.toggle("Afficher en mode simplifié (mobile friendly)", value=True)
 
 colonnes_completes = ["CLASSEMENT", "NOM_EQUIPE", "POINTS", "PENALITES", "MJ", "G", "N", "P", "BP", "BC", "DIFF"]
-colonnes_simplifiees = ["NOM_EQUIPE", "POINTS", "DIFF", "MJ"]
+colonnes_simplifiees = ["CLASSEMENT", "NOM_EQUIPE", "POINTS", "DIFF", "MJ"]
 
 # --- 1. CLASSEMENT ACTUEL
 matchs_termine = get_matchs_termine(champ_id, date_limite)
