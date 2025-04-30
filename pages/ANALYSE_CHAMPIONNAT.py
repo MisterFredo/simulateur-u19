@@ -222,6 +222,9 @@ if st.session_state.simulation_validee:
 
         classement_simule = trier_et_numeroter(classement_simule, type_classement)
 
+        # --- Calcul DIF_CAL sur les données simulées
+        classement_simule = calculer_difficulte_calendrier(classement_simule, matchs_tous)
+
         if selected_poule != "Toutes les poules":
             classement_simule = classement_simule[classement_simule["POULE"] == selected_poule]
 
@@ -231,12 +234,24 @@ if st.session_state.simulation_validee:
         for poule in sorted(classement_simule["POULE"].unique()):
             st.subheader(f"Poule {poule}")
             classement_poule = classement_simule[classement_simule["POULE"] == poule]
+
+            colonnes_completes = [
+                "CLASSEMENT", "NOM_EQUIPE", "POINTS", "MJ", "DIF_CAL",
+                "G", "N", "P", "PENALITES", "BP", "BC", "DIFF"
+            ]
+            colonnes_simplifiees = [
+                "CLASSEMENT", "NOM_EQUIPE", "POINTS", "MJ", "DIF_CAL", "DIFF"
+            ]
+
             colonnes_finales = colonnes_simplifiees if mode_simplifie else colonnes_completes
             colonnes_finales = [col for col in colonnes_finales if col in classement_poule.columns]
+
             st.dataframe(classement_poule[colonnes_finales], use_container_width=True, hide_index=True)
+            st.markdown("*La colonne DIF_CAL évalue la difficulté du calendrier à venir.*")
 
         if champ_type_classement == "PARTICULIERE" and mini_classements_simule:
             afficher_mini_classements_bloc(mini_classements_simule, "### Mini-classements des égalités particulières 🥇 (Simulation)")
 
         if selected_poule == "Toutes les poules":
             afficher_comparatifs_speciaux(champ_id, classement_simule, date_limite)
+
