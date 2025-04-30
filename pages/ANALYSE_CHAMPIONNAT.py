@@ -238,7 +238,7 @@ if st.session_state.simulation_validee:
 
             # Réorganiser : mettre CLASSEMENT en index, puis retirer la colonne des colonnes visibles
             if "CLASSEMENT" in classement_poule.columns:
-            classement_poule = classement_poule.set_index("CLASSEMENT")
+                classement_poule = classement_poule.set_index("CLASSEMENT")
 
             # Affichage propre sans double index
             st.table(classement_poule[[col for col in colonnes_finales if col != "CLASSEMENT"]])
@@ -254,3 +254,4 @@ if st.session_state.simulation_validee:
 
         if selected_poule == "Toutes les poules":
             afficher_comparatifs_speciaux(champ_id, classement_simule, date_limite)
+
