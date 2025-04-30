@@ -261,7 +261,7 @@ if st.session_state.simulation_validee:
 
         classement_simule = trier_et_numeroter(classement_simule, type_classement)
 
-        # --- Calcul DIF_CAL sur les données simulées
+        # --- Calcul DIF_CAL (somme brute) sur données simulées
         classement_simule = calculer_difficulte_calendrier(classement_simule, matchs_tous)
 
         if selected_poule != "Toutes les poules":
@@ -274,20 +274,21 @@ if st.session_state.simulation_validee:
             st.subheader(f"Poule {poule}")
             classement_poule = classement_simule[classement_simule["POULE"] == poule].copy()
 
-            colonnes_completes = [
-                "CLASSEMENT", "NOM_EQUIPE", "POINTS", "MJ", "DIF_CAL",
-                "G", "N", "P", "PENALITES", "BP", "BC", "DIFF"
-            ]
-            colonnes_simplifiees = [
-                "CLASSEMENT", "NOM_EQUIPE", "POINTS", "MJ", "DIF_CAL", "DIFF"
-            ]
-            colonnes_finales = colonnes_simplifiees if mode_simplifie else colonnes_completes
-            colonnes_finales = [col for col in colonnes_finales if col in classement_poule.columns]
-
-            # Arrondi DIF_CAL + couleur par tiers
+            # Affichage avec couleurs DIF_CAL
             if "DIF_CAL" in classement_poule.columns:
                 classement_poule["DIF_CAL"] = classement_poule["DIF_CAL"].round(2)
 
+                colonnes_completes = [
+                    "CLASSEMENT", "NOM_EQUIPE", "POINTS", "MJ", "DIF_CAL",
+                    "G", "N", "P", "PENALITES", "BP", "BC", "DIFF"
+                ]
+                colonnes_simplifiees = [
+                    "CLASSEMENT", "NOM_EQUIPE", "POINTS", "MJ", "DIF_CAL", "DIFF"
+                ]
+                colonnes_finales = colonnes_simplifiees if mode_simplifie else colonnes_completes
+                colonnes_finales = [col for col in colonnes_finales if col in classement_poule.columns]
+
+                # Tri pour tiers
                 classement_sorted = classement_poule.sort_values(by="DIF_CAL", ascending=False).reset_index(drop=True)
                 total = len(classement_sorted)
                 tiers = [total // 3, total // 3, total - 2 * (total // 3)]
@@ -296,11 +297,11 @@ if st.session_state.simulation_validee:
                 for i in range(total):
                     id_equipe = classement_sorted.loc[i, "ID_EQUIPE"]
                     if i < tiers[0]:
-                        couleurs[id_equipe] = "#d4edda"
+                        couleurs[id_equipe] = "#d4edda"  # vert clair
                     elif i < tiers[0] + tiers[1]:
-                        couleurs[id_equipe] = "#fff3cd"
+                        couleurs[id_equipe] = "#fff3cd"  # jaune clair
                     else:
-                        couleurs[id_equipe] = "#f8d7da"
+                        couleurs[id_equipe] = "#f8d7da"  # rouge clair
 
                 def style_dif_cal(val, id_eq):
                     return f"background-color: {couleurs.get(id_eq, '')};" if pd.notnull(val) else ""
@@ -316,12 +317,12 @@ if st.session_state.simulation_validee:
 
                 st.dataframe(styled_df, use_container_width=True, hide_index=True)
                 st.markdown("*La colonne DIF_CAL évalue la difficulté du calendrier à venir. Les couleurs indiquent les tiers : vert (facile), orange (moyen), rouge (difficile).*")
-
             else:
-                st.dataframe(classement_poule[colonnes_finales], use_container_width=True, hide_index=True)
+                st.dataframe(classement_poule, use_container_width=True, hide_index=True)
 
         if champ_type_classement == "PARTICULIERE" and mini_classements_simule:
             afficher_mini_classements_bloc(mini_classements_simule, "### Mini-classements des égalités particulières 🥇 (Simulation)")
 
         if selected_poule == "Toutes les poules":
             afficher_comparatifs_speciaux(champ_id, classement_simule, date_limite)
+
