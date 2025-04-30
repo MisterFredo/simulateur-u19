@@ -125,18 +125,18 @@ for poule in sorted(classement_initial["POULE"].unique()):
     st.subheader(f"Poule {poule}")
     classement_poule = classement_initial[classement_initial["POULE"] == poule]
 
-    # Supprimer les colonnes parasites si elles existent
+    # Supprimer colonnes parasites
     classement_poule = classement_poule.drop(columns=[col for col in ["index", "Unnamed: 0"] if col in classement_poule.columns])
 
     colonnes_finales = colonnes_simplifiees if mode_simplifie else colonnes_completes
     colonnes_finales = [col for col in colonnes_finales if col in classement_poule.columns]
 
-    # Replacer CLASSEMENT en premier si présent
-    if "CLASSEMENT" in colonnes_finales:
-        colonnes_finales = ["CLASSEMENT"] + [col for col in colonnes_finales if col != "CLASSEMENT"]
+    # Réorganiser : mettre CLASSEMENT en index, puis enlever cette colonne de l’affichage
+    if "CLASSEMENT" in classement_poule.columns:
+        classement_poule = classement_poule.set_index("CLASSEMENT")
 
-    # ✅ Affichage propre, sans index visible
-    st.table(classement_poule[colonnes_finales])
+    # Affichage sans index parasite : l’index devient le classement
+    st.table(classement_poule[colonnes_finales if "CLASSEMENT" not in colonnes_finales else [col for col in colonnes_finales if col != "CLASSEMENT"]])
     
 if selected_poule == "Toutes les poules":
     afficher_comparatifs_speciaux(champ_id, classement_initial, date_limite)
