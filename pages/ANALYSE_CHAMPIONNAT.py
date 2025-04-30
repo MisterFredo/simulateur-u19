@@ -194,8 +194,7 @@ if st.session_state.simulation_validee:
         st.markdown("### 📝 Matchs simulés")
         matchs_affichage = df_valid.copy()
         colonnes_affichees = colonnes_matchs_simplifiees if mode_simplifie else colonnes_matchs_completes
-        matchs_affichage = matchs_affichage[colonnes_affichees]
-        st.dataframe(matchs_affichage.reset_index(drop=True), use_container_width=True)
+        st.dataframe(matchs_affichage[colonnes_affichees], use_container_width=True, hide_index=True)
 
         matchs_tous = pd.concat([matchs_termine, matchs_simulables], ignore_index=True)
 
@@ -229,36 +228,22 @@ if st.session_state.simulation_validee:
         for poule in sorted(classement_simule["POULE"].unique()):
             st.subheader(f"Poule {poule}")
             classement_poule = classement_simule[classement_simule["POULE"] == poule]
-            classement_poule = classement_poule.drop(columns=[col for col in ["index", "Unnamed: 0"] if col in classement_poule.columns])
-
             colonnes_finales = colonnes_simplifiees if mode_simplifie else colonnes_completes
             colonnes_finales = [col for col in colonnes_finales if col in classement_poule.columns]
+            st.dataframe(classement_poule[colonnes_finales], use_container_width=True, hide_index=True)
 
-            if "CLASSEMENT" in classement_poule.columns:
-                classement_poule = classement_poule.set_index("CLASSEMENT")
-
-            st.table(classement_poule[[col for col in colonnes_finales if col != "CLASSEMENT"]])
-
-        # --- MINI-CLASSEMENTS SIMULÉS
         if champ_type_classement == "PARTICULIERE" and mini_classements_simule:
             st.markdown("### Mini-classements des égalités particulières 🥇 (Simulation)")
             for (poule, pts), mini in mini_classements_simule.items():
                 with st.expander(f"Poule {poule} – Égalité à {pts} points", expanded=True):
                     st.markdown("**Mini-classement :**")
                     df_mini = mini["classement"].copy()
-                    df_mini = df_mini.drop(columns=[col for col in ["index", "Unnamed: 0"] if col in df_mini.columns])
                     colonnes_mini = [col for col in df_mini.columns if col != "CLASSEMENT"]
-
-                    if "CLASSEMENT" in df_mini.columns:
-                        df_mini = df_mini.set_index("CLASSEMENT")
-
                     st.dataframe(df_mini[colonnes_mini], use_container_width=True, hide_index=True)
 
                     st.markdown("**Matchs concernés :**")
                     df_matchs = mini["matchs"].copy()
-                    df_matchs = df_matchs.drop(columns=[col for col in ["index", "Unnamed: 0"] if col in df_matchs.columns])
                     st.dataframe(df_matchs.reset_index(drop=True), use_container_width=True, hide_index=True)
-
 
         if selected_poule == "Toutes les poules":
             afficher_comparatifs_speciaux(champ_id, classement_simule, date_limite)
