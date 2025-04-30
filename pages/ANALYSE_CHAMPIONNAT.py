@@ -33,25 +33,25 @@ def afficher_comparatifs_speciaux(champ_id, classement_df, date_limite):
         st.markdown("### 🚨 Comparatif spécial U19")
         df_11e = classement_special_u19(classement_df, champ_id, date_limite)
         if df_11e is not None:
-            st.dataframe(df_11e, use_container_width=True)
+            st.dataframe(df_11e.reset_index(drop=True), use_container_width=True)
 
     if champ_id == 7:
         st.markdown("### 🥈 Comparatif spécial U17")
         df_2e = classement_special_u17(classement_df, champ_id, date_limite)
         if df_2e is not None:
-            st.dataframe(df_2e, use_container_width=True)
+            st.dataframe(df_2e.reset_index(drop=True), use_container_width=True)
 
     if champ_id == 4:
         st.markdown("### 🚨 Comparatif spécial N2")
         df_13e = classement_special_n2(classement_df, champ_id, date_limite)
         if df_13e is not None:
-            st.dataframe(df_13e, use_container_width=True)
+            st.dataframe(df_13e.reset_index(drop=True), use_container_width=True)
 
     if champ_id == 5:
         st.markdown("### ⚠️ Comparatif spécial N3")
         df_10e = classement_special_n3(classement_df, champ_id, date_limite)
         if df_10e is not None:
-            st.dataframe(df_10e, use_container_width=True)
+            st.dataframe(df_10e.reset_index(drop=True), use_container_width=True)
 
 # --- INIT SESSION STATE
 if "simulation_validee" not in st.session_state:
@@ -95,7 +95,8 @@ if len(all_poules) > 1:
 else:
     selected_poule = all_poules[0] if all_poules else "Toutes les poules"
 
-date_limite = st.sidebar.date_input("Date de simulation", value=date.today())
+# --- Par défaut : date au 30 juin
+date_limite = st.sidebar.date_input("Date de simulation", value=date(2025, 6, 30))
 
 # --- TITRE
 st.title(f"🧪 Simulateur – {selected_nom}")
@@ -125,7 +126,7 @@ for poule in sorted(classement_initial["POULE"].unique()):
     classement_poule = classement_initial[classement_initial["POULE"] == poule]
     colonnes_finales = colonnes_simplifiees if mode_simplifie else colonnes_completes
     colonnes_finales = [col for col in colonnes_finales if col in classement_poule.columns]
-    st.dataframe(classement_poule[colonnes_finales], use_container_width=True, height=500)
+    st.dataframe(classement_poule[colonnes_finales].reset_index(drop=True), use_container_width=True, height=500)
 
 if selected_poule == "Toutes les poules":
     afficher_comparatifs_speciaux(champ_id, classement_initial, date_limite)
@@ -135,9 +136,9 @@ if champ_type_classement == "PARTICULIERE" and mini_classements_initial:
     for (poule, pts), mini in mini_classements_initial.items():
         with st.expander(f"Poule {poule} – Égalité à {pts} points", expanded=True):
             st.markdown("**Mini-classement :**")
-            st.dataframe(mini["classement"], use_container_width=True)
+            st.dataframe(mini["classement"].reset_index(drop=True), use_container_width=True)
             st.markdown("**Matchs concernés :**")
-            st.dataframe(mini["matchs"], use_container_width=True)
+            st.dataframe(mini["matchs"].reset_index(drop=True), use_container_width=True)
 
 # --- 3. MATCHS À SIMULER
 filtrer_non_joues = st.checkbox("Afficher uniquement les matchs non joués", value=True)
@@ -147,18 +148,20 @@ matchs_simulables = get_matchs_modifiables(champ_id, date_limite, filtrer_non_jo
 if selected_poule != "Toutes les poules":
     matchs_simulables = matchs_simulables[matchs_simulables["POULE"] == selected_poule]
 
-st.markdown("### 🌟 Matchs à simuler")
+st.markdown("### 🎯 Matchs à simuler")
 if matchs_simulables.empty:
     st.info("Aucun match disponible pour cette configuration.")
     st.stop()
 
+# Colonnes pour l'affichage mobile-friendly
+colonnes_matchs_simplifiees = ["EQUIPE_DOM", "NB_BUT_DOM", "EQUIPE_EXT", "NB_BUT_EXT"]
+colonnes_matchs_completes = ["JOURNEE", "POULE", "DATE", "EQUIPE_DOM", "NB_BUT_DOM", "EQUIPE_EXT", "NB_BUT_EXT"]
+
+# --- 3BIS. FORMULAIRE DE SIMULATION
 with st.form("formulaire_simulation"):
+    colonnes_affichees = colonnes_matchs_simplifiees if mode_simplifie else colonnes_matchs_completes
     edited_df = st.data_editor(
-        matchs_simulables[[
-            "JOURNEE", "POULE", "DATE",
-            "EQUIPE_DOM", "NB_BUT_DOM",
-            "EQUIPE_EXT", "NB_BUT_EXT"
-        ]],
+        matchs_simulables[colonnes_affichees],
         num_rows="dynamic",
         use_container_width=True,
         key="simulation_scores"
@@ -176,29 +179,13 @@ if st.session_state.simulation_validee:
     df_valid = df_valid.reset_index(drop=True)
 
     if df_valid.empty:
-        st.warning("🛘 Aucun score simulé valide.")
+        st.warning("🚫 Aucun score simulé valide.")
     else:
         st.markdown("### 📝 Matchs simulés")
-
-        def color_victory(val_dom, val_ext):
-            if val_dom > val_ext:
-                return ["background-color: lightgreen", "background-color: lightcoral"]
-            elif val_dom < val_ext:
-                return ["background-color: lightcoral", "background-color: lightgreen"]
-            else:
-                return ["background-color: lightyellow", "background-color: lightyellow"]
-
-        matchs_affichage = df_valid[[
-            "JOURNEE", "POULE", "DATE", "EQUIPE_DOM", "NB_BUT_DOM", "EQUIPE_EXT", "NB_BUT_EXT"
-        ]].copy()
-
-        if not matchs_affichage.empty:
-            styled_matchs = matchs_affichage.style.apply(
-                lambda row: color_victory(row["NB_BUT_DOM"], row["NB_BUT_EXT"]),
-                subset=["NB_BUT_DOM", "NB_BUT_EXT"],
-                axis=1
-            )
-            st.dataframe(styled_matchs, use_container_width=True)
+        matchs_affichage = df_valid.copy()
+        colonnes_affichees = colonnes_matchs_simplifiees if mode_simplifie else colonnes_matchs_completes
+        matchs_affichage = matchs_affichage[colonnes_affichees]
+        st.dataframe(matchs_affichage.reset_index(drop=True), use_container_width=True)
 
         matchs_tous = pd.concat([matchs_termine, matchs_simulables], ignore_index=True)
 
@@ -228,22 +215,22 @@ if st.session_state.simulation_validee:
 
         st.success("✅ Simulation recalculée avec succès !")
 
-        st.markdown("### 🥪 Nouveau Classement simulé")
+        st.markdown("### 🧪 Nouveau Classement simulé")
         for poule in sorted(classement_simule["POULE"].unique()):
             st.subheader(f"Poule {poule}")
             classement_poule = classement_simule[classement_simule["POULE"] == poule]
             colonnes_finales = colonnes_simplifiees if mode_simplifie else colonnes_completes
             colonnes_finales = [col for col in colonnes_finales if col in classement_poule.columns]
-            st.dataframe(classement_poule[colonnes_finales], use_container_width=True, height=500)
+            st.dataframe(classement_poule[colonnes_finales].reset_index(drop=True), use_container_width=True, height=500)
 
         if champ_type_classement == "PARTICULIERE" and mini_classements_simule:
             st.markdown("### Mini-classements des égalités particulières 🥇 (Simulation)")
             for (poule, pts), mini in mini_classements_simule.items():
                 with st.expander(f"Poule {poule} – Égalité à {pts} points", expanded=True):
                     st.markdown("**Mini-classement :**")
-                    st.dataframe(mini["classement"], use_container_width=True)
+                    st.dataframe(mini["classement"].reset_index(drop=True), use_container_width=True)
                     st.markdown("**Matchs concernés :**")
-                    st.dataframe(mini["matchs"], use_container_width=True)
+                    st.dataframe(mini["matchs"].reset_index(drop=True), use_container_width=True)
 
         if selected_poule == "Toutes les poules":
             afficher_comparatifs_speciaux(champ_id, classement_simule, date_limite)
