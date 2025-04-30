@@ -166,11 +166,11 @@ for poule in sorted(classement_initial["POULE"].unique()):
     for i in range(total):
         id_equipe = classement_sorted.loc[i, "ID_EQUIPE"]
         if i < tiers[0]:
-            couleurs[id_equipe] = "#f8d7da"  # rouge clair (plus difficile)
+            couleurs[id_equipe] = "#d4edda"  # vert clair (plus facile)
         elif i < tiers[0] + tiers[1]:
             couleurs[id_equipe] = "#fff3cd"  # jaune clair
         else:
-            couleurs[id_equipe] = "#d4edda"  # vert clair (plus facile)
+            couleurs[id_equipe] = "#f8d7da"  # rouge clair (plus difficile)
 
     def style_dif_cal(val, id_eq):
         return f"background-color: {couleurs.get(id_eq, '')};" if pd.notnull(val) else ""
@@ -297,11 +297,11 @@ if st.session_state.simulation_validee:
                 for i in range(total):
                     id_equipe = classement_sorted.loc[i, "ID_EQUIPE"]
                     if i < tiers[0]:
-                        couleurs[id_equipe] = "#f8d7da"
+                        couleurs[id_equipe] = "#d4edda"
                     elif i < tiers[0] + tiers[1]:
                         couleurs[id_equipe] = "#fff3cd"
                     else:
-                        couleurs[id_equipe] = "#d4edda"
+                        couleurs[id_equipe] = "#f8d7da"
 
                 def style_dif_cal(val, id_eq):
                     return f"background-color: {couleurs.get(id_eq, '')};" if pd.notnull(val) else ""
