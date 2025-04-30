@@ -229,9 +229,19 @@ if st.session_state.simulation_validee:
         for poule in sorted(classement_simule["POULE"].unique()):
             st.subheader(f"Poule {poule}")
             classement_poule = classement_simule[classement_simule["POULE"] == poule]
+
+            # Supprimer colonnes parasites
+            classement_poule = classement_poule.drop(columns=[col for col in ["index", "Unnamed: 0"] if col in classement_poule.columns])
+
             colonnes_finales = colonnes_simplifiees if mode_simplifie else colonnes_completes
             colonnes_finales = [col for col in colonnes_finales if col in classement_poule.columns]
-            st.dataframe(classement_poule[colonnes_finales].reset_index(drop=True), use_container_width=True, height=500)
+
+            # Réorganiser : mettre CLASSEMENT en index, puis retirer la colonne des colonnes visibles
+            if "CLASSEMENT" in classement_poule.columns:
+            classement_poule = classement_poule.set_index("CLASSEMENT")
+
+            # Affichage propre sans double index
+            st.table(classement_poule[[col for col in colonnes_finales if col != "CLASSEMENT"]])
 
         if champ_type_classement == "PARTICULIERE" and mini_classements_simule:
             st.markdown("### Mini-classements des égalités particulières 🥇 (Simulation)")
