@@ -124,20 +124,10 @@ st.markdown("### 🏆 Classement actuel")
 for poule in sorted(classement_initial["POULE"].unique()):
     st.subheader(f"Poule {poule}")
     classement_poule = classement_initial[classement_initial["POULE"] == poule]
-
-    # Supprimer colonnes parasites
-    classement_poule = classement_poule.drop(columns=[col for col in ["index", "Unnamed: 0"] if col in classement_poule.columns])
-
     colonnes_finales = colonnes_simplifiees if mode_simplifie else colonnes_completes
     colonnes_finales = [col for col in colonnes_finales if col in classement_poule.columns]
+    st.dataframe(classement_poule[colonnes_finales], use_container_width=True, hide_index=True)
 
-    # Réorganiser : mettre CLASSEMENT en index, puis enlever cette colonne de l’affichage
-    if "CLASSEMENT" in classement_poule.columns:
-        classement_poule = classement_poule.set_index("CLASSEMENT")
-
-    # Affichage sans index parasite : l’index devient le classement
-    st.table(classement_poule[colonnes_finales if "CLASSEMENT" not in colonnes_finales else [col for col in colonnes_finales if col != "CLASSEMENT"]])
-    
 if selected_poule == "Toutes les poules":
     afficher_comparatifs_speciaux(champ_id, classement_initial, date_limite)
 
@@ -146,9 +136,13 @@ if champ_type_classement == "PARTICULIERE" and mini_classements_initial:
     for (poule, pts), mini in mini_classements_initial.items():
         with st.expander(f"Poule {poule} – Égalité à {pts} points", expanded=True):
             st.markdown("**Mini-classement :**")
-            st.dataframe(mini["classement"].reset_index(drop=True), use_container_width=True)
+            df_mini = mini["classement"].copy()
+            colonnes_mini = [col for col in df_mini.columns if col != "CLASSEMENT"]
+            st.dataframe(df_mini[colonnes_mini], use_container_width=True, hide_index=True)
+
             st.markdown("**Matchs concernés :**")
-            st.dataframe(mini["matchs"].reset_index(drop=True), use_container_width=True)
+            df_matchs = mini["matchs"].copy()
+            st.dataframe(df_matchs.reset_index(drop=True), use_container_width=True, hide_index=True)
 
 # --- 3. MATCHS À SIMULER
 filtrer_non_joues = st.checkbox("Afficher uniquement les matchs non joués", value=True)
