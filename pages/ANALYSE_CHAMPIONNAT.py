@@ -183,7 +183,7 @@ for poule in sorted(classement_initial["POULE"].unique()):
         ],
         axis=0
     )
-
+    styled_df = styled_df.format({"DIF_CAL": "{:.2f}"})
     st.dataframe(styled_df, use_container_width=True, hide_index=True)
     st.markdown("*La colonne DIF_CAL évalue la difficulté du calendrier à venir. Les couleurs indiquent les tiers : vert (facile), orange (moyen), rouge (difficile).*")
 
