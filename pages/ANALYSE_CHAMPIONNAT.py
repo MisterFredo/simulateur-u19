@@ -131,6 +131,10 @@ if champ_type_classement == "PARTICULIERE":
     classement_initial, mini_classements_initial = appliquer_diff_particuliere(classement_initial, matchs_termine)
 
 classement_initial = trier_et_numeroter(classement_initial, type_classement)
+classement_initial = calculer_difficulte_calendrier(classement_initial, matchs_simulables)
+
+if selected_poule != "Toutes les poules":
+    classement_initial = classement_initial[classement_initial["POULE"] == selected_poule]
 
 # --- Affichage du classement actuel
 st.markdown("### 🏆 Classement actuel")
@@ -182,6 +186,32 @@ for poule in sorted(classement_initial["POULE"].unique()):
 
     st.dataframe(styled_df, use_container_width=True, hide_index=True)
     st.markdown("*La colonne DIF_CAL évalue la difficulté du calendrier à venir. Les couleurs indiquent les tiers : vert (facile), orange (moyen), rouge (difficile).*")
+
+if selected_poule == "Toutes les poules":
+    afficher_comparatifs_speciaux(champ_id, classement_initial, date_limite)
+
+if champ_type_classement == "PARTICULIERE" and mini_classements_initial:
+    afficher_mini_classements_bloc(mini_classements_initial, "### Mini-classements des égalités particulières 🥇 (Classement actuel)")
+
+# --- 3. MATCHS À SIMULER
+filtrer_non_joues = st.checkbox("Afficher uniquement les matchs non joués", value=True)
+
+matchs_simulables = get_matchs_modifiables(champ_id, date_limite, filtrer_non_joues)
+
+if selected_poule != "Toutes les poules":
+    matchs_simulables = matchs_simulables[matchs_simulables["POULE"] == selected_poule]
+
+st.markdown("### 🎯 Matchs à simuler")
+if matchs_simulables.empty:
+    st.info("Aucun match disponible pour cette configuration.")
+    st.stop()
+
+# Colonnes pour l'affichage mobile-friendly
+colonnes_matchs_simplifiees = ["EQUIPE_DOM", "NB_BUT_DOM", "EQUIPE_EXT", "NB_BUT_EXT"]
+colonnes_matchs_completes = ["JOURNEE", "POULE", "DATE", "EQUIPE_DOM", "NB_BUT_DOM", "EQUIPE_EXT", "NB_BUT_EXT"]
+
+# --- 3BIS. FORMULAIRE DE SIMULATION
+
 
 # --- 3BIS. FORMULAIRE DE SIMULATION
 with st.form("formulaire_simulation"):
