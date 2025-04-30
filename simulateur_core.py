@@ -461,15 +461,15 @@ def calculer_difficulte_calendrier(df_classement, df_matchs):
     """
     Calcule la difficulté moyenne du calendrier à venir pour chaque équipe,
     basée sur le classement actuel des adversaires.
-
-    df_classement : DataFrame contenant au moins ID_EQUIPE et CLASSEMENT
-    df_matchs : DataFrame contenant les matchs restants (avec ID_EQUIPE_DOM et ID_EQUIPE_EXT)
     """
+    # Garder uniquement les matchs non joués (à venir)
+    df_matchs_restants = df_matchs[df_matchs["NB_BUT_DOM"].isna() | df_matchs["NB_BUT_EXT"].isna()].copy()
+
     classement_dict = df_classement.set_index("ID_EQUIPE")["CLASSEMENT"].to_dict()
 
     confrontations = []
 
-    for _, row in df_matchs.iterrows():
+    for _, row in df_matchs_restants.iterrows():
         id_dom = row["ID_EQUIPE_DOM"]
         id_ext = row["ID_EQUIPE_EXT"]
 
