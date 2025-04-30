@@ -230,17 +230,14 @@ if st.session_state.simulation_validee:
             st.subheader(f"Poule {poule}")
             classement_poule = classement_simule[classement_simule["POULE"] == poule]
 
-            # Supprimer colonnes parasites
             classement_poule = classement_poule.drop(columns=[col for col in ["index", "Unnamed: 0"] if col in classement_poule.columns])
 
             colonnes_finales = colonnes_simplifiees if mode_simplifie else colonnes_completes
             colonnes_finales = [col for col in colonnes_finales if col in classement_poule.columns]
 
-            # Réorganiser : mettre CLASSEMENT en index, puis retirer la colonne des colonnes visibles
             if "CLASSEMENT" in classement_poule.columns:
                 classement_poule = classement_poule.set_index("CLASSEMENT")
 
-            # Affichage propre sans double index
             st.table(classement_poule[[col for col in colonnes_finales if col != "CLASSEMENT"]])
 
         if champ_type_classement == "PARTICULIERE" and mini_classements_simule:
@@ -248,15 +245,17 @@ if st.session_state.simulation_validee:
             for (poule, pts), mini in mini_classements_simule.items():
                 with st.expander(f"Poule {poule} – Égalité à {pts} points", expanded=True):
                     st.markdown("**Mini-classement :**")
-                    df_mini = mini["classement"]
+                    df_mini = mini["classement"].copy()
+                    df_mini = df_mini.drop(columns=[col for col in ["index", "Unnamed: 0"] if col in df_mini.columns])
                     if "CLASSEMENT" in df_mini.columns:
                         df_mini = df_mini.set_index("CLASSEMENT")
                     st.table(df_mini)
 
                     st.markdown("**Matchs concernés :**")
-                    df_matchs = mini["matchs"]
+                    df_matchs = mini["matchs"].copy()
                     df_matchs = df_matchs.drop(columns=[col for col in ["index", "Unnamed: 0"] if col in df_matchs.columns])
-                    st.table(df_matchs.reset_index(drop=True))
+                    df_matchs = df_matchs.reset_index(drop=True)
+                    st.table(df_matchs)
 
         if selected_poule == "Toutes les poules":
             afficher_comparatifs_speciaux(champ_id, classement_simule, date_limite)
