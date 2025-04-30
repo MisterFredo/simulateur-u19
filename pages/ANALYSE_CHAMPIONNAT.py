@@ -124,7 +124,7 @@ colonnes_simplifiees = ["CLASSEMENT", "NOM_EQUIPE", "POINTS", "DIFF", "MJ"]
 
 # --- 1. CLASSEMENT ACTUEL
 matchs_termine = get_matchs_termine(champ_id, date_limite)
-matchs_restants = get_matchs_modifiables(champ_id, date_limite, filtrer_non_joues=True)
+matchs_restants = get_matchs_modifiables(champ_id, date_limite, True)
 
 classement_initial = get_classement_dynamique(champ_id, date_limite, matchs_override=matchs_termine)
 classement_initial = appliquer_penalites(classement_initial, date_limite)
