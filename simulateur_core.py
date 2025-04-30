@@ -33,12 +33,16 @@ def get_classement_dynamique(id_championnat, date_limite, matchs_override=None):
         # Charger depuis BigQuery
         matchs = get_matchs_termine(id_championnat, date_limite)
 
-    # ✅ Sécurité renforcée
-    if matchs is None or matchs.empty:
-        st.write("⚠️ Aucun match trouvé pour le classement dynamique.")
+    # ✅ Sécurité renforcée contre None ou vide
+    if matchs is None:
+        st.warning("❌ Aucun match transmis à get_classement_dynamique (matchs = None)")
         return pd.DataFrame()
 
-    st.write("Nombre de matchs pris en compte :", len(matchs))
+    if matchs.empty:
+        st.warning("⚠️ matchs transmis vide (0 ligne)")
+        return pd.DataFrame()
+
+    st.write("✅ Nombre de matchs pris en compte :", len(matchs))
 
     match_equipes = pd.concat([
         matchs.assign(
