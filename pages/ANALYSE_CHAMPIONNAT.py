@@ -132,18 +132,23 @@ if champ_type_classement == "PARTICULIERE":
 
 classement_initial = trier_et_numeroter(classement_initial, type_classement)
 
-# --- 3. MATCHS À SIMULER (anticipé ici pour le calcul DIF_CAL)
+# --- 3. MATCHS À SIMULER (anticipé ici pour calcul DIF_CAL)
 filtrer_non_joues = st.checkbox("Afficher uniquement les matchs non joués", value=True)
+
 matchs_simulables = get_matchs_modifiables(champ_id, date_limite, filtrer_non_joues)
 
 if selected_poule != "Toutes les poules":
     matchs_simulables = matchs_simulables[matchs_simulables["POULE"] == selected_poule]
     classement_initial = classement_initial[classement_initial["POULE"] == selected_poule]
 
+# --- Colonnes pour l'affichage des matchs (matchs à simuler + simulés)
+colonnes_matchs_simplifiees = ["EQUIPE_DOM", "NB_BUT_DOM", "EQUIPE_EXT", "NB_BUT_EXT"]
+colonnes_matchs_completes = ["JOURNEE", "POULE", "DATE", "EQUIPE_DOM", "NB_BUT_DOM", "EQUIPE_EXT", "NB_BUT_EXT"]
+
 # --- Calcul de la difficulté du calendrier à venir
 classement_initial = calculer_difficulte_calendrier(classement_initial, matchs_simulables)
 
-# --- Affichage du classement
+# --- Affichage du classement actuel
 st.markdown("### 🏆 Classement actuel")
 for poule in sorted(classement_initial["POULE"].unique()):
     st.subheader(f"Poule {poule}")
@@ -158,7 +163,6 @@ if selected_poule == "Toutes les poules":
 
 if champ_type_classement == "PARTICULIERE" and mini_classements_initial:
     afficher_mini_classements_bloc(mini_classements_initial, "### Mini-classements des égalités particulières 🥇 (Classement actuel)")
-
 
 # --- 3BIS. FORMULAIRE DE SIMULATION
 with st.form("formulaire_simulation"):
