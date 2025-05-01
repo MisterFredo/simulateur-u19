@@ -100,8 +100,8 @@ with st.sidebar:
         if user_name and user_email:
             st.session_state.user_name = user_name
             st.session_state.user_email = user_email
-            st.session_state["user"] = user_email  # Ajout pour uniformiser
-            st.session_state.page = "home"  # Revenir à "home" après connexion
+            st.session_state["user"] = user_email  # Uniformise l’état utilisateur
+            st.session_state.page = "home"
             st.success(f"Bienvenue {user_name} !")
         else:
             st.warning("Veuillez entrer votre nom et votre email.")
