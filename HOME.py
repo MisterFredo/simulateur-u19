@@ -37,8 +37,8 @@ with st.sidebar:
     )
 
     # --- Bloc Connexion utilisateur existant ---
-    st.subheader("📚 Identification")
-    
+    st.subheader("📚 Déjà inscrit ?")
+
     user_name = st.text_input("Nom de l'utilisateur")
     user_email = st.text_input("Email")
 
@@ -51,6 +51,32 @@ with st.sidebar:
             st.success(f"Bienvenue {user_name} !")
         else:
             st.warning("Veuillez entrer votre nom et votre email.")
+
+    # --- Bloc Inscription ---
+    st.markdown("---")
+    st.subheader("🆕 Créer un compte gratuit")
+
+    with st.form("form_inscription"):
+        prenom = st.text_input("Prénom")
+        nom = st.text_input("Nom")
+        email_inscription = st.text_input("Email")
+        club = st.text_input("Club ou Société")
+
+        st.markdown("📬 **Newsletter gratuite :** chaque semaine, recevez nos analyses sur les règles spéciales et égalités.")
+        newsletter = st.checkbox("Je souhaite recevoir la newsletter")
+
+        submitted = st.form_submit_button("Créer mon compte")
+
+        if submitted:
+            if prenom and nom and email_inscription:
+                st.session_state["user"] = email_inscription
+                st.session_state["user_name"] = f"{prenom} {nom}"
+                st.session_state["user_email"] = email_inscription
+                st.session_state["club"] = club
+                st.session_state["newsletter"] = "oui" if newsletter else "non"
+                st.success(f"Bienvenue {prenom} ! Ton compte est activé.")
+            else:
+                st.warning("Merci de remplir tous les champs obligatoires.")
 
 # --- Style moderne du contenu principal ---
 st.markdown(
