@@ -74,9 +74,22 @@ with st.sidebar:
                 st.session_state["user_email"] = email_inscription
                 st.session_state["club"] = club
                 st.session_state["newsletter"] = "oui" if newsletter else "non"
+
+                # --- Enregistrement dans Google Sheet ---
+                from simulateur_core import enregistrer_inscription
+                enregistrer_inscription(
+                    email=email_inscription,
+                    prenom=prenom,
+                    nom=nom,
+                    societe_club=club,
+                    newsletter="oui" if newsletter else "non",
+                    source="simulateur"
+                )
+
                 st.success(f"Bienvenue {prenom} ! Ton compte est activé.")
             else:
                 st.warning("Merci de remplir tous les champs obligatoires.")
+
 
 # --- Style moderne du contenu principal ---
 st.markdown(
