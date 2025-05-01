@@ -505,3 +505,29 @@ def calculer_difficulte_calendrier(df_classement, df_matchs):
     df_final["DIF_CAL"] = df_final["DIF_CAL"].fillna(0.0)
 
     return df_final
+
+import gspread
+from datetime import datetime
+from google.oauth2.service_account import Credentials
+
+# --- Connexion au Google Sheet ---
+def connect_to_google_sheet():
+    scopes = [
+        "https://www.googleapis.com/auth/spreadsheets",
+        "https://www.googleapis.com/auth/drive"
+    ]
+    credentials = Credentials.from_service_account_file("credentials.json", scopes=scopes)
+    client = gspread.authorize(credentials)
+    sheet = client.open("DATAFOOT_INSCRIPTIONS").worksheet("INSCRIPTIONS")
+    return sheet
+
+# --- Ajouter une ligne dans l'onglet INSCRIPTIONS ---
+def enregistrer_inscription(email, prenom, nom, societe_club, newsletter, source):
+    try:
+        sheet = connect_to_google_sheet()
+        now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        row = [email, prenom, nom, societe_club, newsletter, source, now, "OK"]
+        sheet.append_row(row, value_input_option="USER_ENTERED")
+    except Exception as e:
+        st.error(f"Erreur lors de l'enregistrement : {e}")
+
