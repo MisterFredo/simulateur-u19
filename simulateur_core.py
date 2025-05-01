@@ -518,8 +518,9 @@ def connect_to_google_sheet():
     ]
     credentials = Credentials.from_service_account_file("credentials.json", scopes=scopes)
     client = gspread.authorize(credentials)
-    sheet = client.open("DATAFOOT_INSCRIPTIONS").worksheet("INSCRIPTIONS")
+    sheet = client.open_by_key("1ODXBmpefw-wrCaUBmeQ1kkc2Lk2QQwWE2oYN5dobVek").worksheet("INSCRIPTIONS")
     return sheet
+
 
 def enregistrer_inscription(email, prenom, nom, societe_club, newsletter, source):
     st.warning("🛠 Code actif : version sans try-except")  # pour debug du déploiement
