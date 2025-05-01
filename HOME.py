@@ -1,6 +1,13 @@
 import streamlit as st
 from datetime import date
-import simulateur_core as core
+
+import sys
+import os
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
+from simulateur_core import (
+    enregistrer_inscription
+)
 
 # --- Configuration de la page principale ---
 st.set_page_config(page_title="Datafoot.ai", page_icon="🏆", layout="wide")
