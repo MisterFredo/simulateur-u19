@@ -523,9 +523,17 @@ def connect_to_google_sheet():
 
 
 def enregistrer_inscription(email, prenom, nom, societe_club, newsletter, source):
-    st.warning("🛠 Code actif : version sans try-except")  # pour debug du déploiement
-
     sheet = connect_to_google_sheet()
+    
+    # Lire tous les emails déjà présents (on saute la première ligne = en-têtes)
+    existing_emails = [row[0] for row in sheet.get_all_values()[1:] if row]
+
+    # Vérifier si l’email est déjà inscrit
+    if email in existing_emails:
+        st.warning("⚠️ Cet email est déjà inscrit.")
+        return
+
+    # Ajouter la nouvelle ligne
     now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     row = [email, prenom, nom, societe_club, newsletter, source, now, "OK"]
     sheet.append_row(row, value_input_option="USER_ENTERED")
