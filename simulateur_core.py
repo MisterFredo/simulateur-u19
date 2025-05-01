@@ -527,8 +527,8 @@ def enregistrer_inscription(email, prenom, nom, societe_club, newsletter, source
         sheet = connect_to_google_sheet()
         now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         row = [email, prenom, nom, societe_club, newsletter, source, now, "OK"]
-        result = sheet.append_row(row, value_input_option="USER_ENTERED")
-        if result:
-            st.success("✅ Inscription enregistrée dans Google Sheet.")
+        sheet.append_row(row, value_input_option="USER_ENTERED")
     except Exception as e:
         st.error(f"❌ Erreur réelle lors de l'enregistrement : {e}")
+    else:
+        st.success("✅ Inscription enregistrée dans Google Sheet.")
