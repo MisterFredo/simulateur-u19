@@ -203,16 +203,34 @@ if matchs_simulables.empty:
 colonnes_matchs_simplifiees = ["EQUIPE_DOM", "NB_BUT_DOM", "EQUIPE_EXT", "NB_BUT_EXT"]
 colonnes_matchs_completes = ["JOURNEE", "POULE", "DATE", "EQUIPE_DOM", "NB_BUT_DOM", "EQUIPE_EXT", "NB_BUT_EXT"]
 
-# --- 3BIS. FORMULAIRE DE SIMULATION
-with st.form("formulaire_simulation"):
-    colonnes_affichees = colonnes_matchs_simplifiees if mode_simplifie else colonnes_matchs_completes
-    edited_df = st.data_editor(
-        matchs_simulables[colonnes_affichees],
-        num_rows="dynamic",
-        use_container_width=True,
-        key="simulation_scores"
-    )
-    submit = st.form_submit_button("🔁 Valider les scores simulés")
+# --- 3BIS. FORMULAIRE DE SIMULATION ---
+if "user" not in st.session_state:
+    st.info("💡 Tu peux modifier les scores, mais tu dois être connecté pour valider la simulation.")
+    with st.form("formulaire_simulation_locked"):
+        colonnes_affichees = colonnes_matchs_simplifiees if mode_simplifie else colonnes_matchs_completes
+        st.data_editor(
+            matchs_simulables[colonnes_affichees],
+            num_rows="dynamic",
+            use_container_width=True,
+            key="simulation_scores"
+        )
+        st.form_submit_button("🔁 Valider les scores simulés", disabled=True)
+    st.stop()
+else:
+    with st.form("formulaire_simulation"):
+        colonnes_affichees = colonnes_matchs_simplifiees if mode_simplifie else colonnes_matchs_completes
+        edited_df = st.data_editor(
+            matchs_simulables[colonnes_affichees],
+            num_rows="dynamic",
+            use_container_width=True,
+            key="simulation_scores"
+        )
+        submit = st.form_submit_button("🔁 Valider les scores simulés")
+
+        if submit:
+            # 👉 Appel de ta fonction de recalcul
+            classement_simule = recalculer_classement_simule(...)
+            st.success("✅ Simulation prise en compte !")
 
 # --- 4. ACTIVATION SIMULATION
 if submit:
