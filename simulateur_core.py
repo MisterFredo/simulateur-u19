@@ -522,6 +522,8 @@ def connect_to_google_sheet():
     return sheet
 
 def enregistrer_inscription(email, prenom, nom, societe_club, newsletter, source):
+    st.warning("🛠 Code actif : version sans try-except")  # pour debug du déploiement
+
     sheet = connect_to_google_sheet()
     now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     row = [email, prenom, nom, societe_club, newsletter, source, now, "OK"]
