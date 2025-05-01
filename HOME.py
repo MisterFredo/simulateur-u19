@@ -35,6 +35,17 @@ with st.sidebar:
         unsafe_allow_html=True,
     )
 
+    # --- Bloc Connexion utilisateur existant ---
+    st.subheader("Déjà inscrit ?")
+
+    email_connexion = st.text_input("Email", key="email_connexion")
+
+    if st.button("Se connecter"):
+        if email_connexion:
+            st.session_state["user"] = email_connexion
+            st.success(f"Bienvenue {email_connexion} !")
+        else:
+            st.warning("Merci de renseigner ton email.")
 # --- Style moderne du contenu principal ---
 st.markdown(
     """
