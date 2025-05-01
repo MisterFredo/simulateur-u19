@@ -130,6 +130,12 @@ if "page" not in st.session_state:
 st.title("Bienvenue sur Datafoot 👋")
 st.subheader("Présentation du projet Datafoot ⚽")
 
+# --- Message de connexion ---
+if "user" in st.session_state:
+    st.success(f"🔓 Connecté en tant que : {st.session_state['user_name']} ({st.session_state['user']})")
+else:
+    st.info("🔒 Connecte-toi ou crée un compte pour accéder à la simulation.")
+
 st.markdown("""
 Datafoot est une plateforme dédiée aux championnats de football amateur. Vous pouvez consulter les classements officiels, simuler les résultats des matchs à venir, et analyser les différences particulières entre les équipes.
 
