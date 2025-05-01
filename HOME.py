@@ -94,17 +94,13 @@ with st.sidebar:
     st.header("📚 Identification")
     user_name = st.text_input("Nom de l'utilisateur")
     user_email = st.text_input("Email")
-    if st.button("Se connecter"):
+   if st.button("Se connecter", key="btn_connexion"):
         if user_name and user_email:
             st.session_state.user_name = user_name
             st.session_state.user_email = user_email
             st.session_state.page = "home"  # Revenir à "home" après connexion
         else:
             st.warning("Veuillez entrer votre nom et email.")
-
-    # --- Menu de navigation : METTRE À JOUR ICI ---
-    # Utilisation d'un selectbox pour la navigation
-    selection = st.selectbox("Naviguer", ["Accueil", "Simulateur", "Classements"])
 
 # --- PAGE D'ACCUEIL ---
 if selection == "Accueil":
