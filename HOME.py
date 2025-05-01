@@ -107,7 +107,6 @@ with st.sidebar:
             st.warning("Veuillez entrer votre nom et votre email.")
 
 # --- PAGE D'ACCUEIL ---
-if selection == "Accueil":
     st.title("Bienvenue sur Datafoot 👋")
     st.subheader("Présentation du projet Datafoot ⚽")
 
