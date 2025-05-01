@@ -92,15 +92,19 @@ if "page" not in st.session_state:
 # --- SIDEBAR : Identification ---
 with st.sidebar:
     st.header("📚 Identification")
+    
     user_name = st.text_input("Nom de l'utilisateur")
     user_email = st.text_input("Email")
-   if st.button("Se connecter", key="btn_connexion"):
+
+    if st.button("Se connecter", key="btn_connexion"):
         if user_name and user_email:
             st.session_state.user_name = user_name
             st.session_state.user_email = user_email
+            st.session_state["user"] = user_email  # Ajout pour uniformiser
             st.session_state.page = "home"  # Revenir à "home" après connexion
+            st.success(f"Bienvenue {user_name} !")
         else:
-            st.warning("Veuillez entrer votre nom et email.")
+            st.warning("Veuillez entrer votre nom et votre email.")
 
 # --- PAGE D'ACCUEIL ---
 if selection == "Accueil":
