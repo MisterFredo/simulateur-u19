@@ -521,13 +521,9 @@ def connect_to_google_sheet():
     sheet = client.open("DATAFOOT_INSCRIPTIONS").worksheet("INSCRIPTIONS")
     return sheet
 
-# --- Ajouter une ligne dans l'onglet INSCRIPTIONS ---
 def enregistrer_inscription(email, prenom, nom, societe_club, newsletter, source):
-    try:
-        sheet = connect_to_google_sheet()
-        now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-        row = [email, prenom, nom, societe_club, newsletter, source, now, "OK"]
-        sheet.append_row(row, value_input_option="USER_ENTERED")
-        st.success("✅ Inscription enregistrée dans Google Sheet.")
-    except Exception as e:
-        st.error(f"❌ Erreur réelle lors de l'enregistrement : {e}")
+    sheet = connect_to_google_sheet()
+    now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    row = [email, prenom, nom, societe_club, newsletter, source, now, "OK"]
+    sheet.append_row(row, value_input_option="USER_ENTERED")
+    st.success("✅ Inscription enregistrée dans Google Sheet.")
