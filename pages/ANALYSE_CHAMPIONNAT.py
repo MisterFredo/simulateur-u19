@@ -341,3 +341,32 @@ if st.session_state.simulation_validee:
 
         if selected_poule == "Toutes les poules":
             afficher_comparatifs_speciaux(champ_id, classement_simule, date_limite)
+
+# --- Après la simulation, affichage de l'option de s'inscrire à la newsletter ---
+if "user" in st.session_state:  # Vérifier si l'utilisateur est identifié
+    if "newsletter" not in st.session_state or st.session_state["newsletter"] == "non":
+        # Si l'utilisateur est identifié mais pas encore inscrit à la newsletter
+        st.markdown("---")
+        st.subheader("📝 Inscription à la Newsletter")
+        
+        with st.form("form_newsletter_from_simulation"):
+            email_newsletter = st.text_input("Email pour la newsletter", value=st.session_state["user_email"])
+            submit_newsletter = st.form_submit_button("S'inscrire à la newsletter")
+
+            if submit_newsletter:
+                if email_newsletter and is_valid_email(email_newsletter):
+                    # Enregistre dans Google Sheet
+                    enregistrer_inscription(
+                        email=email_newsletter,
+                        prenom="Non renseigné",
+                        nom="Non renseigné",
+                        societe_club="Non renseigné",
+                        newsletter="oui",
+                        source="simulateur"
+                    )
+                    st.success(f"✅ Vous êtes maintenant inscrit à la newsletter avec l'email {email_newsletter}.")
+                elif not is_valid_email(email_newsletter):
+                    st.warning("L'adresse email saisie n'est pas valide.")
+                else:
+                    st.warning("Merci de renseigner un email valide.")
+
