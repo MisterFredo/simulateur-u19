@@ -5,6 +5,7 @@ import simulateur_core as core
 # --- Configuration de la page principale ---
 st.set_page_config(page_title="Datafoot.ai", page_icon="🏆", layout="wide")
 
+# --- SIDEBAR ---
 with st.sidebar:
     st.image("LOGO DATAFOOT CARRE.png", use_container_width=True)
 
@@ -36,16 +37,21 @@ with st.sidebar:
     )
 
     # --- Bloc Connexion utilisateur existant ---
-    st.subheader("Déjà inscrit ?")
-
-    email_connexion = st.text_input("Email", key="email_connexion")
+    st.subheader("📚 Identification")
+    
+    user_name = st.text_input("Nom de l'utilisateur")
+    user_email = st.text_input("Email")
 
     if st.button("Se connecter", key="btn_connexion_sidebar"):
-        if email_connexion:
-            st.session_state["user"] = email_connexion
-            st.success(f"Bienvenue {email_connexion} !")
+        if user_name and user_email:
+            st.session_state.user_name = user_name
+            st.session_state.user_email = user_email
+            st.session_state["user"] = user_email
+            st.session_state.page = "home"
+            st.success(f"Bienvenue {user_name} !")
         else:
-            st.warning("Merci de renseigner ton email.")
+            st.warning("Veuillez entrer votre nom et votre email.")
+
 # --- Style moderne du contenu principal ---
 st.markdown(
     """
@@ -74,8 +80,7 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-
-# --- Désactivation de la barre de navigation globale Streamlit (menu en haut) ---
+# --- Désactivation de la barre de navigation globale Streamlit ---
 st.markdown(
     """
     <style>
@@ -83,43 +88,29 @@ st.markdown(
         display: none;
     }
     </style>
-    """, unsafe_allow_html=True)
+    """,
+    unsafe_allow_html=True,
+)
 
 # --- Initialiser la page courante ---
 if "page" not in st.session_state:
     st.session_state.page = "home"
 
-# --- SIDEBAR : Identification ---
-with st.sidebar:
-    st.header("📚 Identification")
-    
-    user_name = st.text_input("Nom de l'utilisateur")
-    user_email = st.text_input("Email")
-
-    if st.button("Se connecter", key="btn_connexion"):
-        if user_name and user_email:
-            st.session_state.user_name = user_name
-            st.session_state.user_email = user_email
-            st.session_state["user"] = user_email  # Uniformise l’état utilisateur
-            st.session_state.page = "home"
-            st.success(f"Bienvenue {user_name} !")
-        else:
-            st.warning("Veuillez entrer votre nom et votre email.")
-
 # --- PAGE D'ACCUEIL ---
-    st.title("Bienvenue sur Datafoot 👋")
-    st.subheader("Présentation du projet Datafoot ⚽")
+st.title("Bienvenue sur Datafoot 👋")
+st.subheader("Présentation du projet Datafoot ⚽")
 
-    st.markdown("""
-    Datafoot est une plateforme dédiée aux championnats de football amateur. Vous pouvez consulter les classements officiels, simuler les résultats des matchs à venir, et analyser les différences particulières entre les équipes.
+st.markdown("""
+Datafoot est une plateforme dédiée aux championnats de football amateur. Vous pouvez consulter les classements officiels, simuler les résultats des matchs à venir, et analyser les différences particulières entre les équipes.
 
-    Fonctionnalités principales :
-    - **Simulations de résultats** : Projetez différents scénarios pour voir l'impact sur le classement.
-    - **Règles spéciales** : Consulter les classements spéciaux pour les catégories comme U19, U17, N2, N3.
-    - **Différences particulières** : Gérez les égalités dans les classements avec des critères alternatifs comme les confrontations directes.
+Fonctionnalités principales :
+- **Simulations de résultats** : Projetez différents scénarios pour voir l'impact sur le classement.
+- **Règles spéciales** : Consulter les classements spéciaux pour les catégories comme U19, U17, N2, N3.
+- **Différences particulières** : Gérez les égalités dans les classements avec des critères alternatifs comme les confrontations directes.
 
-    🔒 Connectez-vous pour commencer.
-    """)
+🔒 Connectez-vous pour commencer.
+""")
+
 
  # --- Fonctionnalités à venir (explications) ---
 st.markdown("### Fonctionnalités principales :")
