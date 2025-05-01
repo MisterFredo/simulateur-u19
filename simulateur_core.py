@@ -538,3 +538,7 @@ def enregistrer_inscription(email, prenom, nom, societe_club, newsletter, source
     row = [email, prenom, nom, societe_club, newsletter, source, now, "OK"]
     sheet.append_row(row, value_input_option="USER_ENTERED")
     st.success("✅ Inscription enregistrée dans Google Sheet.")
+
+def is_valid_email(email):
+    pattern = r"^[\w\.-]+@[\w\.-]+\.\w+$"
+    return re.match(pattern, email)
