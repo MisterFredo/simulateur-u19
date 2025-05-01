@@ -40,7 +40,7 @@ with st.sidebar:
 
     email_connexion = st.text_input("Email", key="email_connexion")
 
-    if st.button("Se connecter"):
+    if st.button("Se connecter", key="btn_connexion_sidebar"):
         if email_connexion:
             st.session_state["user"] = email_connexion
             st.success(f"Bienvenue {email_connexion} !")
