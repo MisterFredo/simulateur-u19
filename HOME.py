@@ -6,7 +6,8 @@ import os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 from simulateur_core import (
-    enregistrer_inscription
+    enregistrer_inscription,
+    is_valid_email
 )
 
 # --- Configuration de la page principale ---
@@ -75,15 +76,13 @@ with st.sidebar:
         submitted = st.form_submit_button("Créer mon compte")
 
         if submitted:
-            if prenom and nom and email_inscription:
+            if prenom and nom and email_inscription and is_valid_email(email_inscription):
                 st.session_state["user"] = email_inscription
                 st.session_state["user_name"] = f"{prenom} {nom}"
                 st.session_state["user_email"] = email_inscription
                 st.session_state["club"] = club
                 st.session_state["newsletter"] = "oui" if newsletter else "non"
 
-                # --- Enregistrement dans Google Sheet ---
-                from simulateur_core import enregistrer_inscription
                 enregistrer_inscription(
                     email=email_inscription,
                     prenom=prenom,
@@ -94,8 +93,11 @@ with st.sidebar:
                 )
 
                 st.success(f"Bienvenue {prenom} ! Ton compte est activé.")
+            elif not is_valid_email(email_inscription):
+                st.warning("L'adresse email saisie n'est pas valide.")
             else:
                 st.warning("Merci de remplir tous les champs obligatoires.")
+
 
 
 # --- Style moderne du contenu principal ---
