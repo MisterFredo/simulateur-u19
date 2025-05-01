@@ -80,6 +80,10 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
+with st.expander("🔧 Debug (session_state)"):
+    st.write("Contenu de st.session_state :")
+    st.json(st.session_state)
+
 # --- Désactivation de la barre de navigation globale Streamlit ---
 st.markdown(
     """
