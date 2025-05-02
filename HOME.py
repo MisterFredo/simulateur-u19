@@ -1,5 +1,11 @@
 import streamlit as st
-from datetime import date
+
+# ✅ Doit absolument être la première commande
+st.set_page_config(page_title="Datafoot.ai", page_icon="🏆", layout="wide")
+
+# --- Imports utiles ---
+import pandas as pd
+from datetime import date, datetime
 
 import sys
 import os
@@ -9,17 +15,10 @@ import importlib
 import simulateur_core
 importlib.reload(simulateur_core)
 
-# --- Configuration de la page principale ---
-st.set_page_config(page_title="Datafoot.ai", page_icon="🏆", layout="wide")
-
-import streamlit as st
-from datetime import date
-
-import sys
-import os
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-
-from simulateur_core import enregistrer_inscription
+from simulateur_core import (
+    enregistrer_inscription,
+    verifier_email
+)
 
 # --- Configuration de la page principale ---
 st.set_page_config(page_title="Datafoot.ai", page_icon="🏆", layout="wide")
