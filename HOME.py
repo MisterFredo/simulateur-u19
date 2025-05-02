@@ -134,7 +134,7 @@ st.markdown(
 )
 
 # --- Logo horizontal + titre ---
-st.image("LOGO DATAFOOT RECTANGULAIRE.png", use_column_width=True)
+st.image("LOGO DATAFOOT RECTANGULAIRE.png", use_container_width=True)
 
 st.markdown("""
 <h1 style='margin-top: 0;'>DATAFOOT.AI</h1>
@@ -177,10 +177,9 @@ st.markdown("""
 
 # --- Bouton unique vers la simulation ---
 st.markdown("""
-<a href="/?page=ANALYSE_CHAMPIONNAT" class="button-simulateur">Accéder au simulateur</a>
+<a href="./?page=ANALYSE_CHAMPIONNAT" class="button-simulateur">Accéder au simulateur</a>
 """, unsafe_allow_html=True)
 
-# --- Style du bouton (inchangé) ---
 st.markdown("""
 <style>
 .button-simulateur {
@@ -200,3 +199,4 @@ st.markdown("""
 }
 </style>
 """, unsafe_allow_html=True)
+
