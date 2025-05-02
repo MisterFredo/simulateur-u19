@@ -546,7 +546,12 @@ def verifier_email(email):
         result = re.fullmatch(pattern, email)
         print("📤 Email reçu :", email)
         print("🔎 Résultat regex :", result)
+        if result:
+            print("✅ Email valide ✅")
+        else:
+            print("❌ Email invalide ❌")
         return bool(result)
     except Exception as e:
         print("❌ Exception dans verifier_email :", e)
         return False
+
