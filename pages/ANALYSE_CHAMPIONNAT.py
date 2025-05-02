@@ -22,7 +22,8 @@ from simulateur_core import (
     classement_special_u17,
     classement_special_n2,
     classement_special_n3,
-    calculer_difficulte_calendrier
+    calculer_difficulte_calendrier,
+    recalculer_classement_simule
 )
 
 # --- CONFIG STREAMLIT
