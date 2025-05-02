@@ -111,7 +111,10 @@ with st.form("form_newsletter"):
         st.write(f"📦 Type = {type(email_newsletter)}")
         st.write("📣 Appel réel à :", simulateur_core.verifier_email)
 
-        if email_newsletter and simulateur_core.verifier_email(email_newsletter):
+        test = simulateur_core.verifier_email(email_newsletter)
+        st.write("🧪 Résultat brut validation email :", test)
+
+        if email_newsletter and test:
             simulateur_core.enregistrer_inscription(
                 email=email_newsletter,
                 prenom="Non renseigné",
@@ -121,10 +124,11 @@ with st.form("form_newsletter"):
                 source="newsletter seule"
             )
             st.success(f"✅ Vous êtes inscrit à la newsletter avec l'email {email_newsletter}.")
-        elif not simulateur_core.verifier_email(email_newsletter):
+        elif not test:
             st.warning("L'adresse email saisie n'est pas valide.")
         else:
             st.warning("Merci de renseigner un email valide.")
+
 
 
 # --- Style moderne du contenu principal ---
