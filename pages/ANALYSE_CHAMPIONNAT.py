@@ -32,28 +32,30 @@ st.set_page_config(page_title="SIMULATEUR - Datafoot", layout="wide")
 # --- FONCTION AFFICHAGE COMPARATIFS SPÉCIAUX
 def afficher_comparatifs_speciaux(champ_id, classement_df, date_limite):
     if champ_id == 6:
-        st.markdown("### 🚨 Comparatif spécial U19")
+        st.markdown("### Comparatif spécial U19")
         df_11e = classement_special_u19(classement_df, champ_id, date_limite)
         if df_11e is not None:
             st.dataframe(df_11e, use_container_width=True, hide_index=True)
 
     if champ_id == 7:
-        st.markdown("### 🥈 Comparatif spécial U17")
+        st.markdown("### Comparatif spécial U17")
         df_2e = classement_special_u17(classement_df, champ_id, date_limite)
         if df_2e is not None:
             st.dataframe(df_2e, use_container_width=True, hide_index=True)
 
-    if champ_id == 4:
-        st.markdown("### 🚨 Comparatif spécial N2")
-        df_13e = classement_special_n2(classement_df, champ_id, date_limite)
-        if df_13e is not None:
-            st.dataframe(df_13e, use_container_width=True, hide_index=True)
+    # --- Bloc désactivé temporairement : Comparatif spécial N2 ---
+    # if champ_id == 4:
+    #     st.markdown("### Comparatif spécial N2")
+    #     df_13e = classement_special_n2(classement_df, champ_id, date_limite)
+    #     if df_13e is not None:
+    #         st.dataframe(df_13e, use_container_width=True, hide_index=True)
 
     if champ_id == 5:
-        st.markdown("### ⚠️ Comparatif spécial N3")
+        st.markdown("### Comparatif spécial N3")
         df_10e = classement_special_n3(classement_df, champ_id, date_limite)
         if df_10e is not None:
             st.dataframe(df_10e, use_container_width=True, hide_index=True)
+
 
 # --- FACTORISATION MINI-CLASSEMENTS
 def afficher_mini_classements_bloc(mini_classements, titre_bloc):
