@@ -133,14 +133,6 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-# --- Logo horizontal + titre ---
-st.image("LOGO DATAFOOT RECTANGULAIRE.png", use_container_width=True)
-
-st.markdown("""
-<h1 style='margin-top: 0;'>DATAFOOT.AI</h1>
-<h3 style='font-weight:normal;'>Le simulateur des championnats amateurs</h3>
-""", unsafe_allow_html=True)
-
 # --- Message de connexion (neutre) ---
 if "user" in st.session_state:
     st.success(f"Connecté : {st.session_state['user_name']} ({st.session_state['user']})")
@@ -177,7 +169,7 @@ st.markdown("""
 
 # --- Bouton unique vers la simulation ---
 st.markdown("""
-<a href="./?page=ANALYSE_CHAMPIONNAT" class="button-simulateur">Accéder au simulateur</a>
+<a href="/ANALYSE_CHAMPIONNAT" class="button-simulateur">Accéder au simulateur</a>
 """, unsafe_allow_html=True)
 
 st.markdown("""
