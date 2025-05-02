@@ -3,16 +3,6 @@ import streamlit as st
 # ✅ Doit absolument être la première commande
 st.set_page_config(page_title="Datafoot.ai", page_icon="🏆", layout="wide")
 
-# --- Détection de switch_page disponible ---
-try:
-    from streamlit_extras.switch_page_button import switch_page
-    SWITCH_AVAILABLE = True
-except ImportError:
-    SWITCH_AVAILABLE = False
-
-if "page" in st.session_state and st.session_state.page == "ANALYSE_CHAMPIONNAT" and SWITCH_AVAILABLE:
-    switch_page("ANALYSE_CHAMPIONNAT")
-
 # --- Imports utiles ---
 import pandas as pd
 from datetime import date, datetime
@@ -186,13 +176,9 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # --- Bouton unique vers la simulation ---
-if SWITCH_AVAILABLE:
-    if st.button("Accéder au simulateur"):
-        st.session_state.page = "ANALYSE_CHAMPIONNAT"
-else:
-    st.markdown("""
-    <a href="/?page=ANALYSE_CHAMPIONNAT" class="button-simulateur">Accéder au simulateur</a>
-    """, unsafe_allow_html=True)
+st.markdown("""
+<a href="/?page=ANALYSE_CHAMPIONNAT" class="button-simulateur">Accéder au simulateur</a>
+""", unsafe_allow_html=True)
 
 # --- Style du bouton (inchangé) ---
 st.markdown("""
