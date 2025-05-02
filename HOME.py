@@ -105,6 +105,10 @@ with st.sidebar:
     with st.form("form_newsletter"):
         email_newsletter = st.text_input("Email pour la newsletter")
         submitted_newsletter = st.form_submit_button("S'inscrire à la newsletter")
+        st.write(f"🧪 Debug email_newsletter = '{email_newsletter}'")
+        st.write(f"📏 Longueur = {len(str(email_newsletter))}")
+        st.write(f"📦 Type = {type(email_newsletter)}")
+
 
         if submitted_newsletter:
             if email_newsletter and is_valid_email(email_newsletter):
