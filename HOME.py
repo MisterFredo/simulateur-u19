@@ -20,9 +20,6 @@ from simulateur_core import (
     verifier_email
 )
 
-# --- Configuration de la page principale ---
-st.set_page_config(page_title="Datafoot.ai", page_icon="🏆", layout="wide")
-
 # --- SIDEBAR ---
 with st.sidebar:
     st.image("LOGO DATAFOOT CARRE.png", use_container_width=True)
