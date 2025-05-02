@@ -50,10 +50,10 @@ with st.sidebar:
         unsafe_allow_html=True,
     )
 
-    # --- Bloc Connexion utilisateur existant ---
-    st.subheader("📚 Déjà inscrit ?")
+    # --- Connexion utilisateur ---
+    st.subheader("Se connecter")
 
-    user_name = st.text_input("Nom de l'utilisateur")
+    user_name = st.text_input("Nom")
     user_email = st.text_input("Email")
 
     if st.button("Se connecter", key="btn_connexion_sidebar"):
@@ -62,13 +62,13 @@ with st.sidebar:
             st.session_state.user_email = user_email
             st.session_state["user"] = user_email
             st.session_state.page = "home"
-            st.success(f"Bienvenue {user_name} !")
+            st.success("Connexion réussie.")
         else:
-            st.warning("Veuillez entrer votre nom et votre email.")
+            st.warning("Renseigner le nom et l'email.")
 
-    # --- Bloc Inscription ---
+    # --- Inscription ---
     st.markdown("---")
-    st.subheader("🆕 Créer un compte gratuit")
+    st.subheader("Créer un compte gratuit")
 
     with st.form("form_inscription"):
         prenom = st.text_input("Prénom")
@@ -76,10 +76,10 @@ with st.sidebar:
         email_inscription = st.text_input("Email")
         club = st.text_input("Club ou Société")
 
-        st.markdown("📬 **Newsletter gratuite :** chaque semaine, recevez nos analyses sur les règles spéciales et égalités.")
-        newsletter = st.checkbox("Je souhaite recevoir la newsletter")
+        st.markdown("Recevoir chaque mois une synthèse des analyses : règles spéciales, égalités, simulations.")
+        newsletter = st.checkbox("S'abonner à la newsletter")
 
-        submitted = st.form_submit_button("Créer mon compte")
+        submitted = st.form_submit_button("Créer un compte")
 
         if submitted:
             if prenom and nom and email_inscription:
@@ -98,9 +98,9 @@ with st.sidebar:
                     source="simulateur"
                 )
 
-                st.success(f"Bienvenue {prenom} ! Ton compte est activé.")
+                st.success("Compte activé.")
             else:
-                st.warning("Merci de remplir tous les champs obligatoires.")
+                st.warning("Remplir tous les champs obligatoires.")
 
 # --- Style moderne du contenu principal ---
 st.markdown(
@@ -108,11 +108,11 @@ st.markdown(
     <style>
     [data-testid="stAppViewContainer"] {
         background-color: #ffffff;
-        padding: 2rem 2rem 2rem 2rem;
+        padding: 2rem;
     }
     h1, h2, h3 {
-        color: #333333;
-        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        color: #2E3C51;
+        font-family: 'Poppins', 'Segoe UI', sans-serif;
     }
     .stButton>button {
         border-radius: 8px;
@@ -123,64 +123,58 @@ st.markdown(
     }
     .stButton>button:hover {
         background-color: #005bb5;
-        color: #ffffff;
     }
     </style>
     """,
     unsafe_allow_html=True,
 )
 
-with st.expander("🔧 Debug (session_state)"):
-    st.write("Contenu de st.session_state :")
-    st.json(st.session_state)
+# --- Logo horizontal + titre ---
+st.image("LOGO DATAFOOT RECTANGULAIRE.png", width=300)
 
-# --- Désactivation de la barre de navigation globale Streamlit ---
-st.markdown(
-    """
-    <style>
-    .css-1l02zws {
-        display: none;
-    }
-    </style>
-    """,
-    unsafe_allow_html=True,
-)
+st.markdown("""
+<h1 style='margin-top: 0;'>DATAFOOT.AI</h1>
+<h3 style='font-weight:normal;'>Le simulateur des championnats amateurs</h3>
+""", unsafe_allow_html=True)
 
-# --- Initialiser la page courante ---
-if "page" not in st.session_state:
-    st.session_state.page = "home"
-
-# --- PAGE D'ACCUEIL ---
-st.title("Bienvenue sur Datafoot 👋")
-st.subheader("Présentation du projet Datafoot ⚽")
-
-# --- Message de connexion ---
+# --- Message de connexion (neutre) ---
 if "user" in st.session_state:
-    st.success(f"🔓 Connecté en tant que : {st.session_state['user_name']} ({st.session_state['user']})")
+    st.success(f"Connecté : {st.session_state['user_name']} ({st.session_state['user']})")
 else:
-    st.info("🔒 Connecte-toi ou crée un compte pour accéder à la simulation.")
+    st.info("Se connecter ou créer un compte pour accéder aux simulations.")
 
+# --- Bloc concept ---
+st.subheader("Concept")
 st.markdown("""
-Datafoot est une plateforme dédiée aux championnats de football amateur. Vous pouvez consulter les classements officiels, simuler les résultats des matchs à venir, et analyser les différences particulières entre les équipes.
-
-Fonctionnalités principales :
-- **Simulations de résultats** : Projetez différents scénarios pour voir l'impact sur le classement.
-- **Règles spéciales** : Consulter les classements spéciaux pour les catégories comme U19, U17, N2, N3.
-- **Différences particulières** : Gérez les égalités dans les classements avec des critères alternatifs comme les confrontations directes.
-
-🔒 Connectez-vous pour commencer.
+Datafoot.ai est une plateforme dédiée à l’analyse et à la simulation des championnats de football amateur.  
+Elle permet de consulter les classements en temps réel, tester différents scénarios, et appliquer des règles spéciales (U19, N3, etc.) selon les règlements fédéraux.
 """)
 
-
- # --- Fonctionnalités à venir (explications) ---
-st.markdown("### Fonctionnalités principales :")
+# --- Bloc fonctionnalités ---
+st.subheader("Fonctionnalités principales")
 st.markdown("""
-1. **Simulations de résultats** : Vous pouvez simuler des résultats pour les matchs à venir et voir l'impact sur le classement global.
-2. **Règles spéciales** : Accédez à des classements spécifiques (ex : U19, U17, N2, N3) pour des analyses détaillées.
-3. **Différences particulières** : Gérez les égalités entre équipes avec des critères comme les confrontations directes.
+- **Classements dynamiques** : Calculés à partir des résultats à une date donnée  
+- **Simulation de matchs** : Modifier les scores pour tester des scénarios  
+- **Règles spéciales** : Classements personnalisés pour U19, U17, N2, N3  
+- **Égalités** : Départager les équipes par différence particulière
 """)
 
-# Bouton sobre aligné à gauche
+# --- Bloc analyses ---
+st.subheader("Exemples d’analyses")
+st.markdown("""
+1. **U19 : un 11e devant un 10e**  
+   Grâce aux confrontations directes contre les équipes classées 6 à 10.
+2. **National 3 : un 10e sauvé**  
+   Grâce aux résultats contre les 5e à 9e.
+3. **Égalité parfaite**  
+   Départagée par la règle de différence particulière.
+""")
+
+# --- Bouton unique vers la simulation ---
+st.markdown("""
+<a href="?page=ANALYSE_CHAMPIONNAT" class="button-simulateur">Accéder au simulateur</a>
+""", unsafe_allow_html=True)
+
 st.markdown("""
 <style>
 .button-simulateur {
@@ -188,22 +182,15 @@ st.markdown("""
     padding: 0.6rem 1.2rem;
     font-size: 1rem;
     font-weight: normal;
-    color: #333333;
+    color: #2E3C51;
     background-color: #f0f0f0;
     border: 1px solid #cccccc;
     border-radius: 6px;
     text-decoration: none;
-    text-align: left;
     transition: background-color 0.3s ease;
 }
 .button-simulateur:hover {
     background-color: #e6e6e6;
 }
 </style>
-<a href="?page=ANALYSE_CHAMPIONNAT" class="button-simulateur">Accéder au simulateur</a>
 """, unsafe_allow_html=True)
-
-
-# --- Lien vers la documentation ou aide
-st.markdown("### Aide et Documentation")
-st.markdown("Pour en savoir plus, consultez notre [guide d'utilisation](#) ou contactez-nous à [support@datafoot.fr](mailto:support@datafoot.fr).")
