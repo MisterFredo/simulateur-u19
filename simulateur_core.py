@@ -424,6 +424,9 @@ def get_matchs_modifiables(champ_id, date_limite, non_joues_only=True):
     return client.query(query).to_dataframe()
 
 def recalculer_classement_simule(matchs_simules, champ_id, date_limite, selected_poule, type_classement):
+    # Ne garder que les matchs simulés avec des scores complets
+    matchs_simules = matchs_simules.dropna(subset=["NB_BUT_DOM", "NB_BUT_EXT"])
+
     # Récupération des matchs terminés à date, hors ceux qu'on va simuler
     matchs_historiques = get_matchs_termine(champ_id, date_limite)
     matchs_historiques = matchs_historiques[~matchs_historiques["ID_MATCH"].isin(matchs_simules["ID_MATCH"])]
@@ -472,6 +475,7 @@ def recalculer_classement_simule(matchs_simules, champ_id, date_limite, selected
         classement_df = classement_df[classement_df["POULE"] == selected_poule]
 
     return classement_df, mini_classements
+
 
 def calculer_difficulte_calendrier(df_classement, df_matchs):
     """
