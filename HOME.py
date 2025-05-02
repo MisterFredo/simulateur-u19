@@ -12,6 +12,18 @@ importlib.reload(simulateur_core)
 # --- Configuration de la page principale ---
 st.set_page_config(page_title="Datafoot.ai", page_icon="🏆", layout="wide")
 
+import streamlit as st
+from datetime import date
+
+import sys
+import os
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
+from simulateur_core import enregistrer_inscription
+
+# --- Configuration de la page principale ---
+st.set_page_config(page_title="Datafoot.ai", page_icon="🏆", layout="wide")
+
 # --- SIDEBAR ---
 with st.sidebar:
     st.image("LOGO DATAFOOT CARRE.png", use_container_width=True)
@@ -75,14 +87,14 @@ with st.sidebar:
         submitted = st.form_submit_button("Créer mon compte")
 
         if submitted:
-            if prenom and nom and email_inscription and simulateur_core.verifier_email(email_inscription):
+            if prenom and nom and email_inscription:
                 st.session_state["user"] = email_inscription
                 st.session_state["user_name"] = f"{prenom} {nom}"
                 st.session_state["user_email"] = email_inscription
                 st.session_state["club"] = club
                 st.session_state["newsletter"] = "oui" if newsletter else "non"
 
-                simulateur_core.enregistrer_inscription(
+                enregistrer_inscription(
                     email=email_inscription,
                     prenom=prenom,
                     nom=nom,
@@ -92,44 +104,8 @@ with st.sidebar:
                 )
 
                 st.success(f"Bienvenue {prenom} ! Ton compte est activé.")
-            elif not simulateur_core.verifier_email(email_inscription):
-                st.warning("L'adresse email saisie n'est pas valide.")
             else:
                 st.warning("Merci de remplir tous les champs obligatoires.")
-
-# --- Bloc Inscription Newsletter Seule ---
-st.markdown("---")
-st.subheader("📝 Inscription à la Newsletter")
-
-with st.form("form_newsletter"):
-    email_newsletter = st.text_input("Email pour la newsletter")
-    submitted_newsletter = st.form_submit_button("S'inscrire à la newsletter")
-
-    if submitted_newsletter:
-        st.write(f"🧪 Debug email_newsletter = '{email_newsletter}'")
-        st.write(f"📏 Longueur = {len(str(email_newsletter))}")
-        st.write(f"📦 Type = {type(email_newsletter)}")
-        st.write("📣 Appel réel à :", simulateur_core.verifier_email)
-
-        test = simulateur_core.verifier_email(email_newsletter)
-        st.write("🧪 Résultat brut validation email :", test)
-
-        if email_newsletter and test:
-            simulateur_core.enregistrer_inscription(
-                email=email_newsletter,
-                prenom="Non renseigné",
-                nom="Non renseigné",
-                societe_club="Non renseigné",
-                newsletter="oui",
-                source="newsletter seule"
-            )
-            st.success(f"✅ Vous êtes inscrit à la newsletter avec l'email {email_newsletter}.")
-        elif not test:
-            st.warning("L'adresse email saisie n'est pas valide.")
-        else:
-            st.warning("Merci de renseigner un email valide.")
-
-
 
 # --- Style moderne du contenu principal ---
 st.markdown(
