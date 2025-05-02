@@ -17,7 +17,6 @@ importlib.reload(simulateur_core)
 
 from simulateur_core import (
     enregistrer_inscription,
-    verifier_email
 )
 
 # --- SIDEBAR ---
