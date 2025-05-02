@@ -9,10 +9,6 @@ import importlib
 import simulateur_core
 importlib.reload(simulateur_core)
 
-from simulateur_core import (
-    enregistrer_inscription,
-    is_valid_email
-)
 
 # --- Configuration de la page principale ---
 st.set_page_config(page_title="Datafoot.ai", page_icon="🏆", layout="wide")
