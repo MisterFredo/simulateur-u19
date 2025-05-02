@@ -521,7 +521,7 @@ def connect_to_google_sheet():
     sheet = client.open_by_key("1ODXBmpefw-wrCaUBmeQ1kkc2Lk2QQwWE2oYN5dobVek").worksheet("INSCRIPTIONS")
     return sheet
 
-
+# --- Enregistrement de l'inscription ---
 def enregistrer_inscription(email, prenom, nom, societe_club, newsletter, source):
     sheet = connect_to_google_sheet()
     
@@ -538,20 +538,4 @@ def enregistrer_inscription(email, prenom, nom, societe_club, newsletter, source
     row = [email, prenom, nom, societe_club, newsletter, source, now, "OK"]
     sheet.append_row(row, value_input_option="USER_ENTERED")
     st.success("✅ Inscription enregistrée dans Google Sheet.")
-
-def verifier_email(email):
-    try:
-        email = str(email).strip()
-        pattern = r"^[\w\.-]+@[\w\.-]+\.\w+$"
-        result = re.fullmatch(pattern, email)
-        print("📤 Email reçu :", email)
-        print("🔎 Résultat regex :", result)
-        if result:
-            print("✅ Email valide ✅")
-        else:
-            print("❌ Email invalide ❌")
-        return bool(result)
-    except Exception as e:
-        print("❌ Exception dans verifier_email :", e)
-        return False
 
