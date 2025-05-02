@@ -97,33 +97,34 @@ with st.sidebar:
             else:
                 st.warning("Merci de remplir tous les champs obligatoires.")
 
-    # --- Bloc Inscription Newsletter Seule ---
-    st.markdown("---")
-    st.subheader("📝 Inscription à la Newsletter")
+# --- Bloc Inscription Newsletter Seule ---
+st.markdown("---")
+st.subheader("📝 Inscription à la Newsletter")
 
-    with st.form("form_newsletter"):
-        email_newsletter = st.text_input("Email pour la newsletter")
-        submitted_newsletter = st.form_submit_button("S'inscrire à la newsletter")
+with st.form("form_newsletter"):
+    email_newsletter = st.text_input("Email pour la newsletter")
+    submitted_newsletter = st.form_submit_button("S'inscrire à la newsletter")
 
-        if submitted_newsletter:
-            st.write(f"🧪 Debug email_newsletter = '{email_newsletter}'")
-            st.write(f"📏 Longueur = {len(str(email_newsletter))}")
-            st.write(f"📦 Type = {type(email_newsletter)}")
-            
-            if email_newsletter and simulateur_core.is_valid_email(email_newsletter):
-                simulateur_core.enregistrer_inscription(
-                    email=email_newsletter,
-                    prenom="Non renseigné",
-                    nom="Non renseigné",
-                    societe_club="Non renseigné",
-                    newsletter="oui",
-                    source="newsletter seule"
-                )
-                st.success(f"✅ Vous êtes inscrit à la newsletter avec l'email {email_newsletter}.")
-            elif not simulateur_core.is_valid_email(email_newsletter):
-                st.warning("L'adresse email saisie n'est pas valide.")
-            else:
-                st.warning("Merci de renseigner un email valide.")
+    if submitted_newsletter:
+        st.write(f"🧪 Debug email_newsletter = '{email_newsletter}'")
+        st.write(f"📏 Longueur = {len(str(email_newsletter))}")
+        st.write(f"📦 Type = {type(email_newsletter)}")
+        st.write("📣 Appel réel à :", simulateur_core.is_valid_email)
+
+        if email_newsletter and simulateur_core.is_valid_email(email_newsletter):
+            simulateur_core.enregistrer_inscription(
+                email=email_newsletter,
+                prenom="Non renseigné",
+                nom="Non renseigné",
+                societe_club="Non renseigné",
+                newsletter="oui",
+                source="newsletter seule"
+            )
+            st.success(f"✅ Vous êtes inscrit à la newsletter avec l'email {email_newsletter}.")
+        elif not simulateur_core.is_valid_email(email_newsletter):
+            st.warning("L'adresse email saisie n'est pas valide.")
+        else:
+            st.warning("Merci de renseigner un email valide.")
 
 
 # --- Style moderne du contenu principal ---
