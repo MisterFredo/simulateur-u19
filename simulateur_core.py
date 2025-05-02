@@ -543,6 +543,10 @@ def is_valid_email(email):
     try:
         email = str(email).strip()
         pattern = r"^[\w\.-]+@[\w\.-]+\.\w+$"
-        return bool(re.fullmatch(pattern, email))
-    except Exception:
+        result = re.fullmatch(pattern, email)
+        print("📤 Email reçu :", email)
+        print("🔎 Résultat regex :", result)
+        return bool(result)
+    except Exception as e:
+        print("❌ Exception dans is_valid_email :", e)
         return False
