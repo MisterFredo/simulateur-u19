@@ -248,9 +248,9 @@ if matchs_simulables.empty:
     st.info("Aucun match disponible pour cette configuration.")
     st.stop()
 
-# Colonnes pour l'affichage mobile-friendly
-colonnes_matchs_simplifiees = ["EQUIPE_DOM", "NB_BUT_DOM", "EQUIPE_EXT", "NB_BUT_EXT"]
-colonnes_matchs_completes = ["JOURNEE", "POULE", "DATE", "EQUIPE_DOM", "NB_BUT_DOM", "EQUIPE_EXT", "NB_BUT_EXT"]
+# Colonnes pour affichage
+colonnes_matchs_simplifiees = ["ID_MATCH", "EQUIPE_DOM", "NB_BUT_DOM", "EQUIPE_EXT", "NB_BUT_EXT"]
+colonnes_matchs_completes = ["ID_MATCH", "JOURNEE", "POULE", "DATE", "EQUIPE_DOM", "NB_BUT_DOM", "EQUIPE_EXT", "NB_BUT_EXT"]
 
 # --- Formulaire de simulation ---
 if "user" not in st.session_state:
@@ -264,7 +264,10 @@ if "user" not in st.session_state:
             matchs_simulables[colonnes_affichees],
             num_rows="dynamic",
             use_container_width=True,
-            key="simulation_scores"
+            key="simulation_scores",
+            column_config={
+                "ID_MATCH": st.column_config.Column(disabled=True)
+            }
         )
         st.form_submit_button("Valider les scores simulés", disabled=True)
     
@@ -277,7 +280,10 @@ else:
             matchs_simulables[colonnes_affichees],
             num_rows="dynamic",
             use_container_width=True,
-            key="simulation_scores"
+            key="simulation_scores",
+            column_config={
+                "ID_MATCH": st.column_config.Column(disabled=True)
+            }
         )
         submit = st.form_submit_button("Valider les scores simulés")
 
