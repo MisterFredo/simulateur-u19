@@ -206,7 +206,8 @@ colonnes_matchs_completes = ["JOURNEE", "POULE", "DATE", "EQUIPE_DOM", "NB_BUT_D
 # --- 3BIS. FORMULAIRE DE SIMULATION ---
 if "user" not in st.session_state:
     st.info("💡 Tu peux modifier les scores, mais tu dois être inscrit pour valider la simulation.")
-    st.warning("🔐 Crée ton compte gratuitement via le menu à gauche pour activer le simulateur.")
+    st.warning("🔐 Crée ton compte gratuitement via le menu 📖 (en haut à gauche) pour activer le simulateur.")
+    st.markdown("📱 Sur mobile, appuie sur l’icône `≡` pour ouvrir le menu.")
     
     with st.form("formulaire_simulation_locked"):
         colonnes_affichees = colonnes_matchs_simplifiees if mode_simplifie else colonnes_matchs_completes
