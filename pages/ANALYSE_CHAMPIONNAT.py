@@ -282,12 +282,12 @@ else:
         submit = st.form_submit_button("Valider les scores simulés")
 
         if submit:
-            classement_simule = recalculer_classement_simule(
+            classement_simule, mini_classements_simule = recalculer_classement_simule(
+                edited_df,
                 champ_id,
                 date_limite,
                 selected_poule,
-                type_classement,
-                edited_df
+                type_classement
             )
             st.success("Simulation prise en compte.")
 
