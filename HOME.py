@@ -3,6 +3,16 @@ import streamlit as st
 # ✅ Doit absolument être la première commande
 st.set_page_config(page_title="Datafoot.ai", page_icon="🏆", layout="wide")
 
+# --- Détection de switch_page disponible ---
+try:
+    from streamlit_extras.switch_page_button import switch_page
+    SWITCH_AVAILABLE = True
+except ImportError:
+    SWITCH_AVAILABLE = False
+
+if "page" in st.session_state and st.session_state.page == "ANALYSE_CHAMPIONNAT" and SWITCH_AVAILABLE:
+    switch_page("ANALYSE_CHAMPIONNAT")
+
 # --- Imports utiles ---
 import pandas as pd
 from datetime import date, datetime
@@ -114,6 +124,10 @@ st.markdown(
         color: #2E3C51;
         font-family: 'Poppins', 'Segoe UI', sans-serif;
     }
+    img {
+        height: auto !important;
+        max-width: 100%;
+    }
     .stButton>button {
         border-radius: 8px;
         padding: 0.5rem 1rem;
@@ -130,7 +144,7 @@ st.markdown(
 )
 
 # --- Logo horizontal + titre ---
-st.image("LOGO DATAFOOT RECTANGULAIRE.png", width=300)
+st.image("LOGO DATAFOOT RECTANGULAIRE.png", use_column_width=True)
 
 st.markdown("""
 <h1 style='margin-top: 0;'>DATAFOOT.AI</h1>
@@ -159,22 +173,28 @@ st.markdown("""
 - **Égalités** : Départager les équipes par différence particulière
 """)
 
-# --- Bloc analyses ---
-st.subheader("Exemples d’analyses")
+# --- Bloc analyses (encadré visuel) ---
 st.markdown("""
-1. **U19 : un 11e devant un 10e**  
-   Grâce aux confrontations directes contre les équipes classées 6 à 10.
-2. **National 3 : un 10e sauvé**  
-   Grâce aux résultats contre les 5e à 9e.
-3. **Égalité parfaite**  
-   Départagée par la règle de différence particulière.
-""")
-
-# --- Bouton unique vers la simulation ---
-st.markdown("""
-<a href="?page=ANALYSE_CHAMPIONNAT" class="button-simulateur">Accéder au simulateur</a>
+<div style='background-color:#f9f9f9; padding: 1rem; border-left: 4px solid #2E3C51; margin-top: 2rem;'>
+<h4 style='margin-top:0;'>Exemples d’analyses</h4>
+<ol>
+<li><b>U19 : un 11e devant un 10e</b><br>Grâce aux confrontations directes contre les équipes classées 6 à 10.</li>
+<li><b>National 3 : un 10e sauvé</b><br>Grâce aux résultats contre les 5e à 9e.</li>
+<li><b>Égalité parfaite</b><br>Départagée par la règle de différence particulière.</li>
+</ol>
+</div>
 """, unsafe_allow_html=True)
 
+# --- Bouton unique vers la simulation ---
+if SWITCH_AVAILABLE:
+    if st.button("Accéder au simulateur"):
+        st.session_state.page = "ANALYSE_CHAMPIONNAT"
+else:
+    st.markdown("""
+    <a href="/?page=ANALYSE_CHAMPIONNAT" class="button-simulateur">Accéder au simulateur</a>
+    """, unsafe_allow_html=True)
+
+# --- Style du bouton (inchangé) ---
 st.markdown("""
 <style>
 .button-simulateur {
