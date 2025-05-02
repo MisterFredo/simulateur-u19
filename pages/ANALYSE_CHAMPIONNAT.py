@@ -205,7 +205,9 @@ colonnes_matchs_completes = ["JOURNEE", "POULE", "DATE", "EQUIPE_DOM", "NB_BUT_D
 
 # --- 3BIS. FORMULAIRE DE SIMULATION ---
 if "user" not in st.session_state:
-    st.info("💡 Tu peux modifier les scores, mais tu dois être connecté pour valider la simulation.")
+    st.info("💡 Tu peux modifier les scores, mais tu dois être inscrit pour valider la simulation.")
+    st.warning("🔐 Crée ton compte gratuitement via le menu à gauche pour activer le simulateur.")
+    
     with st.form("formulaire_simulation_locked"):
         colonnes_affichees = colonnes_matchs_simplifiees if mode_simplifie else colonnes_matchs_completes
         st.data_editor(
@@ -215,7 +217,9 @@ if "user" not in st.session_state:
             key="simulation_scores"
         )
         st.form_submit_button("🔁 Valider les scores simulés", disabled=True)
+    
     st.stop()
+
 else:
     with st.form("formulaire_simulation"):
         colonnes_affichees = colonnes_matchs_simplifiees if mode_simplifie else colonnes_matchs_completes
@@ -228,9 +232,10 @@ else:
         submit = st.form_submit_button("🔁 Valider les scores simulés")
 
         if submit:
-            # 👉 Appel de ta fonction de recalcul
+            # 👉 Appel à ta fonction de recalcul
             classement_simule = recalculer_classement_simule(...)
             st.success("✅ Simulation prise en compte !")
+
 
 # --- 4. ACTIVATION SIMULATION
 if submit:
