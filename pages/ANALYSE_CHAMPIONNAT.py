@@ -283,7 +283,7 @@ else:
 
         if submit:
             # Appel à la fonction de recalcul (à compléter)
-            classement_simule = recalculer_classement_simule(...)
+            classement_simule = recalculer_classement_simule(champ_id, date_limite, selected_poule, type_classement)
             st.success("Simulation prise en compte.")
 
 
