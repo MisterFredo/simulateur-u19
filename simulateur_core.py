@@ -539,7 +539,7 @@ def enregistrer_inscription(email, prenom, nom, societe_club, newsletter, source
     sheet.append_row(row, value_input_option="USER_ENTERED")
     st.success("✅ Inscription enregistrée dans Google Sheet.")
 
-def is_valid_email(email):
+def verifier_email(email):
     try:
         email = str(email).strip()
         pattern = r"^[\w\.-]+@[\w\.-]+\.\w+$"
@@ -548,5 +548,5 @@ def is_valid_email(email):
         print("🔎 Résultat regex :", result)
         return bool(result)
     except Exception as e:
-        print("❌ Exception dans is_valid_email :", e)
+        print("❌ Exception dans verifier_email :", e)
         return False
