@@ -235,7 +235,7 @@ else:
 
         if submit:
             # 👉 Appel à ta fonction de recalcul
-           classement_simule, mini_classements_simule = recalculer_classement_simule(
+            classement_simule, mini_classements_simule = recalculer_classement_simule(
                 edited_df,
                 champ_id,
                 date_limite,
@@ -244,6 +244,7 @@ else:
             )
 
             st.success("✅ Simulation prise en compte !")
+
 
 
 # --- 4. ACTIVATION SIMULATION
