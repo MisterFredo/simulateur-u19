@@ -5,6 +5,10 @@ import sys
 import os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
+import importlib
+import simulateur_core
+importlib.reload(simulateur_core)
+
 from simulateur_core import (
     enregistrer_inscription,
     is_valid_email
