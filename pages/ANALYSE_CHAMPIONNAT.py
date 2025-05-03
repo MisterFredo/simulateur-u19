@@ -232,8 +232,8 @@ if "user" not in st.session_state:
 
 else:
     with st.form("formulaire_simulation"):
-        colonnes_matchs_simplifiees = ["ID_MATCH", "EQUIPE_DOM", "NB_BUT_DOM", "EQUIPE_EXT", "NB_BUT_EXT"]
-        colonnes_matchs_completes = ["ID_MATCH", "JOURNEE", "POULE", "DATE", "EQUIPE_DOM", "NB_BUT_DOM", "EQUIPE_EXT", "NB_BUT_EXT"]
+        colonnes_matchs_simplifiees = ["EQUIPE_DOM", "NB_BUT_DOM", "EQUIPE_EXT", "NB_BUT_EXT"]
+        colonnes_matchs_completes = ["JOURNEE", "POULE", "DATE", "EQUIPE_DOM", "NB_BUT_DOM", "EQUIPE_EXT", "NB_BUT_EXT"]
         colonnes_affichees = colonnes_matchs_simplifiees if mode_simplifie else colonnes_matchs_completes
 
         edited_df = st.data_editor(
