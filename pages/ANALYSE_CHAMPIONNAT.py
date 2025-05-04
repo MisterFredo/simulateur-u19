@@ -61,7 +61,12 @@ def afficher_comparatifs_speciaux(champ_id, classement_df, date_limite):
 # --- FACTORISATION MINI-CLASSEMENTS
 def afficher_mini_classements_bloc(mini_classements, titre_bloc):
     st.markdown(titre_bloc)
+    
     for (poule, pts), mini in mini_classements.items():
+        # Appliquer le filtre de poule sélectionnée
+        if selected_poule != "Toutes les poules" and poule != selected_poule:
+            continue  # on saute cette poule si elle ne correspond pas
+
         with st.expander(f"Poule {poule} – Égalité à {pts} points", expanded=True):
             st.markdown("**Mini-classement :**")
             df_mini = mini["classement"].copy()
