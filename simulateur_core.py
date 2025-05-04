@@ -253,7 +253,7 @@ def classement_special_u19(classement_df, champ_id, date_limite):
     df_11e_comp["RANG"] = df_11e_comp["PTS_CONFRONT_6_10"].rank(method="min", ascending=False).astype(int)
     return df_11e_comp
 
-def classement_special_u17(classement_df, champ_id, client):
+def classement_special_u17(classement_df, champ_id):
     if champ_id != 7 or classement_df.empty:
         return None
 
@@ -301,6 +301,7 @@ def classement_special_u17(classement_df, champ_id, client):
     df_2e_comp = pd.DataFrame(comparatif_2e).sort_values("PTS_CONFRONT_TOP5", ascending=False)
     df_2e_comp["RANG"] = df_2e_comp["PTS_CONFRONT_TOP5"].rank(method="min", ascending=False).astype(int)
     return df_2e_comp
+
 
 def classement_special_n2(classement_df, champ_id, date_limite):
     if champ_id != 4 or classement_df.empty:
