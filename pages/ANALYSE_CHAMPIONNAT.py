@@ -23,7 +23,7 @@ from simulateur_core import (
     classement_special_n2,
     classement_special_n3,
     calculer_difficulte_calendrier,
-    recalculer_classement_simule
+    recalculer_classement_simule,
     enregistrer_inscription
 )
 
