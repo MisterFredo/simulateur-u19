@@ -542,9 +542,3 @@ def enregistrer_inscription(email, prenom, nom, societe_club, newsletter, source
     row = [email, prenom, nom, societe_club, newsletter, source, now, "OK"]
     sheet.append_row(row, value_input_option="USER_ENTERED")
     st.success("✅ Inscription enregistrée dans Google Sheet.")
-
-def connect_to_google_sheet():
-    gc = gspread.service_account(filename="gspread_key.json")
-    sh = gc.open("DATAFOOT_INSCRIPTIONS")
-    worksheet = sh.worksheet("INSCRIPTIONS")
-    return worksheet
