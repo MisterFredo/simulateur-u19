@@ -253,7 +253,7 @@ def classement_special_u19(classement_df, champ_id, date_limite):
     df_11e_comp["RANG"] = df_11e_comp["PTS_CONFRONT_6_10"].rank(method="min", ascending=False).astype(int)
     return df_11e_comp
 
-def classement_special_u17(classement_df, champ_id):
+def classement_special_u17(classement_df, champ_id, date_limite):
     if champ_id != 7 or classement_df.empty:
         return None
 
@@ -270,11 +270,12 @@ def classement_special_u17(classement_df, champ_id):
         ]["NOM_EQUIPE"].tolist()
 
         query = f"""
-            SELECT EQUIPE_DOM, EQUIPE_EXT, NB_BUT_DOM, NB_BUT_EXT
+            SELECT EQUIPE_DOM, EQUIPE_EXT, NB_BUT_DOM, NB_BUT_EXT, DATE
             FROM `datafoot-448514.DATAFOOT.DATAFOOT_MATCH_2025`
             WHERE ID_CHAMPIONNAT = {champ_id}
               AND POULE = '{poule}'
               AND STATUT = 'TERMINE'
+              AND DATE <= DATE('{date_limite}')
         """
         matchs_poule = client.query(query).to_dataframe()
 
