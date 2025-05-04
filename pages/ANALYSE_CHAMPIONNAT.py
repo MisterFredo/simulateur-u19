@@ -136,7 +136,7 @@ if selected_poule != "Toutes les poules":
     classement_initial = classement_initial[classement_initial["POULE"] == selected_poule]
 
 # --- Affichage du classement actuel
-st.markdown("### 🏆 Classement actuel")
+st.markdown("### Classement actuel")
 for poule in sorted(classement_initial["POULE"].unique()):
     st.subheader(f"Poule {poule}")
     classement_poule = classement_initial[classement_initial["POULE"] == poule].copy()
@@ -187,7 +187,7 @@ if selected_poule == "Toutes les poules":
     afficher_comparatifs_speciaux(champ_id, classement_initial, date_limite)
 
 if champ_type_classement == "PARTICULIERE" and mini_classements_initial:
-    afficher_mini_classements_bloc(mini_classements_initial, "### Mini-classements des égalités particulières 🥇 (Classement actuel)")
+    afficher_mini_classements_bloc(mini_classements_initial, "### Mini-classements des égalités particulières (Classement actuel)")
 
 # --- 3. MATCHS À SIMULER
 filtrer_non_joues = st.checkbox("Afficher uniquement les matchs non joués", value=True)
@@ -197,7 +197,7 @@ matchs_simulables = get_matchs_modifiables(champ_id, date_limite, filtrer_non_jo
 if selected_poule != "Toutes les poules":
     matchs_simulables = matchs_simulables[matchs_simulables["POULE"] == selected_poule]
 
-st.markdown("### 🎯 Matchs à simuler")
+st.markdown("### Matchs à simuler")
 if matchs_simulables.empty:
     st.info("Aucun match disponible pour cette configuration.")
     st.stop()
@@ -265,7 +265,7 @@ if st.session_state.simulation_validee:
     if df_valid.empty:
         st.warning("🚫 Aucun score simulé valide.")
     else:
-        st.markdown("### 📝 Matchs simulés")
+        st.markdown("### Matchs simulés")
         matchs_affichage = df_valid.copy()
         colonnes_affichees = colonnes_matchs_simplifiees if mode_simplifie else colonnes_matchs_completes
         st.dataframe(matchs_affichage[colonnes_affichees], use_container_width=True, hide_index=True)
@@ -308,7 +308,7 @@ if st.session_state.simulation_validee:
 
         st.success("✅ Simulation recalculée avec succès !")
 
-        st.markdown("### 🧪 Nouveau Classement simulé")
+        st.markdown("### Nouveau Classement simulé")
         for poule in sorted(classement_simule["POULE"].unique()):
             st.subheader(f"Poule {poule}")
             classement_poule = classement_simule[classement_simule["POULE"] == poule].copy()
@@ -358,7 +358,7 @@ if st.session_state.simulation_validee:
                 st.dataframe(classement_poule[colonnes_finales], use_container_width=True, hide_index=True)
 
         if champ_type_classement == "PARTICULIERE" and mini_classements_simule:
-            afficher_mini_classements_bloc(mini_classements_simule, "### Mini-classements des égalités particulières 🥇 (Simulation)")
+            afficher_mini_classements_bloc(mini_classements_simule, "### Mini-classements des égalités particulières (Simulation)")
 
         if selected_poule == "Toutes les poules":
             afficher_comparatifs_speciaux(champ_id, classement_simule, date_limite)
