@@ -177,7 +177,7 @@ else:
 
 
 # --- TITRE
-st.title(f"🧪 Simulateur – {selected_nom}")
+st.title(f"Simulateur – {selected_nom}")
 
 # --- Choix Mode Simplifié
 mode_simplifie = st.toggle("Afficher en mode simplifié (mobile friendly)", value=True)
