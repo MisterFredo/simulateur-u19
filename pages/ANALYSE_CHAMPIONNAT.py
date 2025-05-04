@@ -78,6 +78,8 @@ if "simulation_validee" not in st.session_state:
 # --- Chargement championnats
 championnats_df = load_championnats()
 
+from datetime import date
+
 # --- SIDEBAR (Filtres)
 st.sidebar.header("Filtres")
 
@@ -109,6 +111,64 @@ else:
 
 # --- Par défaut : date au 30 juin
 date_limite = st.sidebar.date_input("Date de simulation", value=date(2025, 6, 30))
+
+
+# --- Connexion / Inscription Utilisateur ---
+st.sidebar.markdown("---")
+st.sidebar.subheader("Espace utilisateur")
+
+if "user" in st.session_state:
+    st.sidebar.success(f"Connecté : {st.session_state['user_name']}")
+else:
+    st.sidebar.subheader("Se connecter")
+    user_name = st.sidebar.text_input("Nom")
+    user_email = st.sidebar.text_input("Email")
+
+    if st.sidebar.button("Se connecter", key="btn_connexion_sidebar"):
+        if user_name and user_email:
+            st.session_state.user_name = user_name
+            st.session_state.user_email = user_email
+            st.session_state["user"] = user_email
+            st.session_state.page = "home"
+            st.sidebar.success("Connexion réussie.")
+        else:
+            st.sidebar.warning("Renseigner le nom et l'email.")
+
+    st.sidebar.markdown("---")
+    st.sidebar.subheader("Créer un compte gratuit")
+
+    with st.sidebar.form("form_inscription"):
+        prenom = st.text_input("Prénom")
+        nom = st.text_input("Nom")
+        email_inscription = st.text_input("Email")
+        club = st.text_input("Club ou Société")
+
+        st.markdown("Recevoir chaque mois une synthèse des analyses : règles spéciales, égalités, simulations.")
+        newsletter = st.checkbox("S'abonner à la newsletter")
+
+        submitted = st.form_submit_button("Créer un compte")
+
+        if submitted:
+            if prenom and nom and email_inscription:
+                st.session_state["user"] = email_inscription
+                st.session_state["user_name"] = f"{prenom} {nom}"
+                st.session_state["user_email"] = email_inscription
+                st.session_state["club"] = club
+                st.session_state["newsletter"] = "oui" if newsletter else "non"
+
+                enregistrer_inscription(
+                    email=email_inscription,
+                    prenom=prenom,
+                    nom=nom,
+                    societe_club=club,
+                    newsletter="oui" if newsletter else "non",
+                    source="simulateur"
+                )
+
+                st.sidebar.success("Compte activé.")
+            else:
+                st.sidebar.warning("Remplir tous les champs obligatoires.")
+
 
 # --- TITRE
 st.title(f"🧪 Simulateur – {selected_nom}")
