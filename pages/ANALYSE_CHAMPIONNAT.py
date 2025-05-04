@@ -33,13 +33,13 @@ st.set_page_config(page_title="SIMULATEUR - Datafoot", layout="wide")
 # --- FONCTION AFFICHAGE COMPARATIFS SPÉCIAUX
 def afficher_comparatifs_speciaux(champ_id, classement_df, date_limite):
     if champ_id == 6:
-        st.markdown("### Comparatif spécial U19")
+        st.markdown("### Comparatif spécial U19 : pts obtenus par les équipes classées 11ème contre celles classées de 6 à 10")
         df_11e = classement_special_u19(classement_df, champ_id, date_limite)
         if df_11e is not None:
             st.dataframe(df_11e, use_container_width=True, hide_index=True)
 
     if champ_id == 7:
-        st.markdown("### Comparatif spécial U17")
+        st.markdown("### Comparatif spécial U17 : pts obtenus par les équipes classées 2ème contre celles classées de 1 à 6")
         df_2e = classement_special_u17(classement_df, champ_id, date_limite)
         if df_2e is not None:
             st.dataframe(df_2e, use_container_width=True, hide_index=True)
@@ -52,7 +52,7 @@ def afficher_comparatifs_speciaux(champ_id, classement_df, date_limite):
     #         st.dataframe(df_13e, use_container_width=True, hide_index=True)
 
     if champ_id == 5:
-        st.markdown("### Comparatif spécial N3")
+        st.markdown("### Comparatif spécial N3 : pts obtenus par les équipes classées 11ème contre celles classées de 6 à 10")
         df_10e = classement_special_n3(classement_df, champ_id, date_limite)
         if df_10e is not None:
             st.dataframe(df_10e, use_container_width=True, hide_index=True)
