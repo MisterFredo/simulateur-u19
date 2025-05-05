@@ -121,16 +121,15 @@ date_limite = st.sidebar.date_input("Date de simulation", value=date(2025, 6, 30
 
 # --- Connexion / Inscription Utilisateur ---
 st.sidebar.markdown("---")
-st.sidebar.subheader("Espace utilisateur")
 
 if "user" in st.session_state:
     st.sidebar.success(f"Connecté : {st.session_state['user_name']}")
 else:
-    st.sidebar.subheader("Se connecter")
-    user_name = st.sidebar.text_input("Nom")
+    st.sidebar.subheader("Submit")
+    user_name = st.sidebar.text_input("Nom / Name")
     user_email = st.sidebar.text_input("Email")
 
-    if st.sidebar.button("Se connecter", key="btn_connexion_sidebar"):
+    if st.sidebar.button("Submit", key="btn_connexion_sidebar"):
         if user_name and user_email:
             st.session_state.user_name = user_name
             st.session_state.user_email = user_email
@@ -138,21 +137,21 @@ else:
             st.session_state.page = "home"
             st.sidebar.success("Connexion réussie.")
         else:
-            st.sidebar.warning("Renseigner le nom et l'email.")
+            st.sidebar.warning("Renseigner le nom et l'email / Please fill in Name and email")
 
     st.sidebar.markdown("---")
-    st.sidebar.subheader("Créer un compte gratuit")
+    st.sidebar.subheader("Créer un compte / Create an Account")
 
     with st.sidebar.form("form_inscription"):
-        prenom = st.text_input("Prénom")
-        nom = st.text_input("Nom")
+        prenom = st.text_input("Prénom / First Name")
+        nom = st.text_input("Nom / Name")
         email_inscription = st.text_input("Email")
-        club = st.text_input("Club ou Société")
+        club = st.text_input("Club / Company")
 
-        st.markdown("Recevoir chaque mois une synthèse des analyses : règles spéciales, égalités, simulations.")
-        newsletter = st.checkbox("S'abonner à la newsletter")
+        st.markdown("Neswsletter DATAFOOT.AI : analyses & insights")
+        newsletter = st.checkbox("S'abonner / Subscribe")
 
-        submitted = st.form_submit_button("Créer un compte")
+        submitted = st.form_submit_button("Créer un compte / Create an Account")
 
         if submitted:
             if prenom and nom and email_inscription:
@@ -173,11 +172,11 @@ else:
 
                 st.sidebar.success("Compte activé.")
             else:
-                st.sidebar.warning("Remplir tous les champs obligatoires.")
+                st.sidebar.warning("Remplir tous les champs obligatoires / Please fill in all the mandatories fields")
 
 
 # --- TITRE
-st.title(f"Simulateur – {selected_nom}")
+st.title(f"Simulation – {selected_nom}")
 
 # --- Choix Mode Simplifié
 mode_simplifie = st.toggle("Afficher en mode simplifié (mobile friendly)", value=True)
@@ -256,16 +255,16 @@ if champ_type_classement == "PARTICULIERE" and mini_classements_initial:
     afficher_mini_classements_bloc(mini_classements_initial, "### Mini-classements des égalités particulières (Classement actuel)")
 
 # --- 3. MATCHS À SIMULER
-filtrer_non_joues = st.checkbox("Afficher uniquement les matchs non joués", value=True)
+filtrer_non_joues = st.checkbox("Afficher uniquement les matchs non joués / Show only unplayed matches", value=True)
 
 matchs_simulables = get_matchs_modifiables(champ_id, date_limite, filtrer_non_joues)
 
-if selected_poule != "Toutes les poules":
+if selected_poule != "Toutes les poules / Every groups":
     matchs_simulables = matchs_simulables[matchs_simulables["POULE"] == selected_poule]
 
-st.markdown("### Matchs à simuler")
+st.markdown("### Matchs à simuler / Matchs to simulate ")
 if matchs_simulables.empty:
-    st.info("Aucun match disponible pour cette configuration.")
+    st.info("Aucun match disponible pour cette configuration. / No game available")
     st.stop()
 
 # Colonnes pour l'affichage mobile-friendly
@@ -274,9 +273,8 @@ colonnes_matchs_completes = ["JOURNEE", "POULE", "DATE", "EQUIPE_DOM", "NB_BUT_D
 
 # --- 3BIS. FORMULAIRE DE SIMULATION ---
 if "user" not in st.session_state:
-    st.info("Créez un compte ou connectez-vous pour valider votre simulation après avoir modifié les scores.")
-    st.warning("Créez gratuitement votre compte depuis le menu latéral pour activer le simulateur.")
-    st.markdown("Sur mobile, appuyez sur l’icône ≡ pour ouvrir le menu latéral.")
+    st.info("Créez un compte ou connectez-vous pour valider votre simulation après avoir modifié les scores. / Create an account or log in to validate your simulation after editing the scores.")
+    st.warning("Créez votre compte depuis le menu latéral pour activer le simulateur. / Create account from the sidebar to activate the simulator.")
     
     with st.form("formulaire_simulation_locked"):
         colonnes_affichees = colonnes_matchs_simplifiees if mode_simplifie else colonnes_matchs_completes
@@ -419,8 +417,7 @@ if st.session_state.simulation_validee:
                 ).format({"DIF_CAL": "{:.2f}"})
 
                 st.dataframe(styled_df, use_container_width=True, hide_index=True)
-                st.markdown("*La colonne DIF_CAL évalue la difficulté du calendrier à venir. Les couleurs indiquent les tiers : vert (facile), orange (moyen), rouge (difficile).*")
-            else:
+                st.markdown("*La colonne DIF_CAL évalue la difficulté du calendrier à venir / The DIF_CAL column shows upcoming schedule difficulty : 🟩 vert (easy), 🟧 orange (medium), 🟥 rouge (hard).*")
                 st.dataframe(classement_poule[colonnes_finales], use_container_width=True, hide_index=True)
 
         if champ_type_classement == "PARTICULIERE" and mini_classements_simule:
