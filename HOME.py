@@ -79,7 +79,7 @@ with st.sidebar:
         st.markdown("Newsletter DATAFOOT.AI : analyses & insights")
         newsletter = st.checkbox("S'abonner / Subscribe")
 
-        submitted = st.form_submit_button("Submit")  # ❗ Pas de key ici
+        submitted = st.form_submit_button("Submit")
 
         if submitted:
             if prenom and nom and email_inscription:
@@ -101,6 +101,7 @@ with st.sidebar:
                 st.success("Compte activé. / Account activated.")
             else:
                 st.warning("Tous les champs sont requis. / All fields are required.")
+
 
 
 
