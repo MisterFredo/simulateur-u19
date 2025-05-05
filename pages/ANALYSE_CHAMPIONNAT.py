@@ -285,7 +285,7 @@ if "user" not in st.session_state:
             use_container_width=True,
             key="simulation_scores"
         )
-        st.form_submit_button("🔁 Valider les scores simulés", disabled=True)
+        st.form_submit_button("🔁 Submit", disabled=True)
     
     st.stop()
 
@@ -303,7 +303,7 @@ else:
         # Réintégrer ID_MATCH pour le traitement
         edited_df["ID_MATCH"] = matchs_simulables["ID_MATCH"].values
 
-        submit = st.form_submit_button("🔁 Valider les scores simulés")
+        submit = st.form_submit_button("🔁 Submit")
 
         if submit:
             classement_simule, mini_classements_simule = recalculer_classement_simule(
@@ -314,7 +314,7 @@ else:
                 type_classement
             )
 
-            st.success("✅ Simulation prise en compte !")
+            st.success("✅ Simulation")
 
 
 # --- 4. ACTIVATION SIMULATION
@@ -370,9 +370,9 @@ if st.session_state.simulation_validee:
         if selected_poule != "Toutes les poules":
             classement_simule = classement_simule[classement_simule["POULE"] == selected_poule]
 
-        st.success("✅ Simulation recalculée avec succès !")
+        st.success("✅ Simulation")
 
-        st.markdown("### Nouveau Classement simulé")
+        st.markdown("### Nouveau Classement simulé / New Ranking")
         for poule in sorted(classement_simule["POULE"].unique()):
             st.subheader(f"Poule {poule}")
             classement_poule = classement_simule[classement_simule["POULE"] == poule].copy()
