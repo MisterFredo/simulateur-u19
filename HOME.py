@@ -66,41 +66,42 @@ with st.sidebar:
         else:
             st.warning("Merci de renseigner nom et email. / Please fill in name and email.")
 
-    # --- Inscription ---
-    st.markdown("---")
-    st.subheader("Créer un compte / Create an Account")
+# --- Inscription ---
+st.markdown("---")
+st.subheader("Créer un compte / Create an Account")
 
-    with st.form("form_inscription"):
-        prenom = st.text_input("Prénom / First Name")
-        nom = st.text_input("Nom / Last Name")
-        email_inscription = st.text_input("Email")
-        club = st.text_input("Club / Company")
+with st.form("form_inscription"):
+    prenom = st.text_input("Prénom / First Name")
+    nom = st.text_input("Nom / Last Name")
+    email_inscription = st.text_input("Email")
+    club = st.text_input("Club / Company")
 
-        st.markdown("Newsletter DATAFOOT.AI : analyses & insights")
-        newsletter = st.checkbox("S'abonner / Subscribe")
+    st.markdown("Newsletter DATAFOOT.AI : analyses & insights")
+    newsletter = st.checkbox("S'abonner / Subscribe")
 
-        submitted = st.form_submit_button("Create", key="btn_create_account")
+    submitted = st.form_submit_button("Submit", key="btn_submit_account")
 
-        if submitted:
-            if prenom and nom and email_inscription:
-                st.session_state["user"] = email_inscription
-                st.session_state["user_name"] = f"{prenom} {nom}"
-                st.session_state["user_email"] = email_inscription
-                st.session_state["club"] = club
-                st.session_state["newsletter"] = "oui" if newsletter else "non"
+    if submitted:
+        if prenom and nom and email_inscription:
+            st.session_state["user"] = email_inscription
+            st.session_state["user_name"] = f"{prenom} {nom}"
+            st.session_state["user_email"] = email_inscription
+            st.session_state["club"] = club
+            st.session_state["newsletter"] = "oui" if newsletter else "non"
 
-                enregistrer_inscription(
-                    email=email_inscription,
-                    prenom=prenom,
-                    nom=nom,
-                    societe_club=club,
-                    newsletter="oui" if newsletter else "non",
-                    source="simulateur"
-                )
+            enregistrer_inscription(
+                email=email_inscription,
+                prenom=prenom,
+                nom=nom,
+                societe_club=club,
+                newsletter="oui" if newsletter else "non",
+                source="simulateur"
+            )
 
-                st.success("Compte activé. / Account activated.")
-            else:
-                st.warning("Tous les champs sont requis. / All fields are required.")
+            st.success("Compte activé. / Account activated.")
+        else:
+            st.warning("Tous les champs sont requis. / All fields are required.")
+
 
 
 # --- Style moderne du contenu principal ---
