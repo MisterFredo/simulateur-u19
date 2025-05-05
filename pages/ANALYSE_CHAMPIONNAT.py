@@ -33,26 +33,26 @@ st.set_page_config(page_title="SIMULATEUR - Datafoot", layout="wide")
 # --- FONCTION AFFICHAGE COMPARATIFS SPÉCIAUX
 def afficher_comparatifs_speciaux(champ_id, classement_df, date_limite):
     if champ_id == 6:
-        st.markdown("### Comparatif spécial U19 : pts obtenus par les équipes classées 11ème contre celles classées de 6 à 10")
+        st.markdown("### Règle spéciale U19 NAT : pts obtenus par les équipes classées 11ème vs celles classées de 6 à 10")
         df_11e = classement_special_u19(classement_df, champ_id, date_limite)
         if df_11e is not None:
             st.dataframe(df_11e, use_container_width=True, hide_index=True)
 
     if champ_id == 7:
-        st.markdown("### Comparatif spécial U17 : pts obtenus par les équipes classées 2ème contre celles classées de 1 à 6")
+        st.markdown("### Règle spéciale U17 NAT : pts obtenus par les équipes classées 2ème vs celles classées de 1 à 6")
         df_2e = classement_special_u17(classement_df, champ_id, date_limite)
         if df_2e is not None:
             st.dataframe(df_2e, use_container_width=True, hide_index=True)
 
     # --- Bloc désactivé temporairement : Comparatif spécial N2 ---
     # if champ_id == 4:
-    #     st.markdown("### Comparatif spécial N2")
+    #     st.markdown("### Règle spéciale N2")
     #     df_13e = classement_special_n2(classement_df, champ_id, date_limite)
     #     if df_13e is not None:
     #         st.dataframe(df_13e, use_container_width=True, hide_index=True)
 
     if champ_id == 5:
-        st.markdown("### Comparatif spécial N3 : pts obtenus par les équipes classées 11ème contre celles classées de 6 à 10")
+        st.markdown("### Règle spéciale N3 : pts obtenus par les équipes classées 11ème vs celles classées de 6 à 10")
         df_10e = classement_special_n3(classement_df, champ_id, date_limite)
         if df_10e is not None:
             st.dataframe(df_10e, use_container_width=True, hide_index=True)
@@ -68,12 +68,12 @@ def afficher_mini_classements_bloc(mini_classements, titre_bloc):
             continue  # on saute cette poule si elle ne correspond pas
 
         with st.expander(f"Poule {poule} – Égalité à {pts} points", expanded=True):
-            st.markdown("**Mini-classement :**")
+            st.markdown("**Mini-classement / Mini-Rankings :**")
             df_mini = mini["classement"].copy()
             colonnes_mini = [col for col in df_mini.columns if col != "CLASSEMENT"]
             st.dataframe(df_mini[colonnes_mini], use_container_width=True, hide_index=True)
 
-            st.markdown("**Matchs concernés :**")
+            st.markdown("**Matchs concernés / Affected Matches :**")
             df_matchs = mini["matchs"].copy()
             st.dataframe(df_matchs.reset_index(drop=True), use_container_width=True, hide_index=True)
 
@@ -201,7 +201,7 @@ if selected_poule != "Toutes les poules":
     classement_initial = classement_initial[classement_initial["POULE"] == selected_poule]
 
 # --- Affichage du classement actuel
-st.markdown("### Classement actuel")
+st.markdown("### Classement actuel / Current Ranking")
 for poule in sorted(classement_initial["POULE"].unique()):
     st.subheader(f"Poule {poule}")
     classement_poule = classement_initial[classement_initial["POULE"] == poule].copy()
@@ -227,11 +227,11 @@ for poule in sorted(classement_initial["POULE"].unique()):
     for i in range(total):
         id_equipe = classement_sorted.loc[i, "ID_EQUIPE"]
         if i < tiers[0]:
-            couleurs[id_equipe] = "#d4edda"  # vert clair
+            couleurs[id_equipe] = "#c6f6d5"  # vert pastel (🟩)
         elif i < tiers[0] + tiers[1]:
-            couleurs[id_equipe] = "#fff3cd"  # jaune clair
+            couleurs[id_equipe] = "#fefcbf"  # orange-jaune pastel (🟧)
         else:
-            couleurs[id_equipe] = "#f8d7da"  # rouge clair
+            couleurs[id_equipe] = "#fed7d7"  # rouge pastel (🟥)
 
     def style_dif_cal(val, id_eq):
         return f"background-color: {couleurs.get(id_eq, '')};" if pd.notnull(val) else ""
@@ -327,9 +327,9 @@ if st.session_state.simulation_validee:
     df_valid = edited_df.dropna(subset=["NB_BUT_DOM", "NB_BUT_EXT"]).reset_index(drop=True)
 
     if df_valid.empty:
-        st.warning("🚫 Aucun score simulé valide.")
+        st.warning("🚫 Aucun score simulé valide / No valid simulated score.")
     else:
-        st.markdown("### Matchs simulés")
+        st.markdown("### Matchs simulés / Simulated Matchs")
         matchs_affichage = df_valid.copy()
         colonnes_affichees = colonnes_matchs_simplifiees if mode_simplifie else colonnes_matchs_completes
         st.dataframe(matchs_affichage[colonnes_affichees], use_container_width=True, hide_index=True)
@@ -398,11 +398,11 @@ if st.session_state.simulation_validee:
                 for i in range(total):
                     id_equipe = classement_sorted.loc[i, "ID_EQUIPE"]
                     if i < tiers[0]:
-                        couleurs[id_equipe] = "#d4edda"  # vert clair
+                        couleurs[id_equipe] = "#c6f6d5"  # vert pastel (🟩)
                     elif i < tiers[0] + tiers[1]:
-                        couleurs[id_equipe] = "#fff3cd"  # jaune clair
+                        couleurs[id_equipe] = "#fefcbf"  # orange-jaune pastel (🟧)
                     else:
-                        couleurs[id_equipe] = "#f8d7da"  # rouge clair
+                        couleurs[id_equipe] = "#fed7d7"  # rouge pastel (🟥)
 
                 def style_dif_cal(val, id_eq):
                     return f"background-color: {couleurs.get(id_eq, '')};" if pd.notnull(val) else ""
