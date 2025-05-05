@@ -51,35 +51,35 @@ with st.sidebar:
     )
 
     # --- Connexion utilisateur ---
-    st.subheader("Se connecter")
+    st.subheader("Connexion / Login")
 
-    user_name = st.text_input("Nom")
+    user_name = st.text_input("Nom / Name")
     user_email = st.text_input("Email")
 
-    if st.button("Se connecter", key="btn_connexion_sidebar"):
+    if st.button("Valider / Submit", key="btn_connexion_sidebar"):
         if user_name and user_email:
             st.session_state.user_name = user_name
             st.session_state.user_email = user_email
             st.session_state["user"] = user_email
             st.session_state.page = "home"
-            st.success("Connexion réussie.")
+            st.success("Connexion réussie. / Login successful.")
         else:
-            st.warning("Renseigner le nom et l'email.")
+            st.warning("Merci de renseigner nom et email. / Please fill in name and email.")
 
     # --- Inscription ---
     st.markdown("---")
-    st.subheader("Créer un compte gratuit")
+    st.subheader("Créer un compte / Create Account")
 
     with st.form("form_inscription"):
-        prenom = st.text_input("Prénom")
-        nom = st.text_input("Nom")
+        prenom = st.text_input("Prénom / First Name")
+        nom = st.text_input("Nom / Last Name")
         email_inscription = st.text_input("Email")
-        club = st.text_input("Club ou Société")
+        club = st.text_input("Club ou Société / Club or Company")
 
-        st.markdown("Recevoir chaque mois une synthèse des analyses : règles spéciales, égalités, simulations.")
-        newsletter = st.checkbox("S'abonner à la newsletter")
+        st.markdown("Newsletter DATAFOOT.AI : analyses & insights")
+        newsletter = st.checkbox("S'abonner / Subscribe")
 
-        submitted = st.form_submit_button("Créer un compte")
+        submitted = st.form_submit_button("Créer un compte / Create Account")
 
         if submitted:
             if prenom and nom and email_inscription:
@@ -98,9 +98,10 @@ with st.sidebar:
                     source="simulateur"
                 )
 
-                st.success("Compte activé.")
+                st.success("Compte activé. / Account activated.")
             else:
-                st.warning("Remplir tous les champs obligatoires.")
+                st.warning("Tous les champs sont requis. / All fields are required.")
+
 
 # --- Style moderne du contenu principal ---
 st.markdown(
@@ -137,7 +138,7 @@ st.markdown(
 if "user" in st.session_state:
     st.success(f"Connecté : {st.session_state['user_name']} ({st.session_state['user']})")
 else:
-    st.info("Se connecter ou créer un compte pour accéder aux simulations.")
+    st.info("Simuler ? Connexion requise / Want to simulate? Login required")
 
 # --- Bloc concept ---
 st.subheader("Concept")
@@ -169,7 +170,7 @@ st.markdown("""
 
 # --- Bouton unique vers la simulation ---
 st.markdown("""
-<a href="/ANALYSE_CHAMPIONNAT" class="button-simulateur">Accéder au simulateur</a>
+<a href="/ANALYSE_CHAMPIONNAT" class="button-simulateur"> Simulation (FR/EN)</a>
 """, unsafe_allow_html=True)
 
 st.markdown("""
