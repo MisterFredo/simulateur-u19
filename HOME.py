@@ -56,7 +56,7 @@ with st.sidebar:
     user_name = st.text_input("Nom / Name")
     user_email = st.text_input("Email")
 
-    if st.button("Valider / Submit", key="btn_connexion_sidebar"):
+    if st.button("Submit", key="btn_connexion_sidebar"):
         if user_name and user_email:
             st.session_state.user_name = user_name
             st.session_state.user_email = user_email
@@ -68,18 +68,18 @@ with st.sidebar:
 
     # --- Inscription ---
     st.markdown("---")
-    st.subheader("Créer un compte / Create Account")
+    st.subheader("Créer un compte / Create an Account")
 
     with st.form("form_inscription"):
         prenom = st.text_input("Prénom / First Name")
         nom = st.text_input("Nom / Last Name")
         email_inscription = st.text_input("Email")
-        club = st.text_input("Club ou Société / Club or Company")
+        club = st.text_input("Club / Company")
 
         st.markdown("Newsletter DATAFOOT.AI : analyses & insights")
         newsletter = st.checkbox("S'abonner / Subscribe")
 
-        submitted = st.form_submit_button("Créer un compte / Create Account")
+        submitted = st.form_submit_button("Créer / Create")
 
         if submitted:
             if prenom and nom and email_inscription:
