@@ -143,7 +143,7 @@ else:
     st.info("Simuler ? Connexion requise / Want to simulate? Login required")
 
 # --- Bloc Intro ---
-st.subheader("DATAFOOT.AI : Analyses & Insights")
+st.subheader("DATAFOOT.AI : Simulation & Analyses")
 st.markdown("""
 Datafoot.ai est un service dédié à l’analyse des matchs de football selon toutes ses composantes (club, équipe, joueur, arbitre, etc).  
 Ce service s’appuie sur une plateforme de simulation et une newsletter qui décode et analyse l’ensemble des données.
@@ -155,7 +155,7 @@ It relies on a simulation platform and a newsletter that decodes and analyzes al
 """, unsafe_allow_html=True)
 
 # --- Bloc Simulation ---
-st.subheader("Simulation interactive")
+st.subheader("Plateforme de simulation")
 st.markdown("""
 - Compare les classements réels et simulés  
 - Intègre les égalités particulières (confrontations directes) et les pénalités  
@@ -171,15 +171,15 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # --- Bloc Newsletter / Insights ---
-st.subheader("Exemples d’analyses proposées")
+st.subheader("Newsletter dédiée aux analyses : exemples")
 st.markdown("""
 <div style='background-color:#f9f9f9; padding: 1rem; border-left: 4px solid #2E3C51; margin-top: 1rem;'>
 <ol>
-<li><b>Un 11e devant un 10e</b><br>Grâce aux confrontations directes contre les équipes classées 6 à 10.<br>
-<i style='color:gray;'>An 11th place team ahead of a 10th thanks to head-to-head vs 6th–10th.</i></li>
+<li><b>Ligue 1</b><br>Qui possède le meilleur calendrier ?<br>
+<i style='color:gray;'>Who has the easiest remaining schedule?</i></li>
 
-<li><b>National 3 : un 10e sauvé</b><br>Grâce aux résultats contre les 5e à 9e.<br>
-<i style='color:gray;'>A 10th in N3 saved by results vs 5th–9th.</i></li>
+<li><b>National 3</b><br>Qui seront les meilleurs 11e ?<br>
+<i style='color:gray;'>Who will be the best-ranked 11th-placed teams?</i></li>
 
 <li><b>Horaires</b><br>L'heure des matchs a-t-elle un impact sur les % de victoire à domicile ?<br>
 <i style='color:gray;'>Does match time influence home win rates?</i></li>
@@ -187,10 +187,19 @@ st.markdown("""
 </div>
 
 <br>
-👉 Pour recevoir chaque semaine ce type d’analyse :  
+👉 Pour recevoir ce type d’analyse :  
 <a href="https://datafootai.substack.com" target="_blank"><b>Inscrivez-vous à la newsletter</b></a><br>
-<i style='color:gray;'>Subscribe to the newsletter for weekly insights.</i>
+<i style='color:gray;'>Subscribe to the newsletter.</i>
 """, unsafe_allow_html=True)
+
+# --- Bloc Data (en bas de page) ---
+st.subheader("Données clés")
+st.markdown("""
+- **15 176 matchs** : répartis dans 56 championnats et 107 poules  
+- **7 catégories** : U14 à SENIOR  
+- **2 000+ équipes** couvertes, du national au régional  
+- **Zooms renforcés** : U16 et U18 / Île-de-France et Hauts-de-France
+""")
 
 # --- Bouton vers le simulateur ---
 st.markdown("""
@@ -216,14 +225,4 @@ st.markdown("""
 }
 </style>
 """, unsafe_allow_html=True)
-
-# --- Bloc Data (en bas de page) ---
-st.subheader("Données clés")
-st.markdown("""
-- **15 176 matchs** : répartis dans 56 championnats et 107 poules  
-- **7 catégories** : U14 à SENIOR  
-- **2 000+ équipes** couvertes, du national au régional  
-- **Zooms renforcés** : U16 et U18 / Île-de-France et Hauts-de-France
-""")
-
 
