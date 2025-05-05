@@ -66,20 +66,20 @@ with st.sidebar:
         else:
             st.warning("Merci de renseigner nom et email. / Please fill in name and email.")
 
-# --- Inscription ---
-st.markdown("---")
-st.subheader("Submit")
+    # --- Inscription ---
+    st.markdown("---")
+    st.subheader("Créer un compte / Create an Account")
 
-with st.form("form_inscription"):
-    prenom = st.text_input("Prénom / First Name")
-    nom = st.text_input("Nom / Last Name")
-    email_inscription = st.text_input("Email")
-    club = st.text_input("Club / Company")
+    with st.form("form_inscription"):
+        prenom = st.text_input("Prénom / First Name")
+        nom = st.text_input("Nom / Last Name")
+        email_inscription = st.text_input("Email")
+        club = st.text_input("Club / Company")
 
         st.markdown("Newsletter DATAFOOT.AI : analyses & insights")
         newsletter = st.checkbox("S'abonner / Subscribe")
 
-        submitted = st.form_submit_button("Submit")
+        submitted = st.form_submit_button("Create", key="btn_create_account")
 
         if submitted:
             if prenom and nom and email_inscription:
