@@ -79,7 +79,7 @@ with st.sidebar:
         st.markdown("Newsletter DATAFOOT.AI : analyses & insights")
         newsletter = st.checkbox("S'abonner / Subscribe")
 
-        submitted = st.form_submit_button("Submit")
+        submitted = st.form_submit_button("Submit", type="primary")
 
         if submitted:
             if prenom and nom and email_inscription:
@@ -142,37 +142,59 @@ if "user" in st.session_state:
 else:
     st.info("Simuler ? Connexion requise / Want to simulate? Login required")
 
-# --- Bloc concept ---
-st.subheader("Concept")
+# --- Bloc Intro ---
+st.subheader("DATAFOOT.AI : Analyses & Insights")
 st.markdown("""
-Datafoot.ai est une plateforme dédiée à l’analyse et à la simulation des championnats de football amateur.  
-Elle permet de consulter les classements en temps réel, tester différents scénarios, et appliquer des règles spéciales (U19, N3, etc.) selon les règlements fédéraux.
-""")
+Datafoot.ai est un service dédié à l’analyse des matchs de football selon toutes ses composantes (club, équipe, joueur, arbitre, etc).  
+Ce service s’appuie sur une plateforme de simulation et une newsletter qui décode et analyse l’ensemble des données.
 
-# --- Bloc fonctionnalités ---
-st.subheader("Fonctionnalités principales")
-st.markdown("""
-- **Classements dynamiques** : Calculés à partir des résultats à une date donnée  
-- **Simulation de matchs** : Modifier les scores pour tester des scénarios  
-- **Règles spéciales** : Classements personnalisés pour U19, U17, N2, N3  
-- **Égalités** : Départager les équipes par différence particulière
-""")
-
-# --- Bloc analyses (encadré visuel) ---
-st.markdown("""
-<div style='background-color:#f9f9f9; padding: 1rem; border-left: 4px solid #2E3C51; margin-top: 2rem;'>
-<h4 style='margin-top:0;'>Exemples d’analyses</h4>
-<ol>
-<li><b>U19 : un 11e devant un 10e</b><br>Grâce aux confrontations directes contre les équipes classées 6 à 10.</li>
-<li><b>National 3 : un 10e sauvé</b><br>Grâce aux résultats contre les 5e à 9e.</li>
-<li><b>Égalité parfaite</b><br>Départagée par la règle de différence particulière.</li>
-</ol>
-</div>
+<span style='color:gray; font-style:italic'>
+Datafoot.ai is a service dedicated to football match analysis across all dimensions (club, team, player, referee, etc).  
+It relies on a simulation platform and a newsletter that decodes and analyzes all the data.
+</span>
 """, unsafe_allow_html=True)
 
-# --- Bouton unique vers la simulation ---
+# --- Bloc Simulation ---
+st.subheader("Simulation interactive")
 st.markdown("""
-<a href="/ANALYSE_CHAMPIONNAT" class="button-simulateur"> Simulation (FR/EN)</a>
+- Compare les classements réels et simulés  
+- Intègre les égalités particulières (confrontations directes) et les pénalités  
+- Applique les règles spécifiques propres à chaque championnat (ex : moins bon 11e, top 2, etc.)  
+- Évalue la difficulté du calendrier à venir (DIF_CAL)  
+
+<span style='color:gray; font-style:italic'>
+- Compare real and simulated standings  
+- Includes special tie-breakers (head-to-head) and penalties  
+- Applies competition-specific rules (e.g. worst 11th, best 2nd, etc.)  
+- Evaluates upcoming schedule difficulty (DIF_CAL)
+</span>
+""", unsafe_allow_html=True)
+
+# --- Bloc Newsletter / Insights ---
+st.subheader("Exemples d’analyses proposées")
+st.markdown("""
+<div style='background-color:#f9f9f9; padding: 1rem; border-left: 4px solid #2E3C51; margin-top: 1rem;'>
+<ol>
+<li><b>Un 11e devant un 10e</b><br>Grâce aux confrontations directes contre les équipes classées 6 à 10.<br>
+<i style='color:gray;'>An 11th place team ahead of a 10th thanks to head-to-head vs 6th–10th.</i></li>
+
+<li><b>National 3 : un 10e sauvé</b><br>Grâce aux résultats contre les 5e à 9e.<br>
+<i style='color:gray;'>A 10th in N3 saved by results vs 5th–9th.</i></li>
+
+<li><b>Horaires</b><br>L'heure des matchs a-t-elle un impact sur les % de victoire à domicile ?<br>
+<i style='color:gray;'>Does match time influence home win rates?</i></li>
+</ol>
+</div>
+
+<br>
+👉 Pour recevoir chaque semaine ce type d’analyse :  
+<a href="https://datafootai.substack.com" target="_blank"><b>Inscrivez-vous à la newsletter</b></a><br>
+<i style='color:gray;'>Subscribe to the newsletter for weekly insights.</i>
+""", unsafe_allow_html=True)
+
+# --- Bouton vers le simulateur ---
+st.markdown("""
+<a href="/ANALYSE_CHAMPIONNAT" class="button-simulateur"> Simulation </a>
 """, unsafe_allow_html=True)
 
 st.markdown("""
@@ -194,4 +216,14 @@ st.markdown("""
 }
 </style>
 """, unsafe_allow_html=True)
+
+# --- Bloc Data (en bas de page) ---
+st.subheader("Données clés")
+st.markdown("""
+- **15 176 matchs** : répartis dans 56 championnats et 107 poules  
+- **7 catégories** : U14 à SENIOR  
+- **2 000+ équipes** couvertes, du national au régional  
+- **Zooms renforcés** : U16 et U18 / Île-de-France et Hauts-de-France
+""")
+
 
