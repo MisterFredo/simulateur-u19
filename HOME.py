@@ -160,13 +160,13 @@ st.markdown("""
 - Compare les classements réels et simulés  
 - Intègre les égalités particulières (confrontations directes) et les pénalités  
 - Applique les règles spécifiques propres à chaque championnat (ex : moins bon 11e, top 2, etc.)  
-- Évalue la difficulté du calendrier à venir (DIF_CAL)  
+- Évalue la difficulté du calendrier à venir
 
 <span style='color:gray; font-style:italic'>
 - Compare real and simulated standings  
 - Includes special tie-breakers (head-to-head) and penalties  
 - Applies competition-specific rules (e.g. worst 11th, best 2nd, etc.)  
-- Evaluates upcoming schedule difficulty (DIF_CAL)
+- Evaluates upcoming schedule difficulty
 </span>
 """, unsafe_allow_html=True)
 
@@ -196,9 +196,9 @@ st.markdown("""
 st.subheader("Données clés")
 st.markdown("""
 - **15 176 matchs** : répartis dans 56 championnats et 107 poules  
-- **7 catégories** : U14 à SENIOR  
-- **2 000+ équipes** couvertes, du national au régional  
-- **Zooms renforcés** : U16 et U18 / Île-de-France et Hauts-de-France
+- **7 catégories** : U14, U15, U16, U17, U18, U19 & SENIOR
+- **2 000+ équipes** Ligue 1-2, National 1-2-3, U19 Nat, U17 Nat, Seniors R1, Jeunes R1
+- **Zooms renforcés** : U16, U17 et U18 / Île-de-France et Hauts-de-France
 """)
 
 # --- Bouton vers le simulateur ---
@@ -226,3 +226,19 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
+# --- Bloc Remarques encadré ---
+st.markdown("""
+<div style='background-color:#f9f9f9; padding: 1rem; border-left: 4px solid #cccccc; margin-top: 2rem;'>
+<h4 style='margin-top:0;'>Remarques / Notes</h4>
+<ul>
+<li><b>Simulateur</b> : version desktop recommandée / <i>Desktop version recommended</i></li>
+<li><b>Données</b> : DATAFOOT.AI n’est pas responsable des données manquantes ou erronées / <i>DATAFOOT.AI is not responsible for missing or incorrect data</i></li>
+<li><b>Règles spéciales</b> : sélectionnez toutes les poules pour les activer / <i>Select all groups to activate special rules</i></li>
+<li><b>Version</b> : V0.1 — vos retours sont bienvenus / <i>V0.1 — feedback and bug reports welcome</i></li>
+<li><b>Contact</b> : frederic@datafoot.ai</li>
+</ul>
+</div>
+""", unsafe_allow_html=True)
+
+
+""")
