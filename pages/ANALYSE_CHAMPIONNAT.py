@@ -246,7 +246,7 @@ for poule in sorted(classement_initial["POULE"].unique()):
     ).format({"DIF_CAL": "{:.2f}"})
 
     st.dataframe(styled_df, use_container_width=True, hide_index=True)
-    st.markdown("*La colonne DIF_CAL évalue la difficulté du calendrier à venir. Les couleurs indiquent les tiers : vert (facile), orange (moyen), rouge (difficile).*")
+    st.markdown("*La colonne DIF_CAL évalue la difficulté du calendrier à venir / The DIF_CAL column shows upcoming schedule difficulty : 🟩 vert (easy), 🟧 orange (medium), 🟥 rouge (hard).*")
 
 if selected_poule == "Toutes les poules":
     afficher_comparatifs_speciaux(champ_id, classement_initial, date_limite)
