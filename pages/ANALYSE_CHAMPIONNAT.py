@@ -339,7 +339,7 @@ if st.session_state.simulation_validee:
 
         # Appliquer les scores simulés
         for idx, row in df_valid.iterrows():
-            id_match = matchs_simulables.iloc[idx]["ID_MATCH"]
+            id_match = row["ID_MATCH"]
             if not pd.isna(row["NB_BUT_DOM"]) and not pd.isna(row["NB_BUT_EXT"]):
                 matchs_tous.loc[matchs_tous["ID_MATCH"] == id_match, "NB_BUT_DOM"] = int(row["NB_BUT_DOM"])
                 matchs_tous.loc[matchs_tous["ID_MATCH"] == id_match, "NB_BUT_EXT"] = int(row["NB_BUT_EXT"])
