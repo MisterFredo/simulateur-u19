@@ -264,11 +264,13 @@ def classement_special_u17(classement_df, champ_id, date_limite):
         poule = row["POULE"]
         equipe_2e = row["NOM_EQUIPE"]
 
+        # Sélection des 5 autres équipes les mieux classées (hors 2e)
         top_5 = classement_df[
             (classement_df["POULE"] == poule) &
-            (classement_df["CLASSEMENT"].between(1, 5))
-        ]["NOM_EQUIPE"].tolist()
+            (classement_df["NOM_EQUIPE"] != equipe_2e)
+        ].sort_values("CLASSEMENT").head(5)["NOM_EQUIPE"].tolist()
 
+        # Récupération des matchs joués jusqu’à la date limite
         query = f"""
             SELECT EQUIPE_DOM, EQUIPE_EXT, NB_BUT_DOM, NB_BUT_EXT, DATE
             FROM `datafoot-448514.DATAFOOT.DATAFOOT_MATCH_2025`
@@ -279,11 +281,13 @@ def classement_special_u17(classement_df, champ_id, date_limite):
         """
         matchs_poule = client.query(query).to_dataframe()
 
+        # Filtrer les confrontations du 2e avec les 5 équipes sélectionnées
         confrontations = matchs_poule[
             ((matchs_poule["EQUIPE_DOM"] == equipe_2e) & (matchs_poule["EQUIPE_EXT"].isin(top_5))) |
             ((matchs_poule["EQUIPE_EXT"] == equipe_2e) & (matchs_poule["EQUIPE_DOM"].isin(top_5)))
         ]
 
+        # Calcul des points obtenus dans ces confrontations
         pts = 0
         for _, m in confrontations.iterrows():
             if m["EQUIPE_DOM"] == equipe_2e:
@@ -299,6 +303,7 @@ def classement_special_u17(classement_df, champ_id, date_limite):
             "PTS_CONFRONT_TOP5": pts
         })
 
+    # Création du classement des 2e
     df_2e_comp = pd.DataFrame(comparatif_2e).sort_values("PTS_CONFRONT_TOP5", ascending=False)
     df_2e_comp["RANG"] = df_2e_comp["PTS_CONFRONT_TOP5"].rank(method="min", ascending=False).astype(int)
     return df_2e_comp
