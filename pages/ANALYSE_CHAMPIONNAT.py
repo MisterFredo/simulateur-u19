@@ -214,7 +214,7 @@ else:
 
 # Récupération des matchs terminés et restants
 matchs_termine = get_matchs_termine(champ_id, date_limite=date_limite, journee_limite=journee_limite)
-matchs_restants = get_matchs_modifiables(champ_id, date_limite=date_limite, only_non_joues=True)
+matchs_restants = get_matchs_modifiables(champ_id, date_limite=date_limite, non_joues_only=True)
 
 # Calcul du classement initial
 classement_initial = get_classement_dynamique(
