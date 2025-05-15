@@ -292,9 +292,6 @@ date_limite = st.date_input("📅 Choisissez une date pour simuler les matchs", 
 
 # --- 3. MATCHS À SIMULER
 
-st.markdown("### 🕓 Date de simulation / Simulation date")
-date_limite = st.date_input("📅 Choisissez une date de projection / Choose a projection date", value=date(2025, 6, 30))
-
 filtrer_non_joues = st.checkbox("Afficher uniquement les matchs non joués / Show only unplayed matches", value=True)
 
 matchs_simulables = get_matchs_modifiables(champ_id, date_limite, non_joues_only=filtrer_non_joues)
@@ -303,10 +300,6 @@ if selected_poule != "Toutes les poules / Every groups":
     matchs_simulables = matchs_simulables[matchs_simulables["POULE"] == selected_poule]
 
 st.markdown("### Matchs à simuler / Matchs to simulate")
-
-st.markdown("Créez un compte ou connectez-vous pour valider votre simulation après avoir modifié les scores. / Create an account or log in to validate your simulation after editing the scores.")
-
-st.markdown("Créez votre compte depuis le menu latéral pour activer le simulateur. / Create your account from the sidebar to activate the simulator.")
 
 if matchs_simulables.empty:
     st.info("Aucun match disponible pour cette configuration. / No game available")
@@ -318,7 +311,6 @@ colonnes_matchs_completes = ["JOURNEE", "POULE", "DATE", "EQUIPE_DOM", "NB_BUT_D
 
 # --- 3BIS. FORMULAIRE DE SIMULATION ---
 if "user" not in st.session_state:
-    st.info("Créez un compte ou connectez-vous pour valider votre simulation après avoir modifié les scores. / Create an account or log in to validate your simulation after editing the scores.")
     st.warning("Créez votre compte depuis le menu latéral pour activer le simulateur. / Create account from the sidebar to activate the simulator.")
     
     with st.form("formulaire_simulation_locked"):
