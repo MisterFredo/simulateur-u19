@@ -439,8 +439,10 @@ def classement_special_n3(classement_df, champ_id, date_limite):
     df_10e_comp["RANG"] = df_10e_comp["PTS_CONFRONT_5_9"].rank(method="min", ascending=False).astype(int)
     return df_10e_comp
 
-def get_matchs_modifiables(champ_id, date_limite, non_joues_only=True):
-    condition = "AND STATUT IS NULL" if non_joues_only else ""
+def get_matchs_modifiables(champ_id, date_limite=None, non_joues_only=True):
+    condition_statut = "AND STATUT IS NULL" if non_joues_only else ""
+    condition_date = f"AND DATE <= DATE('{date_limite}')" if date_limite else ""
+
     query = f"""
         SELECT 
             ID_MATCH,
@@ -456,8 +458,8 @@ def get_matchs_modifiables(champ_id, date_limite, non_joues_only=True):
             STATUT
         FROM `datafoot-448514.DATAFOOT.DATAFOOT_MATCH_2025`
         WHERE ID_CHAMPIONNAT = {champ_id}
-          AND DATE <= DATE('{date_limite}')
-          {condition}
+          {condition_date}
+          {condition_statut}
         ORDER BY DATE, JOURNEE
     """
     return client.query(query).to_dataframe()
