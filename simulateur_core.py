@@ -192,7 +192,7 @@ def get_poules_temp(champ_id):
 
 def load_championnats():
     query = """
-        SELECT ID_CHAMPIONNAT, NOM_CHAMPIONNAT, CATEGORIE, NIVEAU, CLASSEMENT
+        SELECT ID_CHAMPIONNAT, NOM_CHAMPIONNAT, CATEGORIE, NIVEAU, CLASSEMENT, NBRE_JOURNEES
         FROM `datafoot-448514.DATAFOOT.DATAFOOT_CHAMPIONNAT`
     """
     return client.query(query).to_dataframe()
