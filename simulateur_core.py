@@ -28,14 +28,34 @@ def get_type_classement(champ_id):
     return result.iloc[0]["CLASSEMENT"] if not result.empty else "GENERALE"
 
 
-def get_classement_dynamique(id_championnat, date_limite, matchs_override=None):
+def get_classement_dynamique(id_championnat, date_limite=None, journee_limite=None, matchs_override=None):
     if matchs_override is not None:
         matchs = matchs_override.copy()
     else:
-        # Charger depuis BigQuery
-        matchs = get_matchs_termine(id_championnat, date_limite)
+        # Charger depuis BigQuery selon le filtre défini
+        if journee_limite is not None:
+            query = f"""
+                SELECT *
+                FROM `datafoot-448514.DATAFOOT.DATAFOOT_MATCH_2025`
+                WHERE STATUT = 'TERMINE'
+                  AND ID_CHAMPIONNAT = {id_championnat}
+                  AND JOURNEE <= {journee_limite}
+            """
+        elif date_limite is not None:
+            query = f"""
+                SELECT *
+                FROM `datafoot-448514.DATAFOOT.DATAFOOT_MATCH_2025`
+                WHERE STATUT = 'TERMINE'
+                  AND ID_CHAMPIONNAT = {id_championnat}
+                  AND DATE <= DATE('{date_limite}')
+            """
+        else:
+            st.warning("❌ Vous devez spécifier soit une date, soit une journée.")
+            return pd.DataFrame()
 
-    # ✅ Sécurité renforcée contre None ou vide
+        matchs = client.query(query).to_dataframe()
+
+    # ✅ Sécurité renforcée
     if matchs is None:
         st.warning("❌ Aucun match transmis à get_classement_dynamique (matchs = None)")
         return pd.DataFrame()
@@ -84,6 +104,7 @@ def get_classement_dynamique(id_championnat, date_limite, matchs_override=None):
     classement["DIFF"] = classement["BP"] - classement["BC"]
 
     return classement
+
 
 def get_matchs_termine(champ_id, date_limite):
     query = f"""
