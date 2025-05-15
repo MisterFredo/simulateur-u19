@@ -40,7 +40,7 @@ def afficher_comparatifs_speciaux(champ_id, classement_df, date_limite):
 
     if champ_id == 7:
         st.markdown("### Règle spéciale U17 NAT : pts obtenus par les équipes classées 2ème vs celles classées de 1 à 6")
-        df_2e = classement_special_u17(classement_df, champ_id, date_limite)
+        df_2e = classement_special_u17(classement_df, champ_id, date_limite=date_limite, journee_min=journee_min, journee_max=journee_max)
         if df_2e is not None:
             st.dataframe(df_2e, use_container_width=True, hide_index=True)
 
