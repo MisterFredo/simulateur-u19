@@ -188,7 +188,8 @@ championnat_info = championnats[championnats["ID_CHAMPIONNAT"] == champ_id].iloc
 
 # Initialisation des variables
 date_limite = None
-journee_limite = None
+journee_min = None
+journee_max = None
 
 # Sélection du mode de filtrage
 if pd.notnull(championnat_info["NBRE_JOURNEES"]):
