@@ -47,7 +47,7 @@ def afficher_comparatifs_speciaux(champ_id, classement_df, date_limite):
     # --- Bloc désactivé temporairement : Comparatif spécial N2 ---
     # if champ_id == 4:
     #     st.markdown("### Règle spéciale N2")
-    #     df_13e = classement_special_n2(classement_df, champ_id, date_limite)
+    #     df_13e = classement_special_n2(classement_df, champ_id, date_limite=date_limite, journee_min=journee_min, journee_max=journee_max)
     #     if df_13e is not None:
     #         st.dataframe(df_13e, use_container_width=True, hide_index=True)
 
