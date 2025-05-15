@@ -186,7 +186,8 @@ colonnes_simplifiees = ["CLASSEMENT", "NOM_EQUIPE", "POINTS", "DIFF", "MJ"]
 
 # --- 1. CLASSEMENT ACTUEL
 
-# Récupération des infos du championnat sélectionné
+# Chargement des infos championnat
+championnats = load_championnats()
 championnat_info = championnats[championnats["ID_CHAMPIONNAT"] == champ_id].iloc[0]
 
 # Initialisation des variables
@@ -288,7 +289,6 @@ if selected_poule == "Toutes les poules":
 
 if champ_type_classement == "PARTICULIERE" and mini_classements_initial:
     afficher_mini_classements_bloc(mini_classements_initial, "### Mini-classements des égalités particulières (Classement actuel)")
-
 
 # --- 3. MATCHS À SIMULER
 filtrer_non_joues = st.checkbox("Afficher uniquement les matchs non joués / Show only unplayed matches", value=True)
