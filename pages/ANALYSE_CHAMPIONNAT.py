@@ -34,7 +34,7 @@ st.set_page_config(page_title="SIMULATEUR - Datafoot", layout="wide")
 def afficher_comparatifs_speciaux(champ_id, classement_df, date_limite):
     if champ_id == 6:
         st.markdown("### Règle spéciale U19 NAT : pts obtenus par les équipes classées 11ème vs celles classées de 6 à 10")
-        df_11e = classement_special_u19(classement_df, champ_id, date_limite)
+        df_11e = classement_special_u19(classement_df, champ_id, date_limite=date_limite, journee_min=journee_min, journee_max=journee_max)
         if df_11e is not None:
             st.dataframe(df_11e, use_container_width=True, hide_index=True)
 
