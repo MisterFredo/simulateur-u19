@@ -234,17 +234,22 @@ else:
 
 
 # Récupération des matchs terminés et restants
-matchs_termine = get_matchs_termine(champ_id, date_limite=date_limite, journee_limite=journee_limite)
+matchs_termine = get_matchs_termine(
+    champ_id,
+    date_limite=date_limite,
+    journee_min=journee_min,
+    journee_max=journee_max
+)
 matchs_restants = get_matchs_modifiables(champ_id, date_limite=date_limite, non_joues_only=True)
 
 # Calcul du classement initial
 classement_initial = get_classement_dynamique(
     champ_id,
     date_limite=date_limite,
-    journee_limite=journee_limite,
+    journee_min=journee_min,
+    journee_max=journee_max,
     matchs_override=matchs_termine
 )
-classement_initial = appliquer_penalites(classement_initial, date_limite)
 
 # Cas des égalités particulières
 if champ_type_classement == "PARTICULIERE":
@@ -259,10 +264,11 @@ if selected_poule != "Toutes les poules":
 
 # --- Affichage du classement actuel
 # Titre dynamique du classement
-if journee_min and journee_max:
-    titre_classement = f"### 📊 Classement entre la J{journee_min} et la J{journee_max}"
-elif journee_max:  # cas ancien, si tu gardais journee_limite
-    titre_classement = f"### 📊 Classement après la J{journee_max}"
+if journee_min is not None and journee_max is not None:
+    if journee_min == journee_max:
+        titre_classement = f"### 📊 Classement après la J{journee_max}"
+    else:
+        titre_classement = f"### 📊 Classement de la J{journee_min} à la J{journee_max}"
 elif date_limite:
     titre_classement = f"### 📊 Classement au {date_limite.strftime('%d/%m/%Y')}"
 else:
