@@ -257,6 +257,16 @@ if selected_poule != "Toutes les poules":
     classement_initial = classement_initial[classement_initial["POULE"] == selected_poule]
 
 # --- Affichage du classement actuel
+# Titre dynamique du classement
+if journee_min and journee_max:
+    titre_classement = f"### 📊 Classement entre la J{journee_min} et la J{journee_max}"
+elif journee_max:  # cas ancien, si tu gardais journee_limite
+    titre_classement = f"### 📊 Classement après la J{journee_max}"
+elif date_limite:
+    titre_classement = f"### 📊 Classement au {date_limite.strftime('%d/%m/%Y')}"
+else:
+    titre_classement = "### 📊 Classement actuel"
+    
 st.markdown("### Classement actuel / Current Ranking")
 for poule in sorted(classement_initial["POULE"].unique()):
     st.subheader(f"Poule {poule}")
