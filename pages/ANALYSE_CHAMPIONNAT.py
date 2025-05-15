@@ -31,29 +31,52 @@ from simulateur_core import (
 st.set_page_config(page_title="SIMULATEUR - Datafoot", layout="wide")
 
 # --- FONCTION AFFICHAGE COMPARATIFS SPÉCIAUX
-def afficher_comparatifs_speciaux(champ_id, classement_df, date_limite):
+def afficher_comparatifs_speciaux(champ_id, classement_df, date_limite=None, journee_min=None, journee_max=None):
     if champ_id == 6:
         st.markdown("### Règle spéciale U19 NAT : pts obtenus par les équipes classées 11ème vs celles classées de 6 à 10")
-        df_11e = classement_special_u19(classement_df, champ_id, date_limite=date_limite, journee_min=journee_min, journee_max=journee_max)
+        df_11e = classement_special_u19(
+            classement_df,
+            champ_id,
+            date_limite=date_limite,
+            journee_min=journee_min,
+            journee_max=journee_max
+        )
         if df_11e is not None:
             st.dataframe(df_11e, use_container_width=True, hide_index=True)
 
     if champ_id == 7:
         st.markdown("### Règle spéciale U17 NAT : pts obtenus par les équipes classées 2ème vs celles classées de 1 à 6")
-        df_2e = classement_special_u17(classement_df, champ_id, date_limite=date_limite, journee_min=journee_min, journee_max=journee_max)
+        df_2e = classement_special_u17(
+            classement_df,
+            champ_id,
+            date_limite=date_limite,
+            journee_min=journee_min,
+            journee_max=journee_max
+        )
         if df_2e is not None:
             st.dataframe(df_2e, use_container_width=True, hide_index=True)
 
-    # --- Bloc désactivé temporairement : Comparatif spécial N2 ---
-    # if champ_id == 4:
-    #     st.markdown("### Règle spéciale N2")
-    #     df_13e = classement_special_n2(classement_df, champ_id, date_limite=date_limite, journee_min=journee_min, journee_max=journee_max)
-    #     if df_13e is not None:
-    #         st.dataframe(df_13e, use_container_width=True, hide_index=True)
+    if champ_id == 4:
+        st.markdown("### Règle spéciale N2 : pts des 13e contre les équipes classées 8 à 12")
+        df_13e = classement_special_n2(
+            classement_df,
+            champ_id,
+            date_limite=date_limite,
+            journee_min=journee_min,
+            journee_max=journee_max
+        )
+        if df_13e is not None:
+            st.dataframe(df_13e, use_container_width=True, hide_index=True)
 
     if champ_id == 5:
         st.markdown("### Règle spéciale N3 : pts obtenus par les équipes classées 10ème vs celles classées de 5 à 9")
-        df_10e = classement_special_n3(classement_df, champ_id, date_limite=date_limite, journee_min=journee_min, journee_max=journee_max)
+        df_10e = classement_special_n3(
+            classement_df,
+            champ_id,
+            date_limite=date_limite,
+            journee_min=journee_min,
+            journee_max=journee_max
+        )
         if df_10e is not None:
             st.dataframe(df_10e, use_container_width=True, hide_index=True)
 
