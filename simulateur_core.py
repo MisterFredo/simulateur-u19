@@ -312,7 +312,7 @@ def classement_special_u19(classement_df, champ_id, date_limite=None, journee_mi
     return df_11e_comp
 
 
-def classement_special_u17(classement_df, champ_id, date_limite):
+def classement_special_u17(classement_df, champ_id, date_limite=None, journee_min=None, journee_max=None):
     if champ_id != 7 or classement_df.empty:
         return None
 
@@ -329,14 +329,22 @@ def classement_special_u17(classement_df, champ_id, date_limite):
             (classement_df["NOM_EQUIPE"] != equipe_2e)
         ].sort_values("CLASSEMENT").head(5)["NOM_EQUIPE"].tolist()
 
-        # Récupération des matchs joués jusqu’à la date limite
+        # Choix du filtre selon la configuration
+        if journee_min is not None and journee_max is not None:
+            filtre = f"AND JOURNEE BETWEEN {journee_min} AND {journee_max}"
+        elif date_limite is not None:
+            filtre = f"AND DATE <= DATE('{date_limite}')"
+        else:
+            st.warning("❌ Aucun filtre valide fourni pour la règle spéciale U17.")
+            return None
+
         query = f"""
             SELECT EQUIPE_DOM, EQUIPE_EXT, NB_BUT_DOM, NB_BUT_EXT, DATE
             FROM `datafoot-448514.DATAFOOT.DATAFOOT_MATCH_2025`
             WHERE ID_CHAMPIONNAT = {champ_id}
               AND POULE = '{poule}'
               AND STATUT = 'TERMINE'
-              AND DATE <= DATE('{date_limite}')
+              {filtre}
         """
         matchs_poule = client.query(query).to_dataframe()
 
@@ -366,6 +374,7 @@ def classement_special_u17(classement_df, champ_id, date_limite):
     df_2e_comp = pd.DataFrame(comparatif_2e).sort_values("PTS_CONFRONT_TOP5", ascending=False)
     df_2e_comp["RANG"] = df_2e_comp["PTS_CONFRONT_TOP5"].rank(method="min", ascending=False).astype(int)
     return df_2e_comp
+
 
 
 def classement_special_n2(classement_df, champ_id, date_limite):
