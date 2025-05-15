@@ -377,19 +377,28 @@ def classement_special_u17(classement_df, champ_id, date_limite=None, journee_mi
 
 
 
-def classement_special_n2(classement_df, champ_id, date_limite):
+def classement_special_n2(classement_df, champ_id, date_limite=None, journee_min=None, journee_max=None):
     if champ_id != 4 or classement_df.empty:
         return None
 
     df_13e = classement_df[classement_df["CLASSEMENT"] == 13]
     comparatif_13e = []
 
+    # Construction du filtre selon date ou journées
+    if journee_min is not None and journee_max is not None:
+        filtre = f"AND JOURNEE BETWEEN {journee_min} AND {journee_max}"
+    elif date_limite is not None:
+        filtre = f"AND DATE <= DATE('{date_limite}')"
+    else:
+        st.warning("❌ Aucun filtre valide fourni pour la règle spéciale N2.")
+        return None
+
     query = f"""
         SELECT *
         FROM `datafoot-448514.DATAFOOT.DATAFOOT_MATCH_2025`
         WHERE STATUT = 'TERMINE'
           AND ID_CHAMPIONNAT = {champ_id}
-          AND DATE <= DATE('{date_limite}')
+          {filtre}
     """
     matchs_n2 = client.query(query).to_dataframe()
 
@@ -425,6 +434,7 @@ def classement_special_n2(classement_df, champ_id, date_limite):
     df_13e_comp = pd.DataFrame(comparatif_13e).sort_values("PTS_CONFRONT_8_12", ascending=False)
     df_13e_comp["RANG"] = df_13e_comp["PTS_CONFRONT_8_12"].rank(method="min", ascending=False).astype(int)
     return df_13e_comp
+
 
 def classement_special_n3(classement_df, champ_id, date_limite):
     if champ_id != 5 or classement_df.empty:
