@@ -113,14 +113,23 @@ def get_classement_dynamique(id_championnat, date_limite=None, journee_min=None,
 
     return classement
 
-def get_matchs_termine(champ_id, date_limite=None, journee_limite=None):
-    if journee_limite is not None:
+def get_matchs_termine(champ_id, date_limite=None, journee_min=None, journee_max=None):
+    # Construire le filtre selon les paramètres fournis
+    if journee_min is not None and journee_max is not None:
         query = f"""
             SELECT *
             FROM `datafoot-448514.DATAFOOT.DATAFOOT_MATCH_2025`
             WHERE STATUT = 'TERMINE'
               AND ID_CHAMPIONNAT = {champ_id}
-              AND JOURNEE <= {journee_limite}
+              AND JOURNEE BETWEEN {journee_min} AND {journee_max}
+        """
+    elif journee_max is not None:
+        query = f"""
+            SELECT *
+            FROM `datafoot-448514.DATAFOOT.DATAFOOT_MATCH_2025`
+            WHERE STATUT = 'TERMINE'
+              AND ID_CHAMPIONNAT = {champ_id}
+              AND JOURNEE <= {journee_max}
         """
     elif date_limite is not None:
         query = f"""
@@ -131,10 +140,11 @@ def get_matchs_termine(champ_id, date_limite=None, journee_limite=None):
               AND DATE <= DATE('{date_limite}')
         """
     else:
-        st.warning("❌ Vous devez spécifier soit une date, soit une journée.")
+        st.warning("❌ Vous devez spécifier une date ou une plage de journées.")
         return pd.DataFrame()
 
     return client.query(query).to_dataframe()
+
 
 def appliquer_diff_particuliere(classement_df, matchs_df, selected_poule="Toutes les poules"):
     classement_df["RANG_CONFRONT"] = 999
