@@ -106,17 +106,28 @@ def get_classement_dynamique(id_championnat, date_limite=None, journee_limite=No
     return classement
 
 
-def get_matchs_termine(champ_id, date_limite):
-    query = f"""
-        SELECT *
-        FROM `datafoot-448514.DATAFOOT.DATAFOOT_MATCH_2025`
-        WHERE STATUT = 'TERMINE'
-          AND ID_CHAMPIONNAT = {champ_id}
-          AND DATE <= DATE('{date_limite}')
-    """
+def get_matchs_termine(champ_id, date_limite=None, journee_limite=None):
+    if journee_limite is not None:
+        query = f"""
+            SELECT *
+            FROM `datafoot-448514.DATAFOOT.DATAFOOT_MATCH_2025`
+            WHERE STATUT = 'TERMINE'
+              AND ID_CHAMPIONNAT = {champ_id}
+              AND JOURNEE <= {journee_limite}
+        """
+    elif date_limite is not None:
+        query = f"""
+            SELECT *
+            FROM `datafoot-448514.DATAFOOT.DATAFOOT_MATCH_2025`
+            WHERE STATUT = 'TERMINE'
+              AND ID_CHAMPIONNAT = {champ_id}
+              AND DATE <= DATE('{date_limite}')
+        """
+    else:
+        st.warning("❌ Vous devez spécifier soit une date, soit une journée.")
+        return pd.DataFrame()
+
     return client.query(query).to_dataframe()
-
-
 
 def appliquer_diff_particuliere(classement_df, matchs_df, selected_poule="Toutes les poules"):
     classement_df["RANG_CONFRONT"] = 999
