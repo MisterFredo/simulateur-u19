@@ -185,15 +185,50 @@ colonnes_completes = ["CLASSEMENT", "NOM_EQUIPE", "POINTS", "PENALITES", "MJ", "
 colonnes_simplifiees = ["CLASSEMENT", "NOM_EQUIPE", "POINTS", "DIFF", "MJ"]
 
 # --- 1. CLASSEMENT ACTUEL
-matchs_termine = get_matchs_termine(champ_id, date_limite)
-matchs_restants = get_matchs_modifiables(champ_id, date_limite, True)
 
-classement_initial = get_classement_dynamique(champ_id, date_limite, matchs_override=matchs_termine)
+# Récupération des infos du championnat sélectionné
+championnat_info = championnats[championnats["ID_CHAMPIONNAT"] == champ_id].iloc[0]
+
+# Initialisation des variables
+date_limite = None
+journee_limite = None
+
+# Sélection du mode de filtrage
+if pd.notnull(championnat_info["NBRE_JOURNEES"]):
+    mode_filtrage = st.radio(
+        "Mode de calcul du classement",
+        ["Par date", "Par journée"],
+        index=0,
+        horizontal=True
+    )
+
+    if mode_filtrage == "Par date":
+        date_limite = st.date_input("📅 Date limite", value=date.today())
+    else:
+        max_journee = int(championnat_info["NBRE_JOURNEES"])
+        journee_limite = st.slider("📆 Journée limite", min_value=1, max_value=max_journee, value=1)
+else:
+    st.markdown("ℹ️ Ce championnat ne permet le calcul que par **date** (non structuré en journées).")
+    date_limite = st.date_input("📅 Date limite", value=date.today())
+
+# Récupération des matchs terminés et restants
+matchs_termine = get_matchs_termine(champ_id, date_limite=date_limite, journee_limite=journee_limite)
+matchs_restants = get_matchs_modifiables(champ_id, date_limite=date_limite, only_non_joues=True)
+
+# Calcul du classement initial
+classement_initial = get_classement_dynamique(
+    champ_id,
+    date_limite=date_limite,
+    journee_limite=journee_limite,
+    matchs_override=matchs_termine
+)
 classement_initial = appliquer_penalites(classement_initial, date_limite)
 
+# Cas des égalités particulières
 if champ_type_classement == "PARTICULIERE":
     classement_initial, mini_classements_initial = appliquer_diff_particuliere(classement_initial, matchs_termine)
 
+# Tri et post-traitements
 classement_initial = trier_et_numeroter(classement_initial, type_classement)
 classement_initial = calculer_difficulte_calendrier(classement_initial, matchs_restants)
 
@@ -227,11 +262,11 @@ for poule in sorted(classement_initial["POULE"].unique()):
     for i in range(total):
         id_equipe = classement_sorted.loc[i, "ID_EQUIPE"]
         if i < tiers[0]:
-            couleurs[id_equipe] = "#c6f6d5"  # vert pastel (🟩)
+            couleurs[id_equipe] = "#c6f6d5"  # vert pastel
         elif i < tiers[0] + tiers[1]:
-            couleurs[id_equipe] = "#fefcbf"  # orange-jaune pastel (🟧)
+            couleurs[id_equipe] = "#fefcbf"  # orange-jaune pastel
         else:
-            couleurs[id_equipe] = "#fed7d7"  # rouge pastel (🟥)
+            couleurs[id_equipe] = "#fed7d7"  # rouge pastel
 
     def style_dif_cal(val, id_eq):
         return f"background-color: {couleurs.get(id_eq, '')};" if pd.notnull(val) else ""
@@ -253,6 +288,7 @@ if selected_poule == "Toutes les poules":
 
 if champ_type_classement == "PARTICULIERE" and mini_classements_initial:
     afficher_mini_classements_bloc(mini_classements_initial, "### Mini-classements des égalités particulières (Classement actuel)")
+
 
 # --- 3. MATCHS À SIMULER
 filtrer_non_joues = st.checkbox("Afficher uniquement les matchs non joués / Show only unplayed matches", value=True)
