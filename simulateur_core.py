@@ -260,8 +260,17 @@ def trier_et_numeroter(classement_df, type_classement):
     classement_df["CLASSEMENT"] = classement_df.groupby("POULE").cumcount() + 1
     return classement_df
 
-def classement_special_u19(classement_df, champ_id, date_limite):
+def classement_special_u19(classement_df, champ_id, date_limite=None, journee_min=None, journee_max=None):
     if champ_id != 6 or classement_df.empty:
+        return None
+
+    # Choix du filtre SQL
+    if journee_min is not None and journee_max is not None:
+        filtre = f"AND JOURNEE BETWEEN {journee_min} AND {journee_max}"
+    elif date_limite is not None:
+        filtre = f"AND DATE <= DATE('{date_limite}')"
+    else:
+        st.warning("❌ Aucun filtre valide fourni pour le calcul du comparatif U19.")
         return None
 
     query = f"""
@@ -269,9 +278,10 @@ def classement_special_u19(classement_df, champ_id, date_limite):
         FROM `datafoot-448514.DATAFOOT.DATAFOOT_MATCH_2025`
         WHERE STATUT = 'TERMINE'
           AND ID_CHAMPIONNAT = {champ_id}
-          AND DATE <= DATE('{date_limite}')
+          {filtre}
     """
     matchs_u19 = client.query(query).to_dataframe()
+
     df_11e = classement_df[classement_df["CLASSEMENT"] == 11]
     comparatif_11e = []
 
@@ -300,6 +310,7 @@ def classement_special_u19(classement_df, champ_id, date_limite):
     df_11e_comp = pd.DataFrame(comparatif_11e).sort_values(by="PTS_CONFRONT_6_10", ascending=False)
     df_11e_comp["RANG"] = df_11e_comp["PTS_CONFRONT_6_10"].rank(method="min", ascending=False).astype(int)
     return df_11e_comp
+
 
 def classement_special_u17(classement_df, champ_id, date_limite):
     if champ_id != 7 or classement_df.empty:
