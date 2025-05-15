@@ -53,7 +53,7 @@ def afficher_comparatifs_speciaux(champ_id, classement_df, date_limite):
 
     if champ_id == 5:
         st.markdown("### Règle spéciale N3 : pts obtenus par les équipes classées 10ème vs celles classées de 5 à 9")
-        df_10e = classement_special_n3(classement_df, champ_id, date_limite)
+        df_10e = classement_special_n3(classement_df, champ_id, date_limite=date_limite, journee_min=journee_min, journee_max=journee_max)
         if df_10e is not None:
             st.dataframe(df_10e, use_container_width=True, hide_index=True)
 
