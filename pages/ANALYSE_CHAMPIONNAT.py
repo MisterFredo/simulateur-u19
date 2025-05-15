@@ -115,10 +115,6 @@ if len(all_poules) > 1:
 else:
     selected_poule = all_poules[0] if all_poules else "Toutes les poules"
 
-# --- Par défaut : date au 30 juin
-date_limite = st.sidebar.date_input("Date de simulation", value=date(2025, 6, 30))
-
-
 # --- Connexion / Inscription Utilisateur ---
 st.sidebar.markdown("---")
 
@@ -289,6 +285,10 @@ if selected_poule == "Toutes les poules":
 
 if champ_type_classement == "PARTICULIERE" and mini_classements_initial:
     afficher_mini_classements_bloc(mini_classements_initial, "### Mini-classements des égalités particulières (Classement actuel)")
+
+# --- 2BIS. DATE DE SIMULATION
+st.markdown("### 🕓 Date de simulation / Simulation date")
+date_limite = st.date_input("📅 Choisissez une date pour simuler les matchs", value=date(2025, 6, 30))
 
 # --- 3. MATCHS À SIMULER
 
