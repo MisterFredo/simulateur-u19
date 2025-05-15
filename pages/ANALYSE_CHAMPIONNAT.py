@@ -193,20 +193,44 @@ journee_limite = None
 # Sélection du mode de filtrage
 if pd.notnull(championnat_info["NBRE_JOURNEES"]):
     mode_filtrage = st.radio(
-        "Mode de calcul du classement",
+        "Mode de calcul du classement / Ranking filter mode",
         ["Par date", "Par journée"],
         index=0,
         horizontal=True
     )
 
     if mode_filtrage == "Par date":
-        date_limite = st.date_input("📅 Date limite", value=date.today())
+        date_limite = st.date_input("📅 Date limite / Cut-off date", value=date.today())
+        journee_min = None
+        journee_max = None
     else:
         max_journee = int(championnat_info["NBRE_JOURNEES"])
-        journee_limite = st.slider("📆 Journée limite", min_value=1, max_value=max_journee, value=1)
+        st.markdown("### 📆 Plage de journées / Matchday range")
+        col1, col2 = st.columns(2)
+
+        with col1:
+            journee_min = st.number_input(
+                "Journée de début / Start matchday",
+                min_value=1,
+                max_value=max_journee,
+                value=1,
+                key="journee_min"
+            )
+        with col2:
+            journee_max = st.number_input(
+                "Journée de fin / End matchday",
+                min_value=journee_min,
+                max_value=max_journee,
+                value=max_journee,
+                key="journee_max"
+            )
+        date_limite = None
 else:
     st.markdown("ℹ️ Ce championnat ne permet le calcul que par **date** (non structuré en journées).")
-    date_limite = st.date_input("📅 Date limite", value=date.today())
+    date_limite = st.date_input("📅 Date limite / Cut-off date", value=date.today())
+    journee_min = None
+    journee_max = None
+
 
 # Récupération des matchs terminés et restants
 matchs_termine = get_matchs_termine(champ_id, date_limite=date_limite, journee_limite=journee_limite)
