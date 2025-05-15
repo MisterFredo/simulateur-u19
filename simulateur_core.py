@@ -436,19 +436,28 @@ def classement_special_n2(classement_df, champ_id, date_limite=None, journee_min
     return df_13e_comp
 
 
-def classement_special_n3(classement_df, champ_id, date_limite):
+def classement_special_n3(classement_df, champ_id, date_limite=None, journee_min=None, journee_max=None):
     if champ_id != 5 or classement_df.empty:
         return None
 
     df_10e = classement_df[classement_df["CLASSEMENT"] == 10]
     comparatif_10e = []
 
+    # Construction du filtre selon la config
+    if journee_min is not None and journee_max is not None:
+        filtre = f"AND JOURNEE BETWEEN {journee_min} AND {journee_max}"
+    elif date_limite is not None:
+        filtre = f"AND DATE <= DATE('{date_limite}')"
+    else:
+        st.warning("❌ Aucun filtre valide fourni pour la règle spéciale N3.")
+        return None
+
     query = f"""
         SELECT *
         FROM `datafoot-448514.DATAFOOT.DATAFOOT_MATCH_2025`
         WHERE STATUT = 'TERMINE'
           AND ID_CHAMPIONNAT = {champ_id}
-          AND DATE <= DATE('{date_limite}')
+          {filtre}
     """
     matchs_n3 = client.query(query).to_dataframe()
 
