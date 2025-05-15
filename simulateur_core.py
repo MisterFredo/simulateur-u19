@@ -28,18 +28,26 @@ def get_type_classement(champ_id):
     return result.iloc[0]["CLASSEMENT"] if not result.empty else "GENERALE"
 
 
-def get_classement_dynamique(id_championnat, date_limite=None, journee_limite=None, matchs_override=None):
+def get_classement_dynamique(id_championnat, date_limite=None, journee_min=None, journee_max=None, matchs_override=None):
     if matchs_override is not None:
         matchs = matchs_override.copy()
     else:
-        # Charger depuis BigQuery selon le filtre défini
-        if journee_limite is not None:
+        # Chargement selon le filtre défini
+        if journee_min is not None and journee_max is not None:
             query = f"""
                 SELECT *
                 FROM `datafoot-448514.DATAFOOT.DATAFOOT_MATCH_2025`
                 WHERE STATUT = 'TERMINE'
                   AND ID_CHAMPIONNAT = {id_championnat}
-                  AND JOURNEE <= {journee_limite}
+                  AND JOURNEE BETWEEN {journee_min} AND {journee_max}
+            """
+        elif journee_max is not None:
+            query = f"""
+                SELECT *
+                FROM `datafoot-448514.DATAFOOT.DATAFOOT_MATCH_2025`
+                WHERE STATUT = 'TERMINE'
+                  AND ID_CHAMPIONNAT = {id_championnat}
+                  AND JOURNEE <= {journee_max}
             """
         elif date_limite is not None:
             query = f"""
@@ -50,7 +58,7 @@ def get_classement_dynamique(id_championnat, date_limite=None, journee_limite=No
                   AND DATE <= DATE('{date_limite}')
             """
         else:
-            st.warning("❌ Vous devez spécifier soit une date, soit une journée.")
+            st.warning("❌ Vous devez spécifier une date ou une journée.")
             return pd.DataFrame()
 
         matchs = client.query(query).to_dataframe()
@@ -104,7 +112,6 @@ def get_classement_dynamique(id_championnat, date_limite=None, journee_limite=No
     classement["DIFF"] = classement["BP"] - classement["BC"]
 
     return classement
-
 
 def get_matchs_termine(champ_id, date_limite=None, journee_limite=None):
     if journee_limite is not None:
