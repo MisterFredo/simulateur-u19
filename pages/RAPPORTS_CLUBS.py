@@ -10,12 +10,6 @@ from simulateur_core import get_rapport_clubs
 # --- CONFIG STREAMLIT
 st.set_page_config(page_title="RAPPORTS CLUBS - Datafoot", layout="wide")
 
-# --- SIDEBAR : Navigation entre les pages
-st.sidebar.markdown("## Navigation")
-st.sidebar.page_link("HOME.py", label="Accueil")
-st.sidebar.page_link("pages/ANALYSE_CHAMPIONNAT.py", label="Analyse Championnat")
-st.sidebar.page_link("pages/RAPPORTS_CLUBS.py", label="Rapports Clubs")
-
 # --- CORPS PRINCIPAL
 st.markdown("## 📊 Rapports Clubs")
 
