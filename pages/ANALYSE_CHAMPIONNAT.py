@@ -30,12 +30,6 @@ from simulateur_core import (
 # --- CONFIG STREAMLIT
 st.set_page_config(page_title="SIMULATEUR - Datafoot", layout="wide")
 
-# --- SIDEBAR : Navigation entre les pages
-st.sidebar.markdown("## Navigation")
-st.sidebar.page_link("HOME.py", label="Accueil")
-st.sidebar.page_link("pages/ANALYSE_CHAMPIONNAT.py", label="Analyse Championnat")
-st.sidebar.page_link("pages/RAPPORTS_CLUBS.py", label="Rapports Clubs")
-
 # --- FONCTION AFFICHAGE COMPARATIFS SPÉCIAUX
 def afficher_comparatifs_speciaux(champ_id, classement_df, date_limite=None, journee_min=None, journee_max=None):
     if champ_id == 6:
