@@ -638,3 +638,31 @@ def enregistrer_inscription(email, prenom, nom, societe_club, newsletter, source
     row = [email, prenom, nom, societe_club, newsletter, source, now, "OK"]
     sheet.append_row(row, value_input_option="USER_ENTERED")
     st.success("✅ Inscription enregistrée dans Google Sheet.")
+
+# --- FONCTION DE RÉCUPÉRATION DES DONNÉES POUR RAPPORT CLUBS
+def get_rapport_clubs(saison=None):
+    condition_saison = f"WHERE ES.SAISON = {saison}" if saison else ""
+    query = f"""
+        SELECT 
+            ES.SAISON,
+            EQ.ID_EQUIPE,
+            EQ.NOM AS NOM_EQUIPE,
+            EQ.CATEGORIE,
+            EQ.NIVEAU,
+            CL.ID_CLUB,
+            CL.NOM_CLUB,
+            CL.LIGUE,
+            CL.SHORT_LIGUE,
+            CL.DISTRICT,
+            CL.CENTRE,
+            CL.TOP_400,
+            ES.ID_CHAMPIONNAT,
+            ES.POULE,
+            ES.STATUT
+        FROM `datafoot-448514.DATAFOOT.DATAFOOT_EQUIPE_SAISON` ES
+        JOIN `datafoot-448514.DATAFOOT.DATAFOOT_EQUIPE` EQ ON ES.ID_EQUIPE = EQ.ID_EQUIPE
+        JOIN `datafoot-448514.DATAFOOT.DATAFOOT_CLUB` CL ON EQ.ID_CLUB = CL.ID_CLUB
+        {condition_saison}
+        ORDER BY CL.LIGUE, CL.NOM_CLUB, EQ.CATEGORIE
+    """
+    return client.query(query).to_dataframe()
