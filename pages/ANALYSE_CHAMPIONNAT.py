@@ -109,34 +109,40 @@ championnats_df = load_championnats()
 
 from datetime import date
 
-# --- SIDEBAR (Filtres)
-st.sidebar.header("Filtres")
+# --- FILTRES PRINCIPAUX (dans le corps)
+st.markdown("## 🔍 Sélection du championnat")
 
-selected_categorie = st.sidebar.selectbox("Catégorie", sorted(championnats_df["CATEGORIE"].unique()))
-selected_niveau = st.sidebar.selectbox(
-    "Niveau", sorted(championnats_df[championnats_df["CATEGORIE"] == selected_categorie]["NIVEAU"].unique())
-)
+col1, col2, col3 = st.columns(3)
 
-champ_options = championnats_df[
-    (championnats_df["CATEGORIE"] == selected_categorie) &
-    (championnats_df["NIVEAU"] == selected_niveau)
-]
+with col1:
+    selected_categorie = st.selectbox("Catégorie", sorted(championnats_df["CATEGORIE"].unique()))
 
-selected_nom = st.sidebar.selectbox("Championnat", champ_options["NOM_CHAMPIONNAT"])
+with col2:
+    niveaux_disponibles = sorted(
+        championnats_df[championnats_df["CATEGORIE"] == selected_categorie]["NIVEAU"].unique()
+    )
+    selected_niveau = st.selectbox("Niveau", niveaux_disponibles)
+
+with col3:
+    champ_options = championnats_df[
+        (championnats_df["CATEGORIE"] == selected_categorie) &
+        (championnats_df["NIVEAU"] == selected_niveau)
+    ]
+    selected_nom = st.selectbox("Championnat", champ_options["NOM_CHAMPIONNAT"])
 
 champ_selected = champ_options[champ_options["NOM_CHAMPIONNAT"] == selected_nom]
 champ_id = champ_selected["ID_CHAMPIONNAT"].values[0]
 champ_type_classement = champ_selected["CLASSEMENT"].values[0]
 
 type_classement = get_type_classement(champ_id)
-
 poules_temp = get_poules_temp(champ_id)
 all_poules = sorted(poules_temp["POULE"].dropna().unique())
 
 if len(all_poules) > 1:
-    selected_poule = st.sidebar.selectbox("Poule", ["Toutes les poules"] + all_poules)
+    selected_poule = st.selectbox("Poule", ["Toutes les poules"] + all_poules)
 else:
     selected_poule = all_poules[0] if all_poules else "Toutes les poules"
+
 
 # --- Connexion / Inscription Utilisateur ---
 st.sidebar.markdown("---")
