@@ -9,11 +9,9 @@ from datetime import date
 from simulateur_core import get_classement_dynamique, appliquer_penalites, trier_et_numeroter, get_type_classement
 from agents_core import get_id_championnat
 
-# --- CONFIG STREAMLIT ---
 st.set_page_config(page_title="Agent Datafoot", page_icon="🤖", layout="wide")
 st.title("🧠 Agent Datafoot – Analyste Classement")
 
-# --- CHOIX DU RÔLE ---
 role = st.selectbox("Choisis ton agent", ["Analyste Classement"], index=0)
 
 if role == "Analyste Classement":
@@ -21,10 +19,8 @@ if role == "Analyste Classement":
         "> Cet agent analyse les classements par championnat, poule, date. Il peut inclure les pénalités."
     )
 
-# --- CLÉ OPENAI ---
 openai.api_key = os.getenv("OPENAI_API_KEY")
 
-# --- CHAT INPUT ---
 if prompt := st.chat_input("Pose ta question sur les classements…"):
     st.chat_message("user").write(prompt)
 
@@ -104,6 +100,7 @@ if prompt := st.chat_input("Pose ta question sur les classements…"):
         {"role": "user", "content": prompt}
     ]
 
+    context = {}
     loop_counter = 0
     while loop_counter < 5:
         response = openai.chat.completions.create(
@@ -129,8 +126,8 @@ if prompt := st.chat_input("Pose ta question sur les classements…"):
                         )
                         if df.empty:
                             raise ValueError("Aucun match trouvé pour les paramètres fournis.")
-                        if "groupe b" in prompt.lower():
-                            df = df[df["POULE"] == "B"]
+                        if context.get("poule"):
+                            df = df[df["POULE"] == context["poule"]]
                         result = df.to_json(orient="records")
 
                     elif tool_name == "appliquer_penalites":
@@ -147,7 +144,13 @@ if prompt := st.chat_input("Pose ta question sur les classements…"):
 
                     elif tool_name == "get_id_championnat":
                         nom = args["nom"]
-                        result = get_id_championnat(nom)
+                        result_obj = get_id_championnat(nom)
+                        try:
+                            result_json = json.loads(result_obj)
+                            context.update(result_json)
+                            result = str(result_json["id_championnat"])
+                        except:
+                            result = result_obj
 
                     else:
                         result = f"Fonction {tool_name} non reconnue."
