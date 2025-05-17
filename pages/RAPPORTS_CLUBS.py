@@ -2,11 +2,6 @@ import streamlit as st
 import sys
 import os
 
-# --- ACCÈS RÉSERVÉ AU MODE DEV
-if not st.secrets.get("mode_dev", False):
-    st.warning("🚫 Cette page est réservée au mode développeur.")
-    st.stop()
-
 # --- CHEMIN D'IMPORT CORE
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from simulateur_core import get_rapport_clubs
