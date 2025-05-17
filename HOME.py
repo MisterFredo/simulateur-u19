@@ -3,6 +3,18 @@ import streamlit as st
 # ✅ Doit absolument être la première commande
 st.set_page_config(page_title="Datafoot.ai", page_icon="🏆", layout="wide")
 
+# --- Message version dev ---
+import os
+if os.getenv("RENDER_EXTERNAL_URL", "").startswith("https://datafoot-dev"):
+    st.markdown(
+        """
+        <div style="background-color:#ffc107;padding:0.5rem;text-align:center;border-radius:5px;margin-bottom:1rem;">
+            🔧 <strong>Vous êtes sur la version de développement</strong> – les données et fonctionnalités peuvent évoluer.
+        </div>
+        """,
+        unsafe_allow_html=True
+    )
+
 # --- Imports utiles ---
 import pandas as pd
 from datetime import date, datetime
