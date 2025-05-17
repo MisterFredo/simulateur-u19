@@ -745,17 +745,19 @@ def get_classement_filtres(saison, categorie, date_limite=None, journee_min=None
     if date_limite:
         df = appliquer_penalites(df, date_limite)
 
-    # --- Sécurité : exclusion des lignes sans POINTS
+    # --- Exclure les lignes sans points
     df = df[df["POINTS"].notna()].copy()
     df = df.reset_index(drop=True)
 
-    # --- Classement par poule
-    df = df.assign(
-        CLASSEMENT=df.groupby("POULE")["POINTS"]
-        .rank(method="dense", ascending=False)
-        .astype(int)
-    )
+    # --- Calcul du classement sécurisé
+    df["CLASSEMENT"] = df.groupby("POULE")["POINTS"].rank(method="dense", ascending=False)
 
+    # --- Vérification et conversion propre
+    if df["CLASSEMENT"].isna().any():
+        st.warning("⚠️ Certains classements sont incomplets (NaN détectés).")
+    else:
+        df["CLASSEMENT"] = df["CLASSEMENT"].astype(int)
+
+    # --- Résultat final
     colonnes = ["NOM_CLUB", "NOM_EQUIPE", "NOM_CHAMPIONNAT", "POULE", "CLASSEMENT", "POINTS", "MJ", "BP", "BC"]
     return df[colonnes].sort_values(by=["POULE", "CLASSEMENT"])
-
