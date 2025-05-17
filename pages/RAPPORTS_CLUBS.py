@@ -2,14 +2,14 @@ import streamlit as st
 import sys
 import os
 
-# --- CHEMIN D'IMPORT CORE
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-from simulateur_core import get_rapport_clubs
-
 # --- ACCÈS RÉSERVÉ À FREDERIC ---
 if st.session_state.get("user_email") != "frederic@datafoot.ai":
     st.warning("🚫 Accès réservé à l’administrateur.")
     st.stop()
+
+# --- CHEMIN D'IMPORT CORE
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+from simulateur_core import get_rapport_clubs
 
 # --- CONFIG
 st.set_page_config(page_title="RAPPORTS CLUBS - Datafoot", layout="wide")
@@ -28,19 +28,19 @@ df = get_rapport_clubs(saison=selected_saison if selected_saison != "Toutes" els
 # --- OPTIONS DYNAMIQUES
 ligues_disponibles = sorted(df["NOM_LIGUE"].dropna().unique())
 districts_disponibles = sorted(df["NOM_DISTRICT"].dropna().unique())
-categories_disponibles = ["Choisir..."] + sorted(df["CATEGORIE"].dropna().unique())
-niveaux_disponibles = ["Choisir..."] + sorted(df["NIVEAU"].dropna().unique())
-statuts_disponibles = ["Choisir..."] + sorted(df["STATUT"].dropna().unique())
+categories_disponibles = sorted(df["CATEGORIE"].dropna().unique())
+niveaux_disponibles = sorted(df["NIVEAU"].dropna().unique())
+statuts_disponibles = sorted(df["STATUT"].dropna().unique())
 clubs_disponibles = sorted(df["NOM_CLUB"].dropna().unique())
-championnats_disponibles = ["Choisir..."] + sorted(df["NOM_CHAMPIONNAT"].dropna().unique())
+championnats_disponibles = sorted(df["NOM_CHAMPIONNAT"].dropna().unique())
 
 # --- FILTRES
 col1, col2, col3 = st.columns(3)
 
 with col1:
-    selected_ligue = st.selectbox("Ligue", ["Toutes"] + ligues_disponibles)
-    selected_district = st.selectbox("District", ["Tous"] + districts_disponibles)
-    selected_championnat = st.selectbox("Championnat", championnats_disponibles)
+    selected_ligues = st.multiselect("Ligues", ligues_disponibles)
+    selected_districts = st.multiselect("Districts", districts_disponibles)
+    selected_championnats = st.multiselect("Championnats", championnats_disponibles)
 
 with col2:
     selected_centre = st.selectbox("Centre de formation", ["Tous", "OUI", "NON"])
@@ -48,19 +48,19 @@ with col2:
     selected_clubs = st.multiselect("Clubs", clubs_disponibles)
 
 with col3:
-    selected_categorie = st.selectbox("Catégorie", categories_disponibles)
-    selected_niveau = st.selectbox("Niveau", niveaux_disponibles)
-    selected_statut = st.selectbox("Statut", statuts_disponibles)
+    selected_categories = st.multiselect("Catégories", categories_disponibles)
+    selected_niveaux = st.multiselect("Niveaux", niveaux_disponibles)
+    selected_statuts = st.multiselect("Statuts", statuts_disponibles)
 
-# --- FILTRAGE
-if selected_ligue != "Toutes":
-    df = df[df["NOM_LIGUE"] == selected_ligue]
+# --- FILTRAGE MULTI
+if selected_ligues:
+    df = df[df["NOM_LIGUE"].isin(selected_ligues)]
 
-if selected_district != "Tous":
-    df = df[df["NOM_DISTRICT"] == selected_district]
+if selected_districts:
+    df = df[df["NOM_DISTRICT"].isin(selected_districts)]
 
-if selected_championnat != "Choisir...":
-    df = df[df["NOM_CHAMPIONNAT"] == selected_championnat]
+if selected_championnats:
+    df = df[df["NOM_CHAMPIONNAT"].isin(selected_championnats)]
 
 if selected_centre != "Tous":
     df = df[df["CENTRE"] == selected_centre]
@@ -71,16 +71,16 @@ if selected_top400 != "Tous":
 if selected_clubs:
     df = df[df["NOM_CLUB"].isin(selected_clubs)]
 
-if selected_categorie != "Choisir...":
-    df = df[df["CATEGORIE"] == selected_categorie]
+if selected_categories:
+    df = df[df["CATEGORIE"].isin(selected_categories)]
 
-if selected_niveau != "Choisir...":
-    df = df[df["NIVEAU"] == selected_niveau]
+if selected_niveaux:
+    df = df[df["NIVEAU"].isin(selected_niveaux)]
 
-if selected_statut != "Choisir...":
-    df = df[df["STATUT"] == selected_statut]
+if selected_statuts:
+    df = df[df["STATUT"].isin(selected_statuts)]
 
-# --- SUPPRESSION DES COLONNES TECHNIQUES
+# --- SUPPRESSION COLONNES TECHNIQUES
 colonnes_a_supprimer = ["ID_CLUB", "ID_EQUIPE", "ID_CHAMPIONNAT", "NOM_LIGUE"]
 df = df.drop(columns=[col for col in colonnes_a_supprimer if col in df.columns])
 
@@ -89,7 +89,7 @@ if len(df) > 500:
     st.warning(f"⚠️ Affichage limité à 500 lignes sur {len(df)} résultats.")
     df = df.head(500)
 
-# --- AFFICHAGE FINAL
+# --- AFFICHAGE
 if mobile_mode:
     colonnes_affichage = ["SAISON", "NOM_EQUIPE", "CATEGORIE", "NOM_CHAMPIONNAT"]
     st.dataframe(df[colonnes_affichage], use_container_width=True, hide_index=True)
@@ -104,3 +104,4 @@ else:
 #     file_name="rapport_clubs.csv",
 #     mime="text/csv"
 # )
+
