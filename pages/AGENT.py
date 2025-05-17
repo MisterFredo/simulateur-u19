@@ -21,6 +21,10 @@ if role == "Analyste Classement":
 
 openai.api_key = os.getenv("OPENAI_API_KEY")
 
+# Mémoire locale persistante sur la session
+if "memory_context" not in st.session_state:
+    st.session_state.memory_context = {}
+
 if prompt := st.chat_input("Pose ta question sur les classements…"):
     st.chat_message("user").write(prompt)
 
@@ -30,7 +34,7 @@ if prompt := st.chat_input("Pose ta question sur les classements…"):
         "Si l'utilisateur mentionne un nom de championnat (ex: 'U19', 'N3'), utilise immédiatement la fonction get_id_championnat pour obtenir l'identifiant correspondant. "
         "Ne demande pas confirmation si le nom semble explicite. "
         "Utilise ensuite cet ID dans les fonctions de classement. "
-        "Réponds toujours en t'appuyant sur les outils disponibles."
+        "Si l'utilisateur répond avec une précision (ex: 'U17 National'), complète le contexte précédent."
     )
 
     tools = [
@@ -100,8 +104,9 @@ if prompt := st.chat_input("Pose ta question sur les classements…"):
         {"role": "user", "content": prompt}
     ]
 
-    context = {}
+    memory = st.session_state.memory_context
     loop_counter = 0
+
     while loop_counter < 5:
         response = openai.chat.completions.create(
             model="gpt-4o",
@@ -120,14 +125,18 @@ if prompt := st.chat_input("Pose ta question sur les classements…"):
 
                 try:
                     if tool_name == "get_classement_dynamique":
+                        memory.update({
+                            "id_championnat": args["id_championnat"],
+                            "date_limite": args["date_limite"]
+                        })
                         df = get_classement_dynamique(
                             id_championnat=args["id_championnat"],
                             date_limite=args["date_limite"]
                         )
                         if df.empty:
                             raise ValueError("Aucun match trouvé pour les paramètres fournis.")
-                        if context.get("poule"):
-                            df = df[df["POULE"] == context["poule"]]
+                        if memory.get("poule"):
+                            df = df[df["POULE"] == memory["poule"]]
                         result = df.to_json(orient="records")
 
                     elif tool_name == "appliquer_penalites":
@@ -147,7 +156,7 @@ if prompt := st.chat_input("Pose ta question sur les classements…"):
                         result_obj = get_id_championnat(nom)
                         try:
                             result_json = json.loads(result_obj)
-                            context.update(result_json)
+                            memory.update(result_json)
                             result = str(result_json["id_championnat"])
                         except:
                             result = result_obj
