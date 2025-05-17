@@ -674,49 +674,78 @@ def get_rapport_clubs(saison=None):
     return client.query(query).to_dataframe()
 
 def get_classement_filtres(saison, categorie, date_limite=None, journee_min=None, journee_max=None):
-    # --- Construction de la clause WHERE dynamique
-    where_clause = f"WHERE M.STATUT = 'TERMINE' AND EQ.CATEGORIE = '{categorie}'"
-    if date_limite:
-        where_clause += f" AND M.DATE <= DATE('{date_limite}')"
-    elif journee_min is not None and journee_max is not None:
-        where_clause += f" AND M.JOURNEE BETWEEN {journee_min} AND {journee_max}"
+    # --- Chargement des matchs filtrés
+    if journee_min is not None and journee_max is not None:
+        query = f"""
+            SELECT *
+            FROM `datafoot-448514.DATAFOOT.DATAFOOT_MATCH_2025`
+            WHERE STATUT = 'TERMINE'
+              AND JOURNEE BETWEEN {journee_min} AND {journee_max}
+        """
+    elif date_limite is not None:
+        query = f"""
+            SELECT *
+            FROM `datafoot-448514.DATAFOOT.DATAFOOT_MATCH_2025`
+            WHERE STATUT = 'TERMINE'
+              AND DATE <= DATE('{date_limite}')
+        """
+    else:
+        st.warning("❌ Vous devez spécifier une date ou une journée.")
+        return pd.DataFrame()
 
-    # --- Requête principale : fusion matchs + équipes + clubs + championnats
-    query = f"""
+    matchs = client.query(query).to_dataframe()
+
+    if matchs.empty:
+        return pd.DataFrame()
+
+    # --- Création des lignes par équipe
+    matchs_equipes = pd.concat([
+        matchs.assign(
+            ID_EQUIPE=matchs["ID_EQUIPE_DOM"],
+            BUTS_POUR=matchs["NB_BUT_DOM"],
+            BUTS_CONTRE=matchs["NB_BUT_EXT"],
+            POINTS=matchs.apply(lambda row: 3 if row["NB_BUT_DOM"] > row["NB_BUT_EXT"] else (1 if row["NB_BUT_DOM"] == row["NB_BUT_EXT"] else 0), axis=1)
+        ),
+        matchs.assign(
+            ID_EQUIPE=matchs["ID_EQUIPE_EXT"],
+            BUTS_POUR=matchs["NB_BUT_EXT"],
+            BUTS_CONTRE=matchs["NB_BUT_DOM"],
+            POINTS=matchs.apply(lambda row: 3 if row["NB_BUT_EXT"] > row["NB_BUT_DOM"] else (1 if row["NB_BUT_EXT"] == row["NB_BUT_DOM"] else 0), axis=1)
+        )
+    ])
+
+    # --- Agrégation par équipe
+    stats = matchs_equipes.groupby("ID_EQUIPE").agg(
+        MJ=('ID_EQUIPE', 'count'),
+        PTS=('POINTS', 'sum'),
+        BP=('BUTS_POUR', 'sum'),
+        BC=('BUTS_CONTRE', 'sum')
+    ).reset_index()
+
+    # --- Jointures avec les infos club / championnat / poule
+    query_infos = f"""
         SELECT 
-            M.ID_EQUIPE,
+            EQ.ID_EQUIPE,
             EQ.NOM AS NOM_EQUIPE,
             CL.NOM_CLUB,
-            CH.NOM_CHAMPIONNAT,
+            SA.ID_CHAMPIONNAT,
             SA.POULE,
-            COUNT(*) AS MJ,
-            SUM(M.BUT) AS BP,
-            SUM(ADV.BUT) AS BC,
-            SUM(CASE 
-                WHEN M.BUT > ADV.BUT THEN 3 
-                WHEN M.BUT = ADV.BUT THEN 1 
-                ELSE 0 
-            END) AS PTS
-        FROM `datafoot-448514.DATAFOOT.DATAFOOT_MATCH_2025` M
-        JOIN `datafoot-448514.DATAFOOT.DATAFOOT_MATCH_2025` ADV 
-            ON M.ID_MATCH = ADV.ID_MATCH AND M.ID_EQUIPE != ADV.ID_EQUIPE
-        JOIN `datafoot-448514.DATAFOOT.DATAFOOT_EQUIPE` EQ ON M.ID_EQUIPE = EQ.ID_EQUIPE
+            CH.NOM_CHAMPIONNAT
+        FROM `datafoot-448514.DATAFOOT.DATAFOOT_EQUIPE` EQ
         JOIN `datafoot-448514.DATAFOOT.DATAFOOT_CLUB` CL ON EQ.ID_CLUB = CL.ID_CLUB
-        JOIN `datafoot-448514.DATAFOOT.DATAFOOT_EQUIPE_SAISON` SA ON EQ.ID_EQUIPE = SA.ID_EQUIPE AND SA.SAISON = '{saison}'
+        JOIN `datafoot-448514.DATAFOOT.DATAFOOT_EQUIPE_SAISON` SA ON EQ.ID_EQUIPE = SA.ID_EQUIPE
         JOIN `datafoot-448514.DATAFOOT.DATAFOOT_CHAMPIONNAT` CH ON SA.ID_CHAMPIONNAT = CH.ID_CHAMPIONNAT
-        {where_clause}
-        GROUP BY M.ID_EQUIPE, EQ.NOM, CL.NOM_CLUB, CH.NOM_CHAMPIONNAT, SA.POULE
+        WHERE SA.SAISON = '{saison}' AND EQ.CATEGORIE = '{categorie}'
     """
+    infos = client.query(query_infos).to_dataframe()
 
-    df = client.query(query).to_dataframe()
+    # --- Fusion et classement
+    df = stats.merge(infos, on="ID_EQUIPE")
 
-    # --- Application des pénalités uniquement si mode = date
     if date_limite:
         df = appliquer_penalites(df, date_limite)
 
-    # --- Tri et classement par poule
     df["CLASSEMENT"] = df.groupby("POULE")["PTS"].rank(method="dense", ascending=False).astype(int)
 
-    # --- Colonnes ordonnées
     colonnes = ["NOM_CLUB", "NOM_EQUIPE", "NOM_CHAMPIONNAT", "POULE", "CLASSEMENT", "PTS", "MJ", "BP", "BC"]
     return df[colonnes].sort_values(by=["POULE", "CLASSEMENT"])
