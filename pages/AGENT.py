@@ -47,12 +47,12 @@ if prompt := st.chat_input("Pose ta question sur les classements…"):
                 "parameters": {
                     "type": "object",
                     "properties": {
-                        "ID_CHAMPIONNAT": {"type": "integer"},
+                        "id_championnat": {"type": "integer"},
                         "date": {"type": "string", "format": "date"},
                         "poule": {"type": "string"},
                         "statut": {"type": "string"}
                     },
-                    "required": ["ID_CHAMPIONNAT", "date", "poule", "statut"]
+                    "required": ["id_championnat", "date", "poule", "statut"]
                 }
             }
         },
@@ -65,10 +65,10 @@ if prompt := st.chat_input("Pose ta question sur les classements…"):
                     "type": "object",
                     "properties": {
                         "classement": {"type": "string", "description": "Classement au format JSON"},
-                        "ID_CHAMPIONNAT": {"type": "integer"},
+                        "id_championnat": {"type": "integer"},
                         "date": {"type": "string", "format": "date"}
                     },
-                    "required": ["classement", "ID_CHAMPIONNAT", "date"]
+                    "required": ["classement", "id_championnat", "date"]
                 }
             }
         },
@@ -127,7 +127,7 @@ if prompt := st.chat_input("Pose ta question sur les classements…"):
                 try:
                     if tool_name == "get_classement_dynamique":
                         df = get_classement_dynamique(
-                            ID_CHAMPIONNAT=args["ID_CHAMPIONNAT"],
+                            id_championnat=args["id_championnat"],
                             date=args["date"],
                             poule=args["poule"],
                             statut=args["statut"]
@@ -136,7 +136,7 @@ if prompt := st.chat_input("Pose ta question sur les classements…"):
 
                     elif tool_name == "appliquer_penalites":
                         df = pd.read_json(args["classement"])
-                        df = appliquer_penalites(df, ID_CHAMPIONNAT=args["ID_CHAMPIONNAT"], date=args["date"])
+                        df = appliquer_penalites(df, id_championnat=args["id_championnat"], date=args["date"])
                         result = df.to_json(orient="records")
 
                     elif tool_name == "trier_et_numeroter":
@@ -158,11 +158,16 @@ if prompt := st.chat_input("Pose ta question sur les classements…"):
                     })
 
                 except Exception as e:
+                    messages.append({
+                        "role": "tool",
+                        "tool_call_id": tool_call.id,
+                        "content": f"Erreur dans {tool_name} : {str(e)}"
+                    })
                     st.chat_message("assistant").error(f"Erreur dans {tool_name} : {e}")
-                    break
 
         else:
             st.chat_message("assistant").write(output.content or "[Réponse générée par l'agent]")
             break
 
         loop_counter += 1
+        
