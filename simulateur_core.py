@@ -642,6 +642,7 @@ def enregistrer_inscription(email, prenom, nom, societe_club, newsletter, source
 # --- FONCTION DE RÉCUPÉRATION DES DONNÉES POUR RAPPORT CLUBS
 def get_rapport_clubs(saison=None):
     condition_saison = f"WHERE ES.SAISON = {saison}" if saison else ""
+    
     query = f"""
         SELECT 
             ES.SAISON,
@@ -660,11 +661,16 @@ def get_rapport_clubs(saison=None):
             ES.POULE,
             ES.STATUT
         FROM `datafoot-448514.DATAFOOT.DATAFOOT_EQUIPE_SAISON` ES
-        JOIN `datafoot-448514.DATAFOOT.DATAFOOT_EQUIPE` EQ ON ES.ID_EQUIPE = EQ.ID_EQUIPE
-        JOIN `datafoot-448514.DATAFOOT.DATAFOOT_CLUB` CL ON EQ.ID_CLUB = CL.ID_CLUB
-        JOIN `datafoot-448514.DATAFOOT.DATAFOOT_DISTRICT` DIST ON CL.ID_DISTRICT = DIST.ID_DISTRICT
-        JOIN `datafoot-448514.DATAFOOT.DATAFOOT_LIGUE` LIG ON CL.ID_LIGUE = LIG.ID_LIGUE
+        JOIN `datafoot-448514.DATAFOOT.DATAFOOT_EQUIPE` EQ 
+            ON ES.ID_EQUIPE = EQ.ID_EQUIPE
+        JOIN `datafoot-448514.DATAFOOT.DATAFOOT_CLUB` CL 
+            ON EQ.ID_CLUB = CL.ID_CLUB
+        JOIN `datafoot-448514.DATAFOOT.DATAFOOT_DISTRICT` DIST 
+            ON CL.ID_DISTRICT = DIST.ID_DISTRICT
+        JOIN `datafoot-448514.DATAFOOT.DATAFOOT_LIGUE` LIG 
+            ON CL.ID_LIGUE = LIG.ID_LIGUE
         {condition_saison}
         ORDER BY LIG.NOM_LIGUE, CL.NOM_CLUB, EQ.CATEGORIE
     """
+    
     return client.query(query).to_dataframe()
