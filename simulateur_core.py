@@ -746,10 +746,14 @@ def get_classement_filtres(saison, categorie, date_limite=None, journee_min=None
         df = appliquer_penalites(df, date_limite)
 
     # --- Exclure les équipes sans match (POINTS manquants)
-    # --- Exclure les équipes sans match (POINTS manquants)
-df = df[df["POINTS"].notna()].copy()
+    df = df[df["POINTS"].notna()].copy()
 
-    df["CLASSEMENT"] = df.groupby("POULE")["POINTS"].rank(method="dense", ascending=False).astype(int)
+    df["CLASSEMENT"] = (
+        df.groupby("POULE")["POINTS"]
+        .rank(method="dense", ascending=False)
+        .fillna(0)
+        .astype(int)
+    )
 
     colonnes = ["NOM_CLUB", "NOM_EQUIPE", "NOM_CHAMPIONNAT", "POULE", "CLASSEMENT", "POINTS", "MJ", "BP", "BC"]
     return df[colonnes].sort_values(by=["POULE", "CLASSEMENT"])
