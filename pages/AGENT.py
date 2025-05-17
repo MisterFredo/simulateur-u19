@@ -18,7 +18,7 @@ role = st.selectbox("Choisis ton agent", ["Analyste Classement"], index=0)
 
 if role == "Analyste Classement":
     st.markdown(
-        "> Cet agent analyse les classements par championnat, poule, date et statut. Il peut inclure les pénalités."
+        "> Cet agent analyse les classements par championnat, poule, date. Il peut inclure les pénalités."
     )
 
 # --- CLÉ OPENAI ---
@@ -58,15 +58,14 @@ if prompt := st.chat_input("Pose ta question sur les classements…"):
             "type": "function",
             "function": {
                 "name": "appliquer_penalites",
-                "description": "Applique les pénalités à un classement donné selon la date et le championnat.",
+                "description": "Applique les pénalités à un classement donné selon la date.",
                 "parameters": {
                     "type": "object",
                     "properties": {
                         "classement": {"type": "string", "description": "Classement au format JSON"},
-                        "id_championnat": {"type": "integer"},
                         "date_limite": {"type": "string", "format": "date"}
                     },
-                    "required": ["classement", "id_championnat", "date_limite"]
+                    "required": ["classement", "date_limite"]
                 }
             }
         },
@@ -134,7 +133,7 @@ if prompt := st.chat_input("Pose ta question sur les classements…"):
 
                     elif tool_name == "appliquer_penalites":
                         df = pd.read_json(args["classement"])
-                        df = appliquer_penalites(df, id_championnat=args["id_championnat"], date_limite=args["date_limite"])
+                        df = appliquer_penalites(df, date_limite=args["date_limite"])
                         result = df.to_json(orient="records")
 
                     elif tool_name == "trier_et_numeroter":
