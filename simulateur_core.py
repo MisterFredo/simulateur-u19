@@ -674,6 +674,8 @@ def get_rapport_clubs(saison=None):
     return client.query(query).to_dataframe()
 
 def get_classement_filtres(saison, categorie, date_limite=None, journee_min=None, journee_max=None):
+    import pandas as pd
+
     # --- Chargement des matchs filtrés
     if journee_min is not None and journee_max is not None:
         query = f"""
@@ -694,7 +696,6 @@ def get_classement_filtres(saison, categorie, date_limite=None, journee_min=None
         return pd.DataFrame()
 
     matchs = client.query(query).to_dataframe()
-
     if matchs.empty:
         return pd.DataFrame()
 
@@ -714,7 +715,6 @@ def get_classement_filtres(saison, categorie, date_limite=None, journee_min=None
         )
     ])
 
-    # --- Agrégation par équipe
     stats = matchs_equipes.groupby("ID_EQUIPE").agg(
         MJ=('ID_EQUIPE', 'count'),
         POINTS=('POINTS', 'sum'),
@@ -722,32 +722,50 @@ def get_classement_filtres(saison, categorie, date_limite=None, journee_min=None
         BC=('BUTS_CONTRE', 'sum')
     ).reset_index()
 
-    # --- Infos complémentaires (depuis les matchs + équipes + clubs + championnats)
+    # --- Requête pour récupérer les infos clubs / poules / championnats
     query_infos = f"""
-        SELECT
-            M.ID_EQUIPE,
-            EQ.NOM AS NOM_EQUIPE,
-            CL.NOM_CLUB,
-            M.ID_CHAMPIONNAT,
-            M.POULE,
-            CH.NOM_CHAMPIONNAT
-        FROM `datafoot-448514.DATAFOOT.DATAFOOT_MATCH_2025` M
-        JOIN `datafoot-448514.DATAFOOT.DATAFOOT_EQUIPE` EQ ON M.ID_EQUIPE = EQ.ID_EQUIPE
-        JOIN `datafoot-448514.DATAFOOT.DATAFOOT_CLUB` CL ON EQ.ID_CLUB = CL.ID_CLUB
-        JOIN `datafoot-448514.DATAFOOT.DATAFOOT_CHAMPIONNAT` CH ON M.ID_CHAMPIONNAT = CH.ID_CHAMPIONNAT
-        WHERE EQ.CATEGORIE = '{categorie}'
-    """
-    infos = client.query(f"""
         SELECT * EXCEPT(row_num) FROM (
-            SELECT *, ROW_NUMBER() OVER (PARTITION BY ID_EQUIPE ORDER BY DATE DESC) as row_num
-            FROM ({query_infos})
-        ) WHERE row_num = 1
-    """).to_dataframe()
+            SELECT *,
+                ROW_NUMBER() OVER (PARTITION BY ID_EQUIPE ORDER BY DATE DESC) AS row_num
+            FROM (
+                SELECT 
+                    M.ID_EQUIPE_DOM AS ID_EQUIPE,
+                    EQ_DOM.NOM AS NOM_EQUIPE,
+                    CL.NOM_CLUB,
+                    M.ID_CHAMPIONNAT,
+                    M.POULE,
+                    CH.NOM_CHAMPIONNAT,
+                    M.DATE
+                FROM `datafoot-448514.DATAFOOT.DATAFOOT_MATCH_2025` M
+                JOIN `datafoot-448514.DATAFOOT.DATAFOOT_EQUIPE` EQ_DOM ON M.ID_EQUIPE_DOM = EQ_DOM.ID_EQUIPE
+                JOIN `datafoot-448514.DATAFOOT.DATAFOOT_CLUB` CL ON EQ_DOM.ID_CLUB = CL.ID_CLUB
+                JOIN `datafoot-448514.DATAFOOT.DATAFOOT_CHAMPIONNAT` CH ON M.ID_CHAMPIONNAT = CH.ID_CHAMPIONNAT
+                WHERE EQ_DOM.CATEGORIE = '{categorie}'
 
-    # --- Fusion des infos
+                UNION ALL
+
+                SELECT 
+                    M.ID_EQUIPE_EXT AS ID_EQUIPE,
+                    EQ_EXT.NOM AS NOM_EQUIPE,
+                    CL.NOM_CLUB,
+                    M.ID_CHAMPIONNAT,
+                    M.POULE,
+                    CH.NOM_CHAMPIONNAT,
+                    M.DATE
+                FROM `datafoot-448514.DATAFOOT.DATAFOOT_MATCH_2025` M
+                JOIN `datafoot-448514.DATAFOOT.DATAFOOT_EQUIPE` EQ_EXT ON M.ID_EQUIPE_EXT = EQ_EXT.ID_EQUIPE
+                JOIN `datafoot-448514.DATAFOOT.DATAFOOT_CLUB` CL ON EQ_EXT.ID_CLUB = CL.ID_CLUB
+                JOIN `datafoot-448514.DATAFOOT.DATAFOOT_CHAMPIONNAT` CH ON M.ID_CHAMPIONNAT = CH.ID_CHAMPIONNAT
+                WHERE EQ_EXT.CATEGORIE = '{categorie}'
+            )
+        ) WHERE row_num = 1
+    """
+    infos = client.query(query_infos).to_dataframe()
+
+    # --- Fusion
     df = stats.merge(infos, on="ID_EQUIPE", how="left")
 
-    # --- Ajout du STATUT si présent dans DATAFOOT_EQUIPE_STATUT
+    # --- Ajout du STATUT
     query_statut = f"""
         SELECT ID_EQUIPE, STATUT
         FROM `datafoot-448514.DATAFOOT.DATAFOOT_EQUIPE_STATUT`
@@ -756,20 +774,19 @@ def get_classement_filtres(saison, categorie, date_limite=None, journee_min=None
     statut_df = client.query(query_statut).to_dataframe()
     df = df.merge(statut_df, on="ID_EQUIPE", how="left")
 
-    # --- Application des pénalités uniquement si mode = date
+    # --- Application des pénalités (si date)
     if date_limite:
         df = appliquer_penalites(df, date_limite)
 
-    # --- Nettoyage
+    # --- Sécurité
     df = df[df["POINTS"].notna()]
     df = df[df["POULE"].notna()].copy()
 
-    # --- Classement par poule
     df["CLASSEMENT"] = df.groupby("POULE")["POINTS"].rank(method="dense", ascending=False)
     if not df["CLASSEMENT"].isna().any():
         df["CLASSEMENT"] = df["CLASSEMENT"].astype(int)
     else:
-        st.warning("⚠️ Certaines équipes n'ont pas pu être classées (poule vide ou partielle).")
+        st.warning("⚠️ Certains classements sont incomplets (NaN détectés).")
 
     colonnes = ["NOM_CLUB", "NOM_EQUIPE", "NOM_CHAMPIONNAT", "POULE", "CLASSEMENT", "POINTS", "MJ", "BP", "BC", "STATUT"]
     return df[colonnes].sort_values(by=["POULE", "CLASSEMENT"])
