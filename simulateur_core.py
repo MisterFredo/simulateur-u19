@@ -17,18 +17,18 @@ if creds_json:
 client = bigquery.Client()
 
 
-def get_type_classement(champ_id):
+def get_type_classement(id_championnat):
     query = f"""
         SELECT CLASSEMENT
         FROM `datafoot-448514.DATAFOOT.DATAFOOT_CHAMPIONNAT`
-        WHERE ID_CHAMPIONNAT = {champ_id}
+        WHERE ID_CHAMPIONNAT = {id_championnat}
         LIMIT 1
     """
     df = client.query(query).to_dataframe()
 
-    if not df.empty and \"CLASSEMENT\" in df.columns:
-        return df.iloc[0][\"CLASSEMENT\"]
-    return \"GENERALE\"
+    if not df.empty and "CLASSEMENT" in df.columns:
+        return df.iloc[0]["CLASSEMENT"]
+    return "GENERALE"
 
 
 def get_classement_dynamique(id_championnat, date_limite=None, journee_min=None, journee_max=None, matchs_override=None):
