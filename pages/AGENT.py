@@ -49,10 +49,9 @@ if prompt := st.chat_input("Pose ta question sur les classements…"):
                     "properties": {
                         "id_championnat": {"type": "integer"},
                         "date_limite": {"type": "string", "format": "date"},
-                        "poule": {"type": "string"},
                         "statut": {"type": "string"}
                     },
-                    "required": ["id_championnat", "date_limite", "poule", "statut"]
+                    "required": ["id_championnat", "date_limite", "statut"]
                 }
             }
         },
@@ -129,9 +128,10 @@ if prompt := st.chat_input("Pose ta question sur les classements…"):
                         df = get_classement_dynamique(
                             id_championnat=args["id_championnat"],
                             date_limite=args["date_limite"],
-                            poule=args["poule"],
                             statut=args["statut"]
                         )
+                        if "groupe b" in prompt.lower():
+                            df = df[df["POULE"] == "B"]
                         result = df.to_json(orient="records")
 
                     elif tool_name == "appliquer_penalites":
@@ -170,3 +170,4 @@ if prompt := st.chat_input("Pose ta question sur les classements…"):
             break
 
         loop_counter += 1
+
