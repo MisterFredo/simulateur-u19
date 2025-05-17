@@ -20,7 +20,7 @@ if role == "Analyste Classement":
     )
 
 # --- CLÉ OPENAI ---
-openai.api_key = st.secrets["OPENAI_API_KEY"]
+openai.api_key = os.getenv("OPENAI_API_KEY")
 
 # --- CHAT INPUT ---
 if prompt := st.chat_input("Pose ta question sur les classements…"):
