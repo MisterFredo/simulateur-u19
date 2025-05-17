@@ -788,5 +788,7 @@ def get_classement_filtres(saison, categorie, date_limite=None, journee_min=None
     else:
         st.warning("⚠️ Certains classements sont incomplets (NaN détectés).")
 
-    colonnes = ["NOM_CLUB", "NOM_EQUIPE", "NOM_CHAMPIONNAT", "POULE", "CLASSEMENT", "POINTS", "MJ", "BP", "BC", "STATUT"]
+    df["MOY"] = (df["POINTS"] / df["MJ"]).round(2)
+
+    colonnes = ["NOM_CLUB", "NOM_EQUIPE", "NOM_CHAMPIONNAT", "POULE", "CLASSEMENT", "POINTS", "MOY", "MJ", "BP", "BC", "STATUT"]
     return df[colonnes].sort_values(by=["POULE", "CLASSEMENT"])
