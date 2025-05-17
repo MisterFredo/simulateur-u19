@@ -735,7 +735,7 @@ def get_classement_filtres(saison, categorie, date_limite=None, journee_min=None
         JOIN `datafoot-448514.DATAFOOT.DATAFOOT_CLUB` CL ON EQ.ID_CLUB = CL.ID_CLUB
         JOIN `datafoot-448514.DATAFOOT.DATAFOOT_EQUIPE_SAISON` SA ON EQ.ID_EQUIPE = SA.ID_EQUIPE
         JOIN `datafoot-448514.DATAFOOT.DATAFOOT_CHAMPIONNAT` CH ON SA.ID_CHAMPIONNAT = CH.ID_CHAMPIONNAT
-        WHERE SA.SAISON = '{saison}' AND EQ.CATEGORIE = '{categorie}'
+        WHERE SA.SAISON = {saison} AND EQ.CATEGORIE = '{categorie}'
     """
     infos = client.query(query_infos).to_dataframe()
 
