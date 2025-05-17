@@ -717,7 +717,7 @@ def get_classement_filtres(saison, categorie, date_limite=None, journee_min=None
     # --- Agrégation par équipe
     stats = matchs_equipes.groupby("ID_EQUIPE").agg(
         MJ=('ID_EQUIPE', 'count'),
-        PTS=('POINTS', 'sum'),
+        POINTS=('POINTS', 'sum'),
         BP=('BUTS_POUR', 'sum'),
         BC=('BUTS_CONTRE', 'sum')
     ).reset_index()
@@ -745,7 +745,7 @@ def get_classement_filtres(saison, categorie, date_limite=None, journee_min=None
     if date_limite:
         df = appliquer_penalites(df, date_limite)
 
-    df["CLASSEMENT"] = df.groupby("POULE")["PTS"].rank(method="dense", ascending=False).astype(int)
+    df["CLASSEMENT"] = df.groupby("POULE")["POINTS"].rank(method="dense", ascending=False).astype(int)
 
-    colonnes = ["NOM_CLUB", "NOM_EQUIPE", "NOM_CHAMPIONNAT", "POULE", "CLASSEMENT", "PTS", "MJ", "BP", "BC"]
+    colonnes = ["NOM_CLUB", "NOM_EQUIPE", "NOM_CHAMPIONNAT", "POULE", "CLASSEMENT", "POINTS", "MJ", "BP", "BC"]
     return df[colonnes].sort_values(by=["POULE", "CLASSEMENT"])
