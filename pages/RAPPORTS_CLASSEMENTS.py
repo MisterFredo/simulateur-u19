@@ -77,28 +77,34 @@ if st.button("Afficher le classement"):
     )
 
     if selected_ligues:
-        df = df[df_ref[df_ref["NOM_LIGUE"].isin(selected_ligues)]["NOM_EQUIPE"].isin(df["NOM_EQUIPE"])]
+        equipes_filtrees = df_ref[df_ref["NOM_LIGUE"].isin(selected_ligues)]["NOM_EQUIPE"].unique()
+        df = df[df["NOM_EQUIPE"].isin(equipes_filtrees)]
 
     if selected_districts:
-        df = df[df_ref[df_ref["NOM_DISTRICT"].isin(selected_districts)]["NOM_EQUIPE"].isin(df["NOM_EQUIPE"])]
+        equipes_filtrees = df_ref[df_ref["NOM_DISTRICT"].isin(selected_districts)]["NOM_EQUIPE"].unique()
+        df = df[df["NOM_EQUIPE"].isin(equipes_filtrees)]
 
     if selected_championnats:
-        df = df[df_ref[df_ref["NOM_CHAMPIONNAT"].isin(selected_championnats)]["NOM_EQUIPE"].isin(df["NOM_EQUIPE"])]
+        df = df[df["NOM_CHAMPIONNAT"].isin(selected_championnats)]
 
     if selected_centre != "Tous":
-        df = df[df_ref[df_ref["CENTRE"] == selected_centre]["NOM_EQUIPE"].isin(df["NOM_EQUIPE"])]
+        equipes_filtrees = df_ref[df_ref["CENTRE"] == selected_centre]["NOM_EQUIPE"].unique()
+        df = df[df["NOM_EQUIPE"].isin(equipes_filtrees)]
 
     if selected_top400 != "Tous":
-        df = df[df_ref[df_ref["TOP_400"] == selected_top400]["NOM_EQUIPE"].isin(df["NOM_EQUIPE"])]
+        equipes_filtrees = df_ref[df_ref["TOP_400"] == selected_top400]["NOM_EQUIPE"].unique()
+        df = df[df["NOM_EQUIPE"].isin(equipes_filtrees)]
 
     if selected_clubs:
-        df = df[df_ref[df_ref["NOM_CLUB"].isin(selected_clubs)]["NOM_EQUIPE"].isin(df["NOM_EQUIPE"])]
+        df = df[df["NOM_CLUB"].isin(selected_clubs)]
 
     if selected_niveaux:
-        df = df[df_ref[df_ref["NIVEAU"].isin(selected_niveaux)]["NOM_EQUIPE"].isin(df["NOM_EQUIPE"])]
+        equipes_filtrees = df_ref[df_ref["NIVEAU"].isin(selected_niveaux)]["NOM_EQUIPE"].unique()
+        df = df[df["NOM_EQUIPE"].isin(equipes_filtrees)]
 
     if selected_statuts:
-        df = df[df_ref[df_ref["STATUT"].isin(selected_statuts)]["NOM_EQUIPE"].isin(df["NOM_EQUIPE"])]
+        equipes_filtrees = df_ref[df_ref["STATUT"].isin(selected_statuts)]["NOM_EQUIPE"].unique()
+        df = df[df["NOM_EQUIPE"].isin(equipes_filtrees)]
 
     if len(df) > 500:
         st.warning(f"⚠️ Affichage limité à 500 lignes sur {len(df)} résultats.")
