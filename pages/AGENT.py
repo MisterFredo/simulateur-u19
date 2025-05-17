@@ -4,6 +4,7 @@ import openai
 import os
 import sys
 import json
+import pandas as pd
 from datetime import date
 from simulateur_core import get_classement_dynamique, appliquer_penalites, trier_et_numeroter
 
@@ -43,12 +44,12 @@ if prompt := st.chat_input("Pose ta question sur les classements…"):
                 "parameters": {
                     "type": "object",
                     "properties": {
-                        "champ_id": {"type": "integer"},
+                        "ID_CHAMPIONNAT": {"type": "integer"},
                         "date": {"type": "string", "format": "date"},
                         "poule": {"type": "string"},
                         "statut": {"type": "string"}
                     },
-                    "required": ["champ_id", "date", "poule", "statut"]
+                    "required": ["ID_CHAMPIONNAT", "date", "poule", "statut"]
                 }
             }
         },
@@ -61,10 +62,10 @@ if prompt := st.chat_input("Pose ta question sur les classements…"):
                     "type": "object",
                     "properties": {
                         "classement": {"type": "string", "description": "Classement au format JSON"},
-                        "champ_id": {"type": "integer"},
+                        "ID_CHAMPIONNAT": {"type": "integer"},
                         "date": {"type": "string", "format": "date"}
                     },
-                    "required": ["classement", "champ_id", "date"]
+                    "required": ["classement", "ID_CHAMPIONNAT", "date"]
                 }
             }
         },
@@ -109,7 +110,7 @@ if prompt := st.chat_input("Pose ta question sur les classements…"):
         if tool_name == "get_classement_dynamique":
             try:
                 df = get_classement_dynamique(
-                    champ_id=args["champ_id"],
+                    ID_CHAMPIONNAT=args["ID_CHAMPIONNAT"],
                     date=args["date"],
                     poule=args["poule"],
                     statut=args["statut"]
@@ -121,7 +122,7 @@ if prompt := st.chat_input("Pose ta question sur les classements…"):
         elif tool_name == "appliquer_penalites":
             try:
                 df = pd.read_json(args["classement"])
-                df = appliquer_penalites(df, champ_id=args["champ_id"], date=args["date"])
+                df = appliquer_penalites(df, ID_CHAMPIONNAT=args["ID_CHAMPIONNAT"], date=args["date"])
                 st.chat_message("assistant").dataframe(df, use_container_width=True)
             except Exception as e:
                 st.chat_message("assistant").error(f"Erreur pénalités : {e}")
