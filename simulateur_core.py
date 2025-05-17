@@ -782,7 +782,7 @@ def get_classement_filtres(saison, categorie, date_limite=None, journee_min=None
     df = df[df["POINTS"].notna()]
     df = df[df["POULE"].notna()].copy()
 
-    df["CLASSEMENT"] = df.groupby("POULE")["POINTS"].rank(method="dense", ascending=False)
+    df["CLASSEMENT"] = df.groupby("POULE")["POINTS"].rank(method="min", ascending=False)
     if not df["CLASSEMENT"].isna().any():
         df["CLASSEMENT"] = df["CLASSEMENT"].astype(int)
     else:
