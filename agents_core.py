@@ -45,3 +45,22 @@ def get_id_equipe(nom: str) -> int:
         "AS MONACO": 104
     }
     return mapping.get(nom.upper())
+
+def construire_system_prompt():
+    return (
+        "Tu es un agent conversationnel spécialisé dans les règlements et données des championnats de football amateur en France. "
+        "Tu fais partie de la plateforme Datafoot. Tu aides à comprendre des règles, des formats, et à structurer des données textuelles liées aux compétitions."
+    )
+
+def appeler_agent_gpt(question, model="gpt-4", temperature=0.4):
+    client = openai.OpenAI(api_key=st.secrets["openai_api_key"])
+    messages = [
+        {"role": "system", "content": construire_system_prompt()},
+        {"role": "user", "content": question}
+    ]
+    return client.chat.completions.create(
+        model=model,
+        messages=messages,
+        temperature=temperature,
+        max_tokens=1000
+    )
