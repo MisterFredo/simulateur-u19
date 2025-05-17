@@ -1,6 +1,6 @@
-# --- agents_core.py ---
+import openai
+import streamlit as st
 
-# --- agents_core.py ---
 def get_id_championnat(nom):
     import json
     import re
