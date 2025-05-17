@@ -6,7 +6,7 @@ import sys
 import json
 import pandas as pd
 from datetime import date
-from simulateur_core import get_classement_dynamique, appliquer_penalites, trier_et_numeroter
+from simulateur_core import get_classement_dynamique, appliquer_penalites, trier_et_numeroter, get_type_classement
 from agents_core import get_id_championnat
 
 # --- CONFIG STREAMLIT ---
@@ -28,7 +28,6 @@ openai.api_key = os.getenv("OPENAI_API_KEY")
 if prompt := st.chat_input("Pose ta question sur les classements…"):
     st.chat_message("user").write(prompt)
 
-    # --- SYSTEM PROMPT ---
     system_prompt = (
         "Tu es un agent Datafoot spécialisé dans l'analyse des classements. "
         "Tu disposes de fonctions Python pour récupérer et trier les classements. "
@@ -62,7 +61,7 @@ if prompt := st.chat_input("Pose ta question sur les classements…"):
                 "parameters": {
                     "type": "object",
                     "properties": {
-                        "classement": {"type": "string", "description": "Classement au format JSON"},
+                        "classement": {"type": "string"},
                         "date_limite": {"type": "string", "format": "date"}
                     },
                     "required": ["classement", "date_limite"]
@@ -77,9 +76,10 @@ if prompt := st.chat_input("Pose ta question sur les classements…"):
                 "parameters": {
                     "type": "object",
                     "properties": {
-                        "classement": {"type": "string", "description": "Classement au format JSON"}
+                        "classement": {"type": "string"},
+                        "type_classement": {"type": "string"}
                     },
-                    "required": ["classement"]
+                    "required": ["classement", "type_classement"]
                 }
             }
         },
@@ -127,18 +127,22 @@ if prompt := st.chat_input("Pose ta question sur les classements…"):
                             id_championnat=args["id_championnat"],
                             date_limite=args["date_limite"]
                         )
+                        if df.empty:
+                            raise ValueError("Aucun match trouvé pour les paramètres fournis.")
                         if "groupe b" in prompt.lower():
                             df = df[df["POULE"] == "B"]
                         result = df.to_json(orient="records")
 
                     elif tool_name == "appliquer_penalites":
                         df = pd.read_json(args["classement"])
+                        if df.empty or "ID_EQUIPE" not in df.columns:
+                            raise ValueError("Classement vide ou mal structuré pour appliquer les pénalités.")
                         df = appliquer_penalites(df, date_limite=args["date_limite"])
                         result = df.to_json(orient="records")
 
                     elif tool_name == "trier_et_numeroter":
                         df = pd.read_json(args["classement"])
-                        df = trier_et_numeroter(df)
+                        df = trier_et_numeroter(df, type_classement=args.get("type_classement", "GENERALE"))
                         result = df.to_json(orient="records")
 
                     elif tool_name == "get_id_championnat":
