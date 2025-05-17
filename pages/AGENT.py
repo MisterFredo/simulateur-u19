@@ -3,6 +3,7 @@ import streamlit as st
 import openai
 import os
 import sys
+import json
 from datetime import date
 from simulateur_core import get_classement_dynamique, appliquer_penalites, trier_et_numeroter
 
@@ -19,7 +20,7 @@ if role == "Analyste Classement":
     )
 
 # --- CLÉ OPENAI ---
-openai.api_key = os.getenv("OPENAI_API_KEY")  # ⚠️ Stockée dans secrets ou env vars
+openai.api_key = st.secrets["OPENAI_API_KEY"]
 
 # --- CHAT INPUT ---
 if prompt := st.chat_input("Pose ta question sur les classements…"):
@@ -68,4 +69,23 @@ if prompt := st.chat_input("Pose ta question sur les classements…"):
     )
 
     output = response.choices[0].message
-    st.chat_message("assistant").write(output.content or "[Réponse générée par l'agent]")
+
+    # --- EXÉCUTION SI TOOL CALL ---
+    if output.tool_calls:
+        tool_call = output.tool_calls[0]
+        tool_name = tool_call.function.name
+        args = json.loads(tool_call.function.arguments)
+
+        if tool_name == "get_classement_dynamique":
+            try:
+                df = get_classement_dynamique(
+                    champ_id=args["champ_id"],
+                    date=args["date"],
+                    poule=args["poule"],
+                    statut=args["statut"]
+                )
+                st.chat_message("assistant").dataframe(df, use_container_width=True)
+            except Exception as e:
+                st.chat_message("assistant").error(f"Erreur lors de l'exécution : {e}")
+    else:
+        st.chat_message("assistant").write(output.content or "[Réponse générée par l'agent]")
