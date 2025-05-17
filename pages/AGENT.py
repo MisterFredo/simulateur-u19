@@ -48,11 +48,11 @@ if prompt := st.chat_input("Pose ta question sur les classements…"):
                     "type": "object",
                     "properties": {
                         "id_championnat": {"type": "integer"},
-                        "date": {"type": "string", "format": "date"},
+                        "date_limite": {"type": "string", "format": "date"},
                         "poule": {"type": "string"},
                         "statut": {"type": "string"}
                     },
-                    "required": ["id_championnat", "date", "poule", "statut"]
+                    "required": ["id_championnat", "date_limite", "poule", "statut"]
                 }
             }
         },
@@ -66,9 +66,9 @@ if prompt := st.chat_input("Pose ta question sur les classements…"):
                     "properties": {
                         "classement": {"type": "string", "description": "Classement au format JSON"},
                         "id_championnat": {"type": "integer"},
-                        "date": {"type": "string", "format": "date"}
+                        "date_limite": {"type": "string", "format": "date"}
                     },
-                    "required": ["classement", "id_championnat", "date"]
+                    "required": ["classement", "id_championnat", "date_limite"]
                 }
             }
         },
@@ -128,7 +128,7 @@ if prompt := st.chat_input("Pose ta question sur les classements…"):
                     if tool_name == "get_classement_dynamique":
                         df = get_classement_dynamique(
                             id_championnat=args["id_championnat"],
-                            date=args["date"],
+                            date_limite=args["date_limite"],
                             poule=args["poule"],
                             statut=args["statut"]
                         )
@@ -136,7 +136,7 @@ if prompt := st.chat_input("Pose ta question sur les classements…"):
 
                     elif tool_name == "appliquer_penalites":
                         df = pd.read_json(args["classement"])
-                        df = appliquer_penalites(df, id_championnat=args["id_championnat"], date=args["date"])
+                        df = appliquer_penalites(df, id_championnat=args["id_championnat"], date_limite=args["date_limite"])
                         result = df.to_json(orient="records")
 
                     elif tool_name == "trier_et_numeroter":
@@ -170,4 +170,3 @@ if prompt := st.chat_input("Pose ta question sur les classements…"):
             break
 
         loop_counter += 1
-        
