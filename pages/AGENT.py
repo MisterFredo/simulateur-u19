@@ -32,7 +32,10 @@ if prompt := st.chat_input("Pose ta question sur les classements…"):
     system_prompt = (
         "Tu es un agent Datafoot spécialisé dans l'analyse des classements. "
         "Tu disposes de fonctions Python pour récupérer et trier les classements. "
-        "Si l'utilisateur mentionne un nom de championnat, utilise la fonction get_id_championnat pour le convertir en ID."
+        "Si l'utilisateur mentionne un nom de championnat (ex: 'U19', 'N3'), utilise immédiatement la fonction get_id_championnat pour obtenir l'identifiant correspondant. "
+        "Ne demande pas confirmation si le nom semble explicite. "
+        "Utilise ensuite cet ID dans les fonctions de classement. "
+        "Réponds toujours en t'appuyant sur les outils disponibles."
     )
 
     # --- TOOLS (fonctions exposées) ---
