@@ -24,8 +24,11 @@ def get_type_classement(champ_id):
         WHERE ID_CHAMPIONNAT = {champ_id}
         LIMIT 1
     """
-    result = client.query(query).to_dataframe()
-    return result.iloc[0]["CLASSEMENT"] if not result.empty else "GENERALE"
+    df = client.query(query).to_dataframe()
+
+    if not df.empty and \"CLASSEMENT\" in df.columns:
+        return df.iloc[0][\"CLASSEMENT\"]
+    return \"GENERALE\"
 
 
 def get_classement_dynamique(id_championnat, date_limite=None, journee_min=None, journee_max=None, matchs_override=None):
@@ -113,14 +116,13 @@ def get_classement_dynamique(id_championnat, date_limite=None, journee_min=None,
 
     return classement
 
-def get_matchs_termine(champ_id, date_limite=None, journee_min=None, journee_max=None):
-    # Construire le filtre selon les paramètres fournis
+def get_matchs_termine(id_championnat, date_limite=None, journee_min=None, journee_max=None):
     if journee_min is not None and journee_max is not None:
         query = f"""
             SELECT *
             FROM `datafoot-448514.DATAFOOT.DATAFOOT_MATCH_2025`
             WHERE STATUT = 'TERMINE'
-              AND ID_CHAMPIONNAT = {champ_id}
+              AND ID_CHAMPIONNAT = {id_championnat}
               AND JOURNEE BETWEEN {journee_min} AND {journee_max}
         """
     elif journee_max is not None:
@@ -128,7 +130,7 @@ def get_matchs_termine(champ_id, date_limite=None, journee_min=None, journee_max
             SELECT *
             FROM `datafoot-448514.DATAFOOT.DATAFOOT_MATCH_2025`
             WHERE STATUT = 'TERMINE'
-              AND ID_CHAMPIONNAT = {champ_id}
+              AND ID_CHAMPIONNAT = {id_championnat}
               AND JOURNEE <= {journee_max}
         """
     elif date_limite is not None:
@@ -136,7 +138,7 @@ def get_matchs_termine(champ_id, date_limite=None, journee_min=None, journee_max
             SELECT *
             FROM `datafoot-448514.DATAFOOT.DATAFOOT_MATCH_2025`
             WHERE STATUT = 'TERMINE'
-              AND ID_CHAMPIONNAT = {champ_id}
+              AND ID_CHAMPIONNAT = {id_championnat}
               AND DATE <= DATE('{date_limite}')
         """
     else:
@@ -208,15 +210,16 @@ def appliquer_diff_particuliere(classement_df, matchs_df, selected_poule="Toutes
 
     return classement_df, mini_classements
 
-def get_poules_temp(champ_id):
+def get_poules_temp(id_championnat):
     query = f"""
         SELECT DISTINCT POULE
         FROM `datafoot-448514.DATAFOOT.DATAFOOT_MATCH_2025`
-        WHERE ID_CHAMPIONNAT = {champ_id}
+        WHERE ID_CHAMPIONNAT = {id_championnat}
           AND POULE IS NOT NULL
         ORDER BY POULE
     """
     return client.query(query).to_dataframe()
+
 
 def load_championnats():
     query = """
@@ -245,6 +248,7 @@ def appliquer_penalites(classement_df, date_limite=None):
 
     return classement_df
 
+
 def trier_et_numeroter(classement_df, type_classement):
     if type_classement == "PARTICULIERE":
         classement_df["RANG_CONFRONT"] = classement_df.get("RANG_CONFRONT", 999)
@@ -260,8 +264,8 @@ def trier_et_numeroter(classement_df, type_classement):
     classement_df["CLASSEMENT"] = classement_df.groupby("POULE").cumcount() + 1
     return classement_df
 
-def classement_special_u19(classement_df, champ_id, date_limite=None, journee_min=None, journee_max=None):
-    if champ_id != 6 or classement_df.empty:
+def classement_special_u19(classement_df, id_championnat, date_limite=None, journee_min=None, journee_max=None):
+    if id_championnat != 6 or classement_df.empty:
         return None
 
     # Choix du filtre SQL
@@ -277,7 +281,7 @@ def classement_special_u19(classement_df, champ_id, date_limite=None, journee_mi
         SELECT *
         FROM `datafoot-448514.DATAFOOT.DATAFOOT_MATCH_2025`
         WHERE STATUT = 'TERMINE'
-          AND ID_CHAMPIONNAT = {champ_id}
+          AND ID_CHAMPIONNAT = {id_championnat}
           {filtre}
     """
     matchs_u19 = client.query(query).to_dataframe()
@@ -312,8 +316,8 @@ def classement_special_u19(classement_df, champ_id, date_limite=None, journee_mi
     return df_11e_comp
 
 
-def classement_special_u17(classement_df, champ_id, date_limite=None, journee_min=None, journee_max=None):
-    if champ_id != 7 or classement_df.empty:
+def classement_special_u17(classement_df, id_championnat, date_limite=None, journee_min=None, journee_max=None):
+    if id_championnat != 7 or classement_df.empty:
         return None
 
     df_2e = classement_df[classement_df["CLASSEMENT"] == 2]
@@ -341,7 +345,7 @@ def classement_special_u17(classement_df, champ_id, date_limite=None, journee_mi
         query = f"""
             SELECT EQUIPE_DOM, EQUIPE_EXT, NB_BUT_DOM, NB_BUT_EXT, DATE
             FROM `datafoot-448514.DATAFOOT.DATAFOOT_MATCH_2025`
-            WHERE ID_CHAMPIONNAT = {champ_id}
+            WHERE ID_CHAMPIONNAT = {id_championnat}
               AND POULE = '{poule}'
               AND STATUT = 'TERMINE'
               {filtre}
@@ -375,16 +379,13 @@ def classement_special_u17(classement_df, champ_id, date_limite=None, journee_mi
     df_2e_comp["RANG"] = df_2e_comp["PTS_CONFRONT_TOP5"].rank(method="min", ascending=False).astype(int)
     return df_2e_comp
 
-
-
-def classement_special_n2(classement_df, champ_id, date_limite=None, journee_min=None, journee_max=None):
-    if champ_id != 4 or classement_df.empty:
+def classement_special_n2(classement_df, id_championnat, date_limite=None, journee_min=None, journee_max=None):
+    if id_championnat != 4 or classement_df.empty:
         return None
 
     df_13e = classement_df[classement_df["CLASSEMENT"] == 13]
     comparatif_13e = []
 
-    # Construction du filtre selon date ou journées
     if journee_min is not None and journee_max is not None:
         filtre = f"AND JOURNEE BETWEEN {journee_min} AND {journee_max}"
     elif date_limite is not None:
@@ -397,7 +398,7 @@ def classement_special_n2(classement_df, champ_id, date_limite=None, journee_min
         SELECT *
         FROM `datafoot-448514.DATAFOOT.DATAFOOT_MATCH_2025`
         WHERE STATUT = 'TERMINE'
-          AND ID_CHAMPIONNAT = {champ_id}
+          AND ID_CHAMPIONNAT = {id_championnat}
           {filtre}
     """
     matchs_n2 = client.query(query).to_dataframe()
@@ -436,14 +437,13 @@ def classement_special_n2(classement_df, champ_id, date_limite=None, journee_min
     return df_13e_comp
 
 
-def classement_special_n3(classement_df, champ_id, date_limite=None, journee_min=None, journee_max=None):
-    if champ_id != 5 or classement_df.empty:
+def classement_special_n3(classement_df, id_championnat, date_limite=None, journee_min=None, journee_max=None):
+    if id_championnat != 5 or classement_df.empty:
         return None
 
     df_10e = classement_df[classement_df["CLASSEMENT"] == 10]
     comparatif_10e = []
 
-    # Construction du filtre selon la config
     if journee_min is not None and journee_max is not None:
         filtre = f"AND JOURNEE BETWEEN {journee_min} AND {journee_max}"
     elif date_limite is not None:
@@ -456,7 +456,7 @@ def classement_special_n3(classement_df, champ_id, date_limite=None, journee_min
         SELECT *
         FROM `datafoot-448514.DATAFOOT.DATAFOOT_MATCH_2025`
         WHERE STATUT = 'TERMINE'
-          AND ID_CHAMPIONNAT = {champ_id}
+          AND ID_CHAMPIONNAT = {id_championnat}
           {filtre}
     """
     matchs_n3 = client.query(query).to_dataframe()
@@ -494,7 +494,7 @@ def classement_special_n3(classement_df, champ_id, date_limite=None, journee_min
     df_10e_comp["RANG"] = df_10e_comp["PTS_CONFRONT_5_9"].rank(method="min", ascending=False).astype(int)
     return df_10e_comp
 
-def get_matchs_modifiables(champ_id, date_limite=None, non_joues_only=True):
+def get_matchs_modifiables(id_championnat, date_limite=None, non_joues_only=True):
     condition_statut = "AND STATUT IS NULL" if non_joues_only else ""
     condition_date = f"AND DATE <= DATE('{date_limite}')" if date_limite else ""
 
@@ -512,25 +512,22 @@ def get_matchs_modifiables(champ_id, date_limite=None, non_joues_only=True):
             NB_BUT_EXT,
             STATUT
         FROM `datafoot-448514.DATAFOOT.DATAFOOT_MATCH_2025`
-        WHERE ID_CHAMPIONNAT = {champ_id}
+        WHERE ID_CHAMPIONNAT = {id_championnat}
           {condition_date}
           {condition_statut}
         ORDER BY DATE, JOURNEE
     """
     return client.query(query).to_dataframe()
 
-def recalculer_classement_simule(matchs_simules, champ_id, date_limite, selected_poule, type_classement):
-    # Ne garder que les matchs simulés avec des scores complets
+
+def recalculer_classement_simule(matchs_simules, id_championnat, date_limite, selected_poule, type_classement):
     matchs_simules = matchs_simules.dropna(subset=["NB_BUT_DOM", "NB_BUT_EXT"])
 
-    # Récupération des matchs terminés à date, hors ceux qu'on va simuler
-    matchs_historiques = get_matchs_termine(champ_id, date_limite)
+    matchs_historiques = get_matchs_termine(id_championnat, date_limite)
     matchs_historiques = matchs_historiques[~matchs_historiques["ID_MATCH"].isin(matchs_simules["ID_MATCH"])]
 
-    # Fusion avec les scores simulés
     matchs_complets = pd.concat([matchs_historiques, matchs_simules], ignore_index=True)
 
-    # Construction du tableau complet
     dom = matchs_complets[["POULE", "ID_EQUIPE_DOM", "EQUIPE_DOM", "NB_BUT_DOM", "NB_BUT_EXT"]].copy()
     dom.columns = ["POULE", "ID_EQUIPE", "NOM_EQUIPE", "BUTS_POUR", "BUTS_CONTRE"]
     dom["POINTS"] = dom.apply(lambda r: 3 if r.BUTS_POUR > r.BUTS_CONTRE else 1 if r.BUTS_POUR == r.BUTS_CONTRE else 0, axis=1)
@@ -553,20 +550,16 @@ def recalculer_classement_simule(matchs_simules, champ_id, date_limite, selected
 
     classement_df["DIFF"] = classement_df["BP"] - classement_df["BC"]
 
-    # Application des pénalités
     classement_df = appliquer_penalites(classement_df, date_limite)
 
-    # Application des égalités particulières si besoin
     if type_classement == "PARTICULIERE":
-        matchs_termine = get_matchs_termine(champ_id, date_limite)
+        matchs_termine = get_matchs_termine(id_championnat, date_limite)
         classement_df, mini_classements = appliquer_diff_particuliere(classement_df, matchs_termine, selected_poule)
     else:
         mini_classements = {}
 
-    # Tri final
     classement_df = trier_et_numeroter(classement_df, type_classement)
 
-    # Filtrage par poule si sélectionnée
     if selected_poule != "Toutes les poules":
         classement_df = classement_df[classement_df["POULE"] == selected_poule]
 
