@@ -7,6 +7,7 @@ import json
 import pandas as pd
 from datetime import date
 from simulateur_core import get_classement_dynamique, appliquer_penalites, trier_et_numeroter
+from agents_core import get_id_championnat
 
 # --- CONFIG STREAMLIT ---
 st.set_page_config(page_title="Agent Datafoot", page_icon="🤖", layout="wide")
@@ -31,7 +32,7 @@ if prompt := st.chat_input("Pose ta question sur les classements…"):
     system_prompt = (
         "Tu es un agent Datafoot spécialisé dans l'analyse des classements. "
         "Tu disposes de fonctions Python pour récupérer et trier les classements. "
-        "Pose des questions si nécessaire et réponds de manière claire."
+        "Si l'utilisateur mentionne un nom de championnat, utilise la fonction get_id_championnat pour le convertir en ID."
     )
 
     # --- TOOLS (fonctions exposées) ---
@@ -80,6 +81,20 @@ if prompt := st.chat_input("Pose ta question sur les classements…"):
                         "classement": {"type": "string", "description": "Classement au format JSON"}
                     },
                     "required": ["classement"]
+                }
+            }
+        },
+        {
+            "type": "function",
+            "function": {
+                "name": "get_id_championnat",
+                "description": "Retourne l'identifiant du championnat à partir de son nom.",
+                "parameters": {
+                    "type": "object",
+                    "properties": {
+                        "nom": {"type": "string"}
+                    },
+                    "required": ["nom"]
                 }
             }
         }
@@ -134,6 +149,14 @@ if prompt := st.chat_input("Pose ta question sur les classements…"):
                 st.chat_message("assistant").dataframe(df, use_container_width=True)
             except Exception as e:
                 st.chat_message("assistant").error(f"Erreur tri : {e}")
+
+        elif tool_name == "get_id_championnat":
+            try:
+                nom = args["nom"]
+                result = get_id_championnat(nom)
+                st.chat_message("assistant").write(f"ID du championnat '{nom}' : {result}")
+            except Exception as e:
+                st.chat_message("assistant").error(f"Erreur ID championnat : {e}")
 
     else:
         st.chat_message("assistant").write(output.content or "[Réponse générée par l'agent]")
