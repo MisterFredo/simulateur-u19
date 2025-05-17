@@ -38,7 +38,6 @@ if prompt := st.chat_input("Pose ta question sur les classements…"):
         "Réponds toujours en t'appuyant sur les outils disponibles."
     )
 
-    # --- TOOLS (fonctions exposées) ---
     tools = [
         {
             "type": "function",
@@ -103,63 +102,67 @@ if prompt := st.chat_input("Pose ta question sur les classements…"):
         }
     ]
 
-    # --- MESSAGES ---
     messages = [
         {"role": "system", "content": system_prompt},
         {"role": "user", "content": prompt}
     ]
 
-    # --- APPEL OPENAI ---
-    response = openai.chat.completions.create(
-        model="gpt-4o",
-        messages=messages,
-        tools=tools,
-        tool_choice="auto"
-    )
+    loop_counter = 0
+    while loop_counter < 5:
+        response = openai.chat.completions.create(
+            model="gpt-4o",
+            messages=messages,
+            tools=tools,
+            tool_choice="auto"
+        )
 
-    output = response.choices[0].message
+        output = response.choices[0].message
+        messages.append(output)
 
-    # --- EXÉCUTION SI TOOL CALL ---
-    if output.tool_calls:
-        tool_call = output.tool_calls[0]
-        tool_name = tool_call.function.name
-        args = json.loads(tool_call.function.arguments)
+        if output.tool_calls:
+            for tool_call in output.tool_calls:
+                tool_name = tool_call.function.name
+                args = json.loads(tool_call.function.arguments)
 
-        if tool_name == "get_classement_dynamique":
-            try:
-                df = get_classement_dynamique(
-                    ID_CHAMPIONNAT=args["ID_CHAMPIONNAT"],
-                    date=args["date"],
-                    poule=args["poule"],
-                    statut=args["statut"]
-                )
-                st.chat_message("assistant").dataframe(df, use_container_width=True)
-            except Exception as e:
-                st.chat_message("assistant").error(f"Erreur lors de l'exécution : {e}")
+                try:
+                    if tool_name == "get_classement_dynamique":
+                        df = get_classement_dynamique(
+                            ID_CHAMPIONNAT=args["ID_CHAMPIONNAT"],
+                            date=args["date"],
+                            poule=args["poule"],
+                            statut=args["statut"]
+                        )
+                        result = df.to_json(orient="records")
 
-        elif tool_name == "appliquer_penalites":
-            try:
-                df = pd.read_json(args["classement"])
-                df = appliquer_penalites(df, ID_CHAMPIONNAT=args["ID_CHAMPIONNAT"], date=args["date"])
-                st.chat_message("assistant").dataframe(df, use_container_width=True)
-            except Exception as e:
-                st.chat_message("assistant").error(f"Erreur pénalités : {e}")
+                    elif tool_name == "appliquer_penalites":
+                        df = pd.read_json(args["classement"])
+                        df = appliquer_penalites(df, ID_CHAMPIONNAT=args["ID_CHAMPIONNAT"], date=args["date"])
+                        result = df.to_json(orient="records")
 
-        elif tool_name == "trier_et_numeroter":
-            try:
-                df = pd.read_json(args["classement"])
-                df = trier_et_numeroter(df)
-                st.chat_message("assistant").dataframe(df, use_container_width=True)
-            except Exception as e:
-                st.chat_message("assistant").error(f"Erreur tri : {e}")
+                    elif tool_name == "trier_et_numeroter":
+                        df = pd.read_json(args["classement"])
+                        df = trier_et_numeroter(df)
+                        result = df.to_json(orient="records")
 
-        elif tool_name == "get_id_championnat":
-            try:
-                nom = args["nom"]
-                result = get_id_championnat(nom)
-                st.chat_message("assistant").write(f"ID du championnat '{nom}' : {result}")
-            except Exception as e:
-                st.chat_message("assistant").error(f"Erreur ID championnat : {e}")
+                    elif tool_name == "get_id_championnat":
+                        nom = args["nom"]
+                        result = get_id_championnat(nom)
 
-    else:
-        st.chat_message("assistant").write(output.content or "[Réponse générée par l'agent]")
+                    else:
+                        result = f"Fonction {tool_name} non reconnue."
+
+                    messages.append({
+                        "role": "tool",
+                        "tool_call_id": tool_call.id,
+                        "content": str(result)
+                    })
+
+                except Exception as e:
+                    st.chat_message("assistant").error(f"Erreur dans {tool_name} : {e}")
+                    break
+
+        else:
+            st.chat_message("assistant").write(output.content or "[Réponse générée par l'agent]")
+            break
+
+        loop_counter += 1
