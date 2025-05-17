@@ -722,42 +722,54 @@ def get_classement_filtres(saison, categorie, date_limite=None, journee_min=None
         BC=('BUTS_CONTRE', 'sum')
     ).reset_index()
 
-    # --- Jointures avec les infos club / championnat / poule
+    # --- Infos complémentaires (depuis les matchs + équipes + clubs + championnats)
     query_infos = f"""
-        SELECT 
-            EQ.ID_EQUIPE,
+        SELECT
+            M.ID_EQUIPE,
             EQ.NOM AS NOM_EQUIPE,
             CL.NOM_CLUB,
-            SA.ID_CHAMPIONNAT,
-            SA.POULE,
+            M.ID_CHAMPIONNAT,
+            M.POULE,
             CH.NOM_CHAMPIONNAT
-        FROM `datafoot-448514.DATAFOOT.DATAFOOT_EQUIPE` EQ
+        FROM `datafoot-448514.DATAFOOT.DATAFOOT_MATCH_2025` M
+        JOIN `datafoot-448514.DATAFOOT.DATAFOOT_EQUIPE` EQ ON M.ID_EQUIPE = EQ.ID_EQUIPE
         JOIN `datafoot-448514.DATAFOOT.DATAFOOT_CLUB` CL ON EQ.ID_CLUB = CL.ID_CLUB
-        JOIN `datafoot-448514.DATAFOOT.DATAFOOT_EQUIPE_STATUT` SA ON EQ.ID_EQUIPE = SA.ID_EQUIPE
-        JOIN `datafoot-448514.DATAFOOT.DATAFOOT_CHAMPIONNAT` CH ON SA.ID_CHAMPIONNAT = CH.ID_CHAMPIONNAT
-        WHERE SA.SAISON = {saison} AND EQ.CATEGORIE = '{categorie}'
+        JOIN `datafoot-448514.DATAFOOT.DATAFOOT_CHAMPIONNAT` CH ON M.ID_CHAMPIONNAT = CH.ID_CHAMPIONNAT
+        WHERE EQ.CATEGORIE = '{categorie}'
     """
-    infos = client.query(query_infos).to_dataframe()
+    infos = client.query(f"""
+        SELECT * EXCEPT(row_num) FROM (
+            SELECT *, ROW_NUMBER() OVER (PARTITION BY ID_EQUIPE ORDER BY DATE DESC) as row_num
+            FROM ({query_infos})
+        ) WHERE row_num = 1
+    """).to_dataframe()
 
-    # --- Fusion et classement
-    df = stats.merge(infos, on="ID_EQUIPE")
+    # --- Fusion des infos
+    df = stats.merge(infos, on="ID_EQUIPE", how="left")
 
+    # --- Ajout du STATUT si présent dans DATAFOOT_EQUIPE_STATUT
+    query_statut = f"""
+        SELECT ID_EQUIPE, STATUT
+        FROM `datafoot-448514.DATAFOOT.DATAFOOT_EQUIPE_STATUT`
+        WHERE SAISON = {saison}
+    """
+    statut_df = client.query(query_statut).to_dataframe()
+    df = df.merge(statut_df, on="ID_EQUIPE", how="left")
+
+    # --- Application des pénalités uniquement si mode = date
     if date_limite:
         df = appliquer_penalites(df, date_limite)
 
-    # --- Exclure les lignes sans points
-    df = df[df["POINTS"].notna()].copy()
-    df = df.reset_index(drop=True)
+    # --- Nettoyage
+    df = df[df["POINTS"].notna()]
+    df = df[df["POULE"].notna()].copy()
 
-    # --- Calcul du classement sécurisé
+    # --- Classement par poule
     df["CLASSEMENT"] = df.groupby("POULE")["POINTS"].rank(method="dense", ascending=False)
-
-    # --- Vérification et conversion propre
-    if df["CLASSEMENT"].isna().any():
-        st.warning("⚠️ Certains classements sont incomplets (NaN détectés).")
-    else:
+    if not df["CLASSEMENT"].isna().any():
         df["CLASSEMENT"] = df["CLASSEMENT"].astype(int)
+    else:
+        st.warning("⚠️ Certaines équipes n'ont pas pu être classées (poule vide ou partielle).")
 
-    # --- Résultat final
-    colonnes = ["NOM_CLUB", "NOM_EQUIPE", "NOM_CHAMPIONNAT", "POULE", "CLASSEMENT", "POINTS", "MJ", "BP", "BC"]
+    colonnes = ["NOM_CLUB", "NOM_EQUIPE", "NOM_CHAMPIONNAT", "POULE", "CLASSEMENT", "POINTS", "MJ", "BP", "BC", "STATUT"]
     return df[colonnes].sort_values(by=["POULE", "CLASSEMENT"])
