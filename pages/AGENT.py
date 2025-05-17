@@ -51,6 +51,36 @@ if prompt := st.chat_input("Pose ta question sur les classements…"):
                     "required": ["champ_id", "date", "poule", "statut"]
                 }
             }
+        },
+        {
+            "type": "function",
+            "function": {
+                "name": "appliquer_penalites",
+                "description": "Applique les pénalités à un classement donné selon la date et le championnat.",
+                "parameters": {
+                    "type": "object",
+                    "properties": {
+                        "classement": {"type": "string", "description": "Classement au format JSON"},
+                        "champ_id": {"type": "integer"},
+                        "date": {"type": "string", "format": "date"}
+                    },
+                    "required": ["classement", "champ_id", "date"]
+                }
+            }
+        },
+        {
+            "type": "function",
+            "function": {
+                "name": "trier_et_numeroter",
+                "description": "Trie et numérote le classement final selon les règles de classement Datafoot.",
+                "parameters": {
+                    "type": "object",
+                    "properties": {
+                        "classement": {"type": "string", "description": "Classement au format JSON"}
+                    },
+                    "required": ["classement"]
+                }
+            }
         }
     ]
 
@@ -87,5 +117,22 @@ if prompt := st.chat_input("Pose ta question sur les classements…"):
                 st.chat_message("assistant").dataframe(df, use_container_width=True)
             except Exception as e:
                 st.chat_message("assistant").error(f"Erreur lors de l'exécution : {e}")
+
+        elif tool_name == "appliquer_penalites":
+            try:
+                df = pd.read_json(args["classement"])
+                df = appliquer_penalites(df, champ_id=args["champ_id"], date=args["date"])
+                st.chat_message("assistant").dataframe(df, use_container_width=True)
+            except Exception as e:
+                st.chat_message("assistant").error(f"Erreur pénalités : {e}")
+
+        elif tool_name == "trier_et_numeroter":
+            try:
+                df = pd.read_json(args["classement"])
+                df = trier_et_numeroter(df)
+                st.chat_message("assistant").dataframe(df, use_container_width=True)
+            except Exception as e:
+                st.chat_message("assistant").error(f"Erreur tri : {e}")
+
     else:
         st.chat_message("assistant").write(output.content or "[Réponse générée par l'agent]")
