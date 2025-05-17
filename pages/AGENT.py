@@ -48,10 +48,9 @@ if prompt := st.chat_input("Pose ta question sur les classements…"):
                     "type": "object",
                     "properties": {
                         "id_championnat": {"type": "integer"},
-                        "date_limite": {"type": "string", "format": "date"},
-                        "statut": {"type": "string"}
+                        "date_limite": {"type": "string", "format": "date"}
                     },
-                    "required": ["id_championnat", "date_limite", "statut"]
+                    "required": ["id_championnat", "date_limite"]
                 }
             }
         },
@@ -127,8 +126,7 @@ if prompt := st.chat_input("Pose ta question sur les classements…"):
                     if tool_name == "get_classement_dynamique":
                         df = get_classement_dynamique(
                             id_championnat=args["id_championnat"],
-                            date_limite=args["date_limite"],
-                            statut=args["statut"]
+                            date_limite=args["date_limite"]
                         )
                         if "groupe b" in prompt.lower():
                             df = df[df["POULE"] == "B"]
@@ -170,4 +168,3 @@ if prompt := st.chat_input("Pose ta question sur les classements…"):
             break
 
         loop_counter += 1
-
