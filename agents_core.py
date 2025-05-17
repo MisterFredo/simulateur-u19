@@ -1,33 +1,37 @@
 # --- agents_core.py ---
 
+# --- agents_core.py ---
 def get_id_championnat(nom):
-    """
-    Extrait l'identifiant du championnat à partir d'un nom partiel (ex: 'U19', 'N3', 'N2 D', etc.).
-    Peut aussi renvoyer le nom de la poule associé s'il est inclus dans la requête.
-    """
+    import json
     import re
     from simulateur_core import load_championnats
 
-    # Extraction du texte et de la poule éventuelle
     nom = nom.upper().strip()
     match = re.match(r"(.*?)\s?(POULE|GROUPE)?\s?([A-Z])?$", nom)
-
     nom_champ = match.group(1).strip() if match else nom
     poule = match.group(3) if match and match.group(3) else None
 
-    # Chargement des noms disponibles
     df = load_championnats()
     df["NOM_CLEAN"] = df["NOM_CHAMPIONNAT"].str.upper().str.replace("NATIONAL", "NAT").str.replace("\s", "", regex=True)
     nom_clean = nom_champ.replace("NATIONAL", "NAT").replace(" ", "")
 
     filtres = df[df["NOM_CLEAN"].str.contains(nom_clean)]
+
     if filtres.empty:
         return "Aucun championnat correspondant trouvé."
+    elif len(filtres) == 1:
+        id_championnat = int(filtres.iloc[0]["ID_CHAMPIONNAT"])
+        if poule:
+            return json.dumps({"id_championnat": id_championnat, "poule": poule})
+        return str(id_championnat)
+    else:
+        options = filtres[["ID_CHAMPIONNAT", "NOM_CHAMPIONNAT"]].drop_duplicates()
+        message = "Plusieurs championnats correspondent à \"{}\" :\n".format(nom_champ)
+        for _, row in options.iterrows():
+            message += f"- {row['NOM_CHAMPIONNAT']} (ID {row['ID_CHAMPIONNAT']})\n"
+        message += "Peux-tu préciser lequel tu veux ?"
+        return message
 
-    id_championnat = int(filtres.iloc[0]["ID_CHAMPIONNAT"])
-    if poule:
-        return json.dumps({"id_championnat": id_championnat, "poule": poule})
-    return str(id_championnat)
 
 def get_id_equipe(nom: str) -> int:
     """
