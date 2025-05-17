@@ -674,8 +674,6 @@ def get_rapport_clubs(saison=None):
     return client.query(query).to_dataframe()
 
 def get_classement_filtres(saison, categorie, date_limite=None, journee_min=None, journee_max=None):
-    import pandas as pd
-
     # --- Construction de la clause WHERE dynamique
     where_clause = f"WHERE M.STATUT = 'TERMINE' AND EQ.CATEGORIE = '{categorie}'"
     if date_limite:
@@ -699,8 +697,8 @@ def get_classement_filtres(saison, categorie, date_limite=None, journee_min=None
                 WHEN M.BUT = ADV.BUT THEN 1 
                 ELSE 0 
             END) AS PTS
-        FROM `datafoot-448514.DATAFOOT.DATAFOOT_MATCH_EQUIPE` M
-        JOIN `datafoot-448514.DATAFOOT.DATAFOOT_MATCH_EQUIPE` ADV 
+        FROM `datafoot-448514.DATAFOOT.DATAFOOT_MATCH_2025` M
+        JOIN `datafoot-448514.DATAFOOT.DATAFOOT_MATCH_2025` ADV 
             ON M.ID_MATCH = ADV.ID_MATCH AND M.ID_EQUIPE != ADV.ID_EQUIPE
         JOIN `datafoot-448514.DATAFOOT.DATAFOOT_EQUIPE` EQ ON M.ID_EQUIPE = EQ.ID_EQUIPE
         JOIN `datafoot-448514.DATAFOOT.DATAFOOT_CLUB` CL ON EQ.ID_CLUB = CL.ID_CLUB
@@ -722,4 +720,3 @@ def get_classement_filtres(saison, categorie, date_limite=None, journee_min=None
     # --- Colonnes ordonnées
     colonnes = ["NOM_CLUB", "NOM_EQUIPE", "NOM_CHAMPIONNAT", "POULE", "CLASSEMENT", "PTS", "MJ", "BP", "BC"]
     return df[colonnes].sort_values(by=["POULE", "CLASSEMENT"])
-
