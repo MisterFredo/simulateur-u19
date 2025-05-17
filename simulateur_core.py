@@ -672,3 +672,54 @@ def get_rapport_clubs(saison=None):
     """
     
     return client.query(query).to_dataframe()
+
+def get_classement_filtres(saison, categorie, date_limite=None, journee_min=None, journee_max=None):
+    import pandas as pd
+
+    # --- Construction de la clause WHERE dynamique
+    where_clause = f"WHERE M.STATUT = 'TERMINE' AND EQ.CATEGORIE = '{categorie}'"
+    if date_limite:
+        where_clause += f" AND M.DATE <= DATE('{date_limite}')"
+    elif journee_min is not None and journee_max is not None:
+        where_clause += f" AND M.JOURNEE BETWEEN {journee_min} AND {journee_max}"
+
+    # --- Requête principale : fusion matchs + équipes + clubs + championnats
+    query = f"""
+        SELECT 
+            M.ID_EQUIPE,
+            EQ.NOM AS NOM_EQUIPE,
+            CL.NOM_CLUB,
+            CH.NOM_CHAMPIONNAT,
+            SA.POULE,
+            COUNT(*) AS MJ,
+            SUM(M.BUT) AS BP,
+            SUM(ADV.BUT) AS BC,
+            SUM(CASE 
+                WHEN M.BUT > ADV.BUT THEN 3 
+                WHEN M.BUT = ADV.BUT THEN 1 
+                ELSE 0 
+            END) AS PTS
+        FROM `datafoot-448514.DATAFOOT.DATAFOOT_MATCH_EQUIPE` M
+        JOIN `datafoot-448514.DATAFOOT.DATAFOOT_MATCH_EQUIPE` ADV 
+            ON M.ID_MATCH = ADV.ID_MATCH AND M.ID_EQUIPE != ADV.ID_EQUIPE
+        JOIN `datafoot-448514.DATAFOOT.DATAFOOT_EQUIPE` EQ ON M.ID_EQUIPE = EQ.ID_EQUIPE
+        JOIN `datafoot-448514.DATAFOOT.DATAFOOT_CLUB` CL ON EQ.ID_CLUB = CL.ID_CLUB
+        JOIN `datafoot-448514.DATAFOOT.DATAFOOT_EQUIPE_SAISON` SA ON EQ.ID_EQUIPE = SA.ID_EQUIPE AND SA.SAISON = '{saison}'
+        JOIN `datafoot-448514.DATAFOOT.DATAFOOT_CHAMPIONNAT` CH ON SA.ID_CHAMPIONNAT = CH.ID_CHAMPIONNAT
+        {where_clause}
+        GROUP BY M.ID_EQUIPE, EQ.NOM, CL.NOM_CLUB, CH.NOM_CHAMPIONNAT, SA.POULE
+    """
+
+    df = client.query(query).to_dataframe()
+
+    # --- Application des pénalités uniquement si mode = date
+    if date_limite:
+        df = appliquer_penalites(df, date_limite)
+
+    # --- Tri et classement par poule
+    df["CLASSEMENT"] = df.groupby("POULE")["PTS"].rank(method="dense", ascending=False).astype(int)
+
+    # --- Colonnes ordonnées
+    colonnes = ["NOM_CLUB", "NOM_EQUIPE", "NOM_CHAMPIONNAT", "POULE", "CLASSEMENT", "PTS", "MJ", "BP", "BC"]
+    return df[colonnes].sort_values(by=["POULE", "CLASSEMENT"])
+
