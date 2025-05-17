@@ -6,6 +6,11 @@ import os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from simulateur_core import get_rapport_clubs
 
+# --- ACCÈS RÉSERVÉ À FREDERIC ---
+if st.session_state.get("user_email") != "frederic@datafoot.ai":
+    st.warning("🚫 Accès réservé à l’administrateur.")
+    st.stop()
+
 # --- CONFIG
 st.set_page_config(page_title="RAPPORTS CLUBS - Datafoot", layout="wide")
 st.markdown("## 📊 Rapports Clubs")
