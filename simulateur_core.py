@@ -775,13 +775,13 @@ def get_classement_filtres(saison, categorie, date_limite=None, journee_min=None
     df = df[df["POINTS"].notna()]
     df = df[df["POULE"].notna()].copy()
 
-    df["CLASSEMENT"] = df.groupby("POULE")["POINTS"].rank(method="min", ascending=False)
-    if not df["CLASSEMENT"].isna().any():
-        df["CLASSEMENT"] = df["CLASSEMENT"].astype(int)
-    else:
-        st.warning("⚠️ Certains classements sont incomplets (NaN détectés).")
+    # --- Classement : tri manuel puis numérotation
+    df["DIFF"] = df["BP"] - df["BC"]
+    df = df.sort_values(by=["POULE", "POINTS", "DIFF", "BP"], ascending=[True, False, False, False]).reset_index(drop=True)
+    df["CLASSEMENT"] = df.groupby("POULE").cumcount() + 1
 
+    # --- Moyenne
     df["MOY"] = (df["POINTS"] / df["MJ"]).round(2)
 
     colonnes = ["NOM_CLUB", "NOM_EQUIPE", "NOM_CHAMPIONNAT", "POULE", "CLASSEMENT", "POINTS", "MOY", "MJ", "BP", "BC", "STATUT"]
-    return df[colonnes].sort_values(by=["POULE", "CLASSEMENT"])
+    return df[colonnes]
