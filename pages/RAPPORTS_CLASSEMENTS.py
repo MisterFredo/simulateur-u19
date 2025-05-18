@@ -126,11 +126,11 @@ if st.button("Afficher le classement"):
     else:
         st.dataframe(df, use_container_width=True, hide_index=True)
 
-    # --- EXPORT (commenté)
-    # csv = df.to_csv(index=False).encode("utf-8")
-    # st.download_button(
-    #     label="📥 Télécharger le tableau (CSV)",
-    #     data=csv,
-    #     file_name="classement_performance.csv",
-    #     mime="text/csv"
-    # )
+     --- EXPORT (commenté)
+     csv = df.to_csv(index=False).encode("utf-8")
+     st.download_button(
+         label="📥 Télécharger le tableau (CSV)",
+         data=csv,
+         file_name="classement_performance.csv",
+         mime="text/csv"
+     )
