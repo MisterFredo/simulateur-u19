@@ -779,6 +779,7 @@ def get_classement_filtres(saison, categorie, date_limite=None, journee_min=None
     df["DIFF"] = df["BP"] - df["BC"]
     df = df.sort_values(by=["POULE", "POINTS", "DIFF", "BP"], ascending=[True, False, False, False]).reset_index(drop=True)
     df["CLASSEMENT"] = df.groupby("POULE").cumcount() + 1
+    df["CLASSEMENT"] = df["CLASSEMENT"].astype(int)
 
     # --- Moyenne
     df["MOY"] = (df["POINTS"] / df["MJ"]).round(2)
