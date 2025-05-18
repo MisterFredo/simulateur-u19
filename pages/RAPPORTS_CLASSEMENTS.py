@@ -3,7 +3,7 @@ import sys
 import os
 
 # --- ACCÈS RÉSERVÉ À FREDERIC ---
-if st.session_state.get("user_email") != "frederic@datafoot.ai":
+if st.session_state.get("user_email") != "mister.fredo@gmail.com":
     st.warning("🚫 Accès réservé à l’administrateur.")
     st.stop()
 
