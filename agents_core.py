@@ -1,6 +1,63 @@
-import openai
 import os
-import streamlit as st
+import openai
+from datetime import datetime, date
+from simulateur_core import get_id_championnat, get_classement_dynamique, trier_et_numeroter
+
+def analyser_et_executer_classement(question: str):
+    """
+    Reçoit une question utilisateur.
+    Retourne un résumé texte friendly + un dataframe ou None.
+    """
+    from agents_core import extraire_parametres_demande
+
+    # Étape 1 : extraction GPT
+    result = extraire_parametres_demande(question)
+
+    if "error" in result:
+        return f"❌ Erreur d'extraction : {result['error']}", None
+
+    intent = result.get("intent", "")
+    championnat = result.get("championnat", "")
+    poule = result.get("poule", "")
+    date_str = result.get("date", "").strip()
+
+    # Date fallback
+    if not date_str or date_str.lower() in ["aujourd’hui", "aujourd'hui", "ce jour", "today"]:
+        date_str = str(date.today())
+
+    # Validation de la date
+    try:
+        datetime.strptime(date_str, "%Y-%m-%d")
+    except:
+        return f"📅 Date invalide : `{date_str}`. Format attendu : AAAA-MM-JJ", None
+
+    # Validation du championnat
+    try:
+        id_champ = int(get_id_championnat(championnat))
+    except:
+        return f"🏆 Championnat non reconnu : `{championnat}`", None
+
+    # Intent attendu : classement
+    if intent != "classement":
+        return f"❌ L’intention détectée est `{intent}`, pas `classement`. Reformule ta question.", None
+
+    # Calcul
+    try:
+        df = get_classement_dynamique(
+            champ_id=id_champ,
+            date_limite=date_str,
+            poule=poule if poule else None
+        )
+        df_final = trier_et_numeroter(df)
+        resume = (
+            f"✅ Classement généré pour **{championnat.upper()}**"
+            f"{f' poule {poule.upper()}' if poule else ''} au **{date_str}**"
+        )
+        return resume, df_final
+
+    except Exception as e:
+        return f"❌ Erreur lors du calcul : {str(e)}", None
+
 
 def get_id_championnat(nom):
     import json
