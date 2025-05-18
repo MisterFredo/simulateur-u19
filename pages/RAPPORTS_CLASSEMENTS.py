@@ -114,14 +114,6 @@ if st.button("Afficher le classement"):
         equipes_filtrees = df_ref[df_ref["STATUT"].isin(selected_statuts)]["ID_EQUIPE"].unique()
         df = df[df["ID_EQUIPE"].isin(equipes_filtrees)]
 
-    # --- RECLASSEMENT LOCAL SI AUCUN CHAMPIONNAT SÉLECTIONNÉ
-    if "CLASSEMENT" in df.columns and "POINTS" in df.columns and not selected_championnats:
-        st.info("📊 Classement recalculé après filtrage (multi-championnats ou comparatif libre).")
-        df["DIFF"] = df["BP"] - df["BC"]
-        df = df.sort_values(by=["POULE", "POINTS", "DIFF", "BP"], ascending=[True, False, False, False]).reset_index(drop=True)
-        df["CLASSEMENT"] = df.groupby("POULE").cumcount() + 1
-        df["CLASSEMENT"] = df["CLASSEMENT"].astype(int)
-
     # --- LIMITATION À 500 LIGNES
     if len(df) > 500:
         st.warning(f"⚠️ Affichage limité à 500 lignes sur {len(df)} résultats.")
