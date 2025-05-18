@@ -666,9 +666,7 @@ def get_rapport_clubs(saison=None):
     
     return client.query(query).to_dataframe()
 
-def get_classement_filtres(saison, categorie, nom_championnat=None, date_limite=None, journee_min=None, journee_max=None):
-    import pandas as pd
-
+def get_classement_filtres(saison, categorie, id_championnat=None, date_limite=None, journee_min=None, journee_max=None):
     # --- Chargement des matchs filtrés
     if journee_min is not None and journee_max is not None:
         query = f"""
@@ -759,8 +757,8 @@ def get_classement_filtres(saison, categorie, nom_championnat=None, date_limite=
     df = stats.merge(infos, on="ID_EQUIPE", how="left")
 
     # --- Filtrage sur le championnat s’il est précisé
-    if nom_championnat:
-        df = df[df["NOM_CHAMPIONNAT"] == nom_championnat].copy()
+    if id_championnat:
+        df = df[df["ID_CHAMPIONNAT"] == id_championnat].copy()
 
     # --- Ajout du STATUT
     query_statut = f"""
