@@ -667,6 +667,8 @@ def get_rapport_clubs(saison=None):
     return client.query(query).to_dataframe()
 
 def get_classement_filtres(saison, categorie, id_championnat=None, date_limite=None, journee_min=None, journee_max=None):
+    import pandas as pd
+
     # --- Chargement des matchs filtrés
     if journee_min is not None and journee_max is not None:
         query = f"""
@@ -722,6 +724,7 @@ def get_classement_filtres(saison, categorie, id_championnat=None, date_limite=N
                 SELECT 
                     M.ID_EQUIPE_DOM AS ID_EQUIPE,
                     EQ_DOM.NOM AS NOM_EQUIPE,
+                    EQ_DOM.NIVEAU,
                     CL.NOM_CLUB,
                     M.ID_CHAMPIONNAT,
                     M.POULE,
@@ -738,6 +741,7 @@ def get_classement_filtres(saison, categorie, id_championnat=None, date_limite=N
                 SELECT 
                     M.ID_EQUIPE_EXT AS ID_EQUIPE,
                     EQ_EXT.NOM AS NOM_EQUIPE,
+                    EQ_EXT.NIVEAU,
                     CL.NOM_CLUB,
                     M.ID_CHAMPIONNAT,
                     M.POULE,
@@ -786,6 +790,6 @@ def get_classement_filtres(saison, categorie, id_championnat=None, date_limite=N
     # --- Moyenne
     df["MOY"] = (df["POINTS"] / df["MJ"]).round(2)
 
-    colonnes = ["NOM_CLUB", "NOM_EQUIPE", "NOM_CHAMPIONNAT", "POULE", "CLASSEMENT", "POINTS", "MOY", "MJ", "BP", "BC", "STATUT"]
+    colonnes = ["NOM_CLUB", "NOM_EQUIPE", "NOM_CHAMPIONNAT", "POULE", "CLASSEMENT",
+                "POINTS", "MOY", "MJ", "BP", "BC", "STATUT", "NIVEAU", "ID_EQUIPE"]
     return df[colonnes]
-
