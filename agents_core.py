@@ -1,7 +1,7 @@
 import os
 import openai
 from datetime import datetime, date
-from simulateur_core import get_id_championnat, get_classement_dynamique, trier_et_numeroter
+from simulateur_core import get_classement_dynamique, trier_et_numeroter
 
 def analyser_et_executer_classement(question: str):
     """
