@@ -69,3 +69,45 @@ def appeler_agent_gpt(question, model="gpt-4", temperature=0.4):
         temperature=temperature,
         max_tokens=1000
     )
+
+def extraire_parametres_demande(question: str, model="gpt-4", temperature=0.2) -> dict:
+    """
+    Envoie une requête à GPT pour extraire les paramètres structurés d'une question utilisateur.
+    Retourne un dictionnaire avec : intent, championnat, poule, date.
+    """
+    import openai
+    import os
+
+    api_key = os.getenv("OPENAI_API_KEY")
+    if not api_key:
+        raise ValueError("Clé OPENAI_API_KEY non trouvée.")
+
+    client = openai.OpenAI(api_key=api_key)
+
+    system_prompt = (
+        "Tu es un assistant Datafoot. Quand on te pose une question, tu dois en extraire les paramètres "
+        "structurés dans un dictionnaire JSON. Le dictionnaire doit contenir les clés suivantes :\n"
+        "- intent (ex: 'classement')\n"
+        "- championnat (ex: 'U17')\n"
+        "- poule (ex: 'C', facultatif)\n"
+        "- date (au format 'AAAA-MM-JJ', facultatif)\n"
+        "Ne commente rien. Ne justifie rien. Réponds uniquement avec un objet JSON bien formé."
+    )
+
+    completion = client.chat.completions.create(
+        model=model,
+        messages=[
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": question}
+        ],
+        temperature=temperature,
+        max_tokens=300
+    )
+
+    import json
+    try:
+        result = json.loads(completion.choices[0].message.content.strip())
+        return result
+    except Exception as e:
+        return {"error": f"Erreur d'analyse JSON : {str(e)}", "raw": completion.choices[0].message.content}
+
