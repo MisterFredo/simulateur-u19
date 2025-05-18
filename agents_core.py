@@ -142,13 +142,12 @@ def appeler_agent_gpt(question, model="gpt-4", temperature=0.4):
         max_tokens=1000
     )
 
-def extraire_parametres_demande(question: str, model="gpt-4", temperature=0.2) -> dict:
+def extraire_parametres_demande(question: str, liste_championnats: list[str], model="gpt-4", temperature=0.2) -> dict:
     """
     Envoie une requête à GPT pour extraire les paramètres structurés d'une question utilisateur.
+    Le modèle doit obligatoirement choisir le championnat parmi la liste fournie.
     Retourne un dictionnaire avec : intent, championnat, poule, date.
     """
-    import openai
-    import os
 
     api_key = os.getenv("OPENAI_API_KEY")
     if not api_key:
@@ -156,16 +155,20 @@ def extraire_parametres_demande(question: str, model="gpt-4", temperature=0.2) -
 
     client = openai.OpenAI(api_key=api_key)
 
+    # Construction du prompt système
     system_prompt = (
-        "Tu es un assistant Datafoot. Quand on te pose une question, tu dois en extraire les paramètres "
-        "structurés dans un dictionnaire JSON. Le dictionnaire doit contenir les clés suivantes :\n"
-        "- intent (ex: 'classement')\n"
-        "- championnat (ex: 'U17')\n"
-        "- poule (ex: 'C', facultatif)\n"
-        "- date (au format 'AAAA-MM-JJ', facultatif)\n"
-        "Ne commente rien. Ne justifie rien. Réponds uniquement avec un objet JSON bien formé."
+        "Tu es un assistant Datafoot. Ton rôle est d'extraire des requêtes utilisateur un dictionnaire JSON structuré "
+        "contenant les clés suivantes :\n"
+        "- intent : ex 'classement'\n"
+        "- championnat : un nom EXACT parmi la liste fournie ci-dessous\n"
+        "- poule : une lettre majuscule si présente (ex: A, B...), sinon null ou vide\n"
+        "- date : au format AAAA-MM-JJ si présente, sinon null ou vide\n\n"
+        "Ne commente pas. Ne reformule pas. Réponds uniquement avec un objet JSON valide.\n\n"
+        "Voici la liste des championnats valides (choisis exclusivement parmi eux) :\n"
     )
+    system_prompt += "\n".join([f"- {nom}" for nom in liste_championnats])
 
+    # Appel à l'API
     completion = client.chat.completions.create(
         model=model,
         messages=[
@@ -176,10 +179,15 @@ def extraire_parametres_demande(question: str, model="gpt-4", temperature=0.2) -
         max_tokens=300
     )
 
-    import json
     try:
         result = json.loads(completion.choices[0].message.content.strip())
         return result
+    except Exception as e:
+        return {
+            "error": f"Erreur d'analyse JSON : {str(e)}",
+            "raw": completion.choices[0].message.content
+        }
+
     except Exception as e:
         return {"error": f"Erreur d'analyse JSON : {str(e)}", "raw": completion.choices[0].message.content}
 
