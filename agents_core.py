@@ -1,4 +1,5 @@
 import openai
+import os
 import streamlit as st
 
 def get_id_championnat(nom):
