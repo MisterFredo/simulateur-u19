@@ -1,10 +1,6 @@
 import streamlit as st
 from agents_core import appeler_agent_gpt
 
-# fallback si secrets.toml non lu correctement
-if "openai_api_key" not in st.secrets:
-    st.secrets["openai_api_key"] = os.getenv("OPENAI_API_KEY")
-
 st.set_page_config(page_title="Agent GPT – Datafoot", layout="wide")
 st.title("🤖 Agent GPT – Datafoot LABO")
 
@@ -22,4 +18,3 @@ if st.button("Envoyer", type="primary") and prompt:
             st.markdown(response.choices[0].message.content)
     except Exception as e:
         st.error(f"Erreur lors de l'appel à l'API : {e}")
-
