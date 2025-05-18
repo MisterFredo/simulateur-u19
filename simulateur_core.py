@@ -758,7 +758,7 @@ def get_classement_filtres(saison, categorie, id_championnat=None, date_limite=N
 
     # --- Filtrage sur le championnat s’il est précisé
     if id_championnat:
-        df = df[df["ID_CHAMPIONNAT"] == id_championnat].copy()
+        df = df[df["ID_CHAMPIONNAT"].isin(id_championnat)].copy()
 
     # --- Ajout du STATUT
     query_statut = f"""
