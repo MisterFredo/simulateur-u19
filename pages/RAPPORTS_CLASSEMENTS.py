@@ -70,7 +70,7 @@ else:
 if st.button("Afficher le classement"):
 
     # Récupération de l'ID_CHAMPIONNAT à partir du nom sélectionné
-    id_championnat = df_ref[df_ref["NOM_CHAMPIONNAT"] == selected_championnats[0]]["ID_CHAMPIONNAT"].values[0] if selected_championnats else None
+    id_championnat = df_ref[df_ref["NOM_CHAMPIONNAT"].isin(selected_championnats)]["ID_CHAMPIONNAT"].unique().tolist() if selected_championnats else None
 
     # Appel à la fonction avec l'ID du championnat
     df = get_classement_filtres(
