@@ -104,8 +104,8 @@ if st.button("Afficher le classement"):
         df = df[df["NOM_CLUB"].isin(selected_clubs)]
 
     if selected_niveaux:
-        equipes_filtrees = df_ref[df_ref["NIVEAU"].isin(selected_niveaux)]["NOM_EQUIPE"].unique()
-        df = df[df["NOM_EQUIPE"].isin(equipes_filtrees)]
+        equipes_filtrees = df_ref[df_ref["NIVEAU"].isin(selected_niveaux)]["ID_EQUIPE"].unique()
+        df = df[df["ID_EQUIPE"].isin(equipes_filtrees)]
 
     if selected_statuts:
         equipes_filtrees = df_ref[df_ref["STATUT"].isin(selected_statuts)]["NOM_EQUIPE"].unique()
