@@ -1,4 +1,5 @@
 import os
+import json
 import openai
 from datetime import datetime, date
 from simulateur_core import get_classement_dynamique, trier_et_numeroter, load_championnats
