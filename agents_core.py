@@ -1,7 +1,8 @@
 import os
 import openai
 from datetime import datetime, date
-from simulateur_core import get_classement_dynamique, trier_et_numeroter
+from simulateur_core import get_classement_dynamique, trier_et_numeroter, load_championnats
+from agents_core import extraire_parametres_demande, get_id_championnat
 
 def analyser_et_executer_classement(question: str):
     """
@@ -9,12 +10,13 @@ def analyser_et_executer_classement(question: str):
     Retourne un résumé textuel + un dataframe (ou None).
     Affiche toujours les éléments extraits, même en cas d’erreur.
     """
-    from agents_core import extraire_parametres_demande
-    from datetime import datetime, date
-    from simulateur_core import get_classement_dynamique, trier_et_numeroter
 
-    # Étape 1 : extraction GPT
-    result = extraire_parametres_demande(question)
+    # Charger la liste des championnats pour guider GPT
+    df_champs = load_championnats()
+    liste_championnats = df_champs["NOM_CHAMPIONNAT"].dropna().unique().tolist()
+
+    # Extraction GPT (guidée par les noms valides)
+    result = extraire_parametres_demande(question, liste_championnats)
 
     if "error" in result:
         return f"❌ Erreur d'extraction : {result['error']}", None
@@ -27,7 +29,6 @@ def analyser_et_executer_classement(question: str):
 
     # Fallback date
     if not date_str or date_str.lower() in ["aujourd’hui", "aujourd'hui", "ce jour", "today"]:
-        from datetime import date
         date_str = str(date.today())
 
     # Résumé utilisateur
@@ -46,7 +47,6 @@ def analyser_et_executer_classement(question: str):
 
     # Validation championnat
     try:
-        from agents_core import get_id_championnat
         id_champ = int(get_id_championnat(championnat))
     except:
         return f"{resume_extrait}\n❌ 🏆 Championnat non reconnu : `{championnat}`", None
@@ -71,7 +71,6 @@ def analyser_et_executer_classement(question: str):
 
     except Exception as e:
         return f"{resume_extrait}\n❌ Erreur lors du calcul du classement : {str(e)}", None
-
 
 
 def get_id_championnat(nom):
