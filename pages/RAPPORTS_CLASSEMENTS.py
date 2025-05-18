@@ -68,14 +68,19 @@ else:
 
 # --- AFFICHAGE DU CLASSEMENT
 if st.button("Afficher le classement"):
+
+    # Récupération de l'ID_CHAMPIONNAT à partir du nom sélectionné
+    id_championnat = df_ref[df_ref["NOM_CHAMPIONNAT"] == selected_championnats[0]]["ID_CHAMPIONNAT"].values[0] if selected_championnats else None
+
+    # Appel à la fonction avec l'ID du championnat
     df = get_classement_filtres(
         saison=selected_saison,
         categorie=selected_categories[0] if selected_categories else "SENIOR",
+        id_championnat=id_championnat,
         date_limite=str(date_limite) if date_limite else None,
         journee_min=journee_min,
         journee_max=journee_max
     )
-
     if selected_ligues:
         equipes_filtrees = df_ref[df_ref["NOM_LIGUE"].isin(selected_ligues)]["NOM_EQUIPE"].unique()
         df = df[df["NOM_EQUIPE"].isin(equipes_filtrees)]
