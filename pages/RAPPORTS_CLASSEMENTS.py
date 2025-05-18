@@ -81,40 +81,53 @@ if st.button("Afficher le classement"):
         journee_min=journee_min,
         journee_max=journee_max
     )
+
+    # --- FILTRES POST-CALCUL
     if selected_ligues:
-        equipes_filtrees = df_ref[df_ref["NOM_LIGUE"].isin(selected_ligues)]["NOM_EQUIPE"].unique()
-        df = df[df["NOM_EQUIPE"].isin(equipes_filtrees)]
+        equipes_filtrees = df_ref[df_ref["NOM_LIGUE"].isin(selected_ligues)]["ID_EQUIPE"].unique()
+        df = df[df["ID_EQUIPE"].isin(equipes_filtrees)]
 
     if selected_districts:
-        equipes_filtrees = df_ref[df_ref["NOM_DISTRICT"].isin(selected_districts)]["NOM_EQUIPE"].unique()
-        df = df[df["NOM_EQUIPE"].isin(equipes_filtrees)]
+        equipes_filtrees = df_ref[df_ref["NOM_DISTRICT"].isin(selected_districts)]["ID_EQUIPE"].unique()
+        df = df[df["ID_EQUIPE"].isin(equipes_filtrees)]
 
     if selected_championnats:
         df = df[df["NOM_CHAMPIONNAT"].isin(selected_championnats)]
 
     if selected_centre != "Tous":
-        equipes_filtrees = df_ref[df_ref["CENTRE"] == selected_centre]["NOM_EQUIPE"].unique()
-        df = df[df["NOM_EQUIPE"].isin(equipes_filtrees)]
+        equipes_filtrees = df_ref[df_ref["CENTRE"] == selected_centre]["ID_EQUIPE"].unique()
+        df = df[df["ID_EQUIPE"].isin(equipes_filtrees)]
 
     if selected_top400 != "Tous":
-        equipes_filtrees = df_ref[df_ref["TOP_400"] == selected_top400]["NOM_EQUIPE"].unique()
-        df = df[df["NOM_EQUIPE"].isin(equipes_filtrees)]
+        equipes_filtrees = df_ref[df_ref["TOP_400"] == selected_top400]["ID_EQUIPE"].unique()
+        df = df[df["ID_EQUIPE"].isin(equipes_filtrees)]
 
     if selected_clubs:
-        df = df[df["NOM_CLUB"].isin(selected_clubs)]
+        equipes_filtrees = df_ref[df_ref["NOM_CLUB"].isin(selected_clubs)]["ID_EQUIPE"].unique()
+        df = df[df["ID_EQUIPE"].isin(equipes_filtrees)]
 
     if selected_niveaux:
         equipes_filtrees = df_ref[df_ref["NIVEAU"].isin(selected_niveaux)]["ID_EQUIPE"].unique()
         df = df[df["ID_EQUIPE"].isin(equipes_filtrees)]
 
     if selected_statuts:
-        equipes_filtrees = df_ref[df_ref["STATUT"].isin(selected_statuts)]["NOM_EQUIPE"].unique()
-        df = df[df["NOM_EQUIPE"].isin(equipes_filtrees)]
+        equipes_filtrees = df_ref[df_ref["STATUT"].isin(selected_statuts)]["ID_EQUIPE"].unique()
+        df = df[df["ID_EQUIPE"].isin(equipes_filtrees)]
 
+    # --- RECLASSEMENT LOCAL SI AUCUN CHAMPIONNAT SÉLECTIONNÉ
+    if "CLASSEMENT" in df.columns and "POINTS" in df.columns and not selected_championnats:
+        st.info("📊 Classement recalculé après filtrage (multi-championnats ou comparatif libre).")
+        df["DIFF"] = df["BP"] - df["BC"]
+        df = df.sort_values(by=["POULE", "POINTS", "DIFF", "BP"], ascending=[True, False, False, False]).reset_index(drop=True)
+        df["CLASSEMENT"] = df.groupby("POULE").cumcount() + 1
+        df["CLASSEMENT"] = df["CLASSEMENT"].astype(int)
+
+    # --- LIMITATION À 500 LIGNES
     if len(df) > 500:
         st.warning(f"⚠️ Affichage limité à 500 lignes sur {len(df)} résultats.")
         df = df.head(500)
 
+    # --- AFFICHAGE FINAL
     if mobile_mode:
         colonnes_affichage = ["NOM_CLUB", "NOM_EQUIPE", "NOM_CHAMPIONNAT", "CLASSEMENT"]
         st.dataframe(df[colonnes_affichage], use_container_width=True, hide_index=True)
