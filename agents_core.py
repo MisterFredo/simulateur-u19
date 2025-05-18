@@ -25,7 +25,7 @@ def analyser_et_executer_classement(question: str):
     intent = result.get("intent", "")
     championnat = result.get("championnat", "")
     poule = result.get("poule", "")
-    date_str = result.get("date", "").strip()
+    date_str = (result.get("date") or "").strip()
 
     # Fallback date
     if not date_str or date_str.lower() in ["aujourd’hui", "aujourd'hui", "ce jour", "today"]:
