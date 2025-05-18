@@ -53,7 +53,11 @@ def construire_system_prompt():
     )
 
 def appeler_agent_gpt(question, model="gpt-4", temperature=0.4):
-    client = openai.OpenAI(api_key=st.secrets["openai_api_key"])
+    api_key = os.getenv("OPENAI_API_KEY")
+    if not api_key:
+        raise ValueError("❌ Clé OPENAI_API_KEY non trouvée dans les variables d'environnement.")
+    
+    client = openai.OpenAI(api_key=api_key)
     messages = [
         {"role": "system", "content": construire_system_prompt()},
         {"role": "user", "content": question}
