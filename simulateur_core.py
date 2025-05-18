@@ -781,15 +781,15 @@ def get_classement_filtres(saison, categorie, id_championnat=None, date_limite=N
     df = df[df["POINTS"].notna()]
     df = df[df["POULE"].notna()].copy()
 
-    # --- Classement : tri manuel puis numérotation
+    # --- Classement par championnat + poule (CORRECTION ICI)
     df["DIFF"] = df["BP"] - df["BC"]
-    df = df.sort_values(by=["POULE", "POINTS", "DIFF", "BP"], ascending=[True, False, False, False]).reset_index(drop=True)
-    df["CLASSEMENT"] = df.groupby("POULE").cumcount() + 1
+    df = df.sort_values(by=["ID_CHAMPIONNAT", "POULE", "POINTS", "DIFF", "BP"], ascending=[True, True, False, False, False]).reset_index(drop=True)
+    df["CLASSEMENT"] = df.groupby(["ID_CHAMPIONNAT", "POULE"]).cumcount() + 1
     df["CLASSEMENT"] = df["CLASSEMENT"].astype(int)
 
     # --- Moyenne
     df["MOY"] = (df["POINTS"] / df["MJ"]).round(2)
 
-    colonnes = ["NOM_CLUB", "NOM_EQUIPE", "NOM_CHAMPIONNAT", "POULE", "CLASSEMENT",
-                "POINTS", "MOY", "MJ", "BP", "BC", "STATUT", "NIVEAU", "ID_EQUIPE"]
+    colonnes = ["ID_EQUIPE", "NOM_CLUB", "NOM_EQUIPE", "NOM_CHAMPIONNAT", "POULE", "CLASSEMENT",
+                "POINTS", "MOY", "MJ", "BP", "BC", "STATUT", "NIVEAU"]
     return df[colonnes]
