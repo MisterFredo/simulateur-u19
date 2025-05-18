@@ -9,6 +9,11 @@ from datetime import date
 from simulateur_core import get_classement_dynamique, appliquer_penalites, trier_et_numeroter, get_type_classement
 from agents_core import get_id_championnat
 
+# --- ACCÈS RÉSERVÉ À FREDERIC ---
+if st.session_state.get("user_email") != "mister.fredo@gmail.com":
+    st.warning("🚫 Accès réservé à l’administrateur.")
+    st.stop()
+
 st.set_page_config(page_title="Agent Datafoot", page_icon="🤖", layout="wide")
 st.title("🧠 Agent Datafoot – Analyste Classement")
 
