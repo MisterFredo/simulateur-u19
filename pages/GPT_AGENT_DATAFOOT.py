@@ -1,6 +1,11 @@
 import streamlit as st
 from agents_core import analyser_et_executer_classement
 
+# --- ACCÈS RÉSERVÉ À FREDERIC ---
+if st.session_state.get("user_email") != "mister.fredo@gmail.com":
+    st.warning("🚫 Accès réservé à l’administrateur.")
+    st.stop()
+
 st.set_page_config(page_title="Agent GPT – Datafoot", layout="wide")
 st.title("🧠 Agent GPT – Analyse et Classement")
 
