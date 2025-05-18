@@ -178,6 +178,7 @@ def extraire_parametres_demande(question: str, liste_championnats: list[str], mo
         max_tokens=300
     )
 
+    # Extraction JSON
     try:
         result = json.loads(completion.choices[0].message.content.strip())
         return result
@@ -186,7 +187,3 @@ def extraire_parametres_demande(question: str, liste_championnats: list[str], mo
             "error": f"Erreur d'analyse JSON : {str(e)}",
             "raw": completion.choices[0].message.content
         }
-
-    except Exception as e:
-        return {"error": f"Erreur d'analyse JSON : {str(e)}", "raw": completion.choices[0].message.content}
-
