@@ -29,7 +29,8 @@ ligues_disponibles = sorted(df_ref["NOM_LIGUE"].dropna().unique())
 districts_disponibles = sorted(df_ref["NOM_DISTRICT"].dropna().unique())
 categories_disponibles = sorted(df_ref["CATEGORIE"].dropna().unique())
 niveaux_disponibles = sorted(df_ref["NIVEAU"].dropna().unique())
-statuts_disponibles = sorted(df_ref["STATUT"].dropna().unique())
+statuts_debut_disponibles = sorted(df_ref["STATUT_DEBUT"].dropna().unique())
+statuts_fin_disponibles = sorted(df_ref["STATUT_FIN"].dropna().unique())
 clubs_disponibles = sorted(df_ref["NOM_CLUB"].dropna().unique())
 championnats_disponibles = sorted(df_ref["NOM_CHAMPIONNAT"].dropna().unique())
 
@@ -49,7 +50,8 @@ with col2:
 with col3:
     selected_categories = st.multiselect("Catégories", categories_disponibles)
     selected_niveaux = st.multiselect("Niveaux", niveaux_disponibles)
-    selected_statuts = st.multiselect("Statuts", statuts_disponibles)
+    selected_statuts_debut = st.multiselect("Statuts de début", statuts_debut_disponibles)
+    selected_statuts_fin = st.multiselect("Statuts de fin", statuts_fin_disponibles)
 
 # --- MODE DE CLASSEMENT
 mode = st.radio("Mode de classement", ["Par date (pénalités incluses)", "Par journées (sans pénalités)"])
@@ -110,8 +112,12 @@ if st.button("Afficher le classement"):
         equipes_filtrees = df_ref[df_ref["NIVEAU"].isin(selected_niveaux)]["ID_EQUIPE"].unique()
         df = df[df["ID_EQUIPE"].isin(equipes_filtrees)]
 
-    if selected_statuts:
-        equipes_filtrees = df_ref[df_ref["STATUT"].isin(selected_statuts)]["ID_EQUIPE"].unique()
+    if selected_statuts_debut:
+        equipes_filtrees = df_ref[df_ref["STATUT_DEBUT"].isin(selected_statuts_debut)]["ID_EQUIPE"].unique()
+        df = df[df["ID_EQUIPE"].isin(equipes_filtrees)]
+
+    if selected_statuts_fin:
+        equipes_filtrees = df_ref[df_ref["STATUT_FIN"].isin(selected_statuts_fin)]["ID_EQUIPE"].unique()
         df = df[df["ID_EQUIPE"].isin(equipes_filtrees)]
 
     # --- LIMITATION À 500 LIGNES
@@ -134,4 +140,5 @@ if st.button("Afficher le classement"):
         file_name="classement_performance.csv",
         mime="text/csv"
     )
+
 
