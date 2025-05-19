@@ -74,13 +74,18 @@ if st.button("Afficher le classement"):
 
     # Mapping dynamique NOM_CHAMPIONNAT -> ID_CHAMPIONNAT
     if selected_championnats:
-        query_champ = f"""
-            SELECT ID_CHAMPIONNAT, NOM_CHAMPIONNAT
+        query_champ = """
+            SELECT ID_CHAMPIONNAT
             FROM `datafoot-448514.DATAFOOT.DATAFOOT_CHAMPIONNAT`
-            WHERE NOM_CHAMPIONNAT IN UNNEST({selected_championnats})
+            WHERE NOM_CHAMPIONNAT IN UNNEST(@selected_championnats)
         """
         client = bigquery.Client()
-        champ_df = client.query(query_champ).to_dataframe()
+        job_config = bigquery.QueryJobConfig(
+            query_parameters=[
+                bigquery.ArrayQueryParameter("selected_championnats", "STRING", selected_championnats)
+            ]
+        )
+        champ_df = client.query(query_champ, job_config=job_config).to_dataframe()
         id_championnat = champ_df["ID_CHAMPIONNAT"].unique().tolist()
     else:
         id_championnat = None
@@ -148,3 +153,4 @@ if st.button("Afficher le classement"):
         file_name="classement_performance.csv",
         mime="text/csv"
     )
+
