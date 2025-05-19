@@ -637,6 +637,33 @@ def get_rapport_clubs(saison=None):
     condition_saison = f"WHERE ES.SAISON = {saison}" if saison else ""
     
     query = f"""
+        WITH CHAMPIONNATS_RECENTS AS (
+            SELECT * EXCEPT(row_num) FROM (
+                SELECT 
+                    ID_EQUIPE,
+                    NOM_CHAMPIONNAT,
+                    ROW_NUMBER() OVER (PARTITION BY ID_EQUIPE ORDER BY DATE DESC) AS row_num
+                FROM (
+                    SELECT 
+                        M.ID_EQUIPE_DOM AS ID_EQUIPE,
+                        CH.NOM_CHAMPIONNAT,
+                        M.DATE
+                    FROM `datafoot-448514.DATAFOOT.DATAFOOT_MATCH_2025` M
+                    JOIN `datafoot-448514.DATAFOOT.DATAFOOT_CHAMPIONNAT` CH ON M.ID_CHAMPIONNAT = CH.ID_CHAMPIONNAT
+                    
+                    UNION ALL
+                    
+                    SELECT 
+                        M.ID_EQUIPE_EXT AS ID_EQUIPE,
+                        CH.NOM_CHAMPIONNAT,
+                        M.DATE
+                    FROM `datafoot-448514.DATAFOOT.DATAFOOT_MATCH_2025` M
+                    JOIN `datafoot-448514.DATAFOOT.DATAFOOT_CHAMPIONNAT` CH ON M.ID_CHAMPIONNAT = CH.ID_CHAMPIONNAT
+                )
+            )
+            WHERE row_num = 1
+        )
+
         SELECT 
             ES.SAISON,
             EQ.ID_EQUIPE,
@@ -650,22 +677,22 @@ def get_rapport_clubs(saison=None):
             LIG.SHORT_LIGUE,
             CL.CENTRE,
             CL.TOP_400,
-            ES.ID_CHAMPIONNAT,
-            CH.NOM_CHAMPIONNAT,
             ES.POULE,
             ES.STATUT_DEBUT,
-            ES.STATUT_FIN
+            ES.STATUT_FIN,
+            CR.NOM_CHAMPIONNAT
         FROM `datafoot-448514.DATAFOOT.DATAFOOT_EQUIPE_STATUT` ES
         JOIN `datafoot-448514.DATAFOOT.DATAFOOT_EQUIPE` EQ ON ES.ID_EQUIPE = EQ.ID_EQUIPE
         JOIN `datafoot-448514.DATAFOOT.DATAFOOT_CLUB` CL ON EQ.ID_CLUB = CL.ID_CLUB
         JOIN `datafoot-448514.DATAFOOT.DATAFOOT_DISTRICT` DIST ON CL.ID_DISTRICT = DIST.ID_DISTRICT
         JOIN `datafoot-448514.DATAFOOT.DATAFOOT_LIGUE` LIG ON CL.ID_LIGUE = LIG.ID_LIGUE
-        JOIN `datafoot-448514.DATAFOOT.DATAFOOT_CHAMPIONNAT` CH ON ES.ID_CHAMPIONNAT = CH.ID_CHAMPIONNAT
+        LEFT JOIN CHAMPIONNATS_RECENTS CR ON ES.ID_EQUIPE = CR.ID_EQUIPE
         {condition_saison}
         ORDER BY LIG.NOM_LIGUE, CL.NOM_CLUB, EQ.CATEGORIE
     """
     
     return client.query(query).to_dataframe()
+
 
 
 def get_classement_filtres(saison, categorie, id_championnat=None, date_limite=None, journee_min=None, journee_max=None):
