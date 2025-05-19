@@ -653,7 +653,8 @@ def get_rapport_clubs(saison=None):
             ES.ID_CHAMPIONNAT,
             CH.NOM_CHAMPIONNAT,
             ES.POULE,
-            ES.STATUT
+            ES.STATUT_DEBUT,
+            ES.STATUT_FIN
         FROM `datafoot-448514.DATAFOOT.DATAFOOT_EQUIPE_STATUT` ES
         JOIN `datafoot-448514.DATAFOOT.DATAFOOT_EQUIPE` EQ ON ES.ID_EQUIPE = EQ.ID_EQUIPE
         JOIN `datafoot-448514.DATAFOOT.DATAFOOT_CLUB` CL ON EQ.ID_CLUB = CL.ID_CLUB
@@ -665,6 +666,7 @@ def get_rapport_clubs(saison=None):
     """
     
     return client.query(query).to_dataframe()
+
 
 def get_classement_filtres(saison, categorie, id_championnat=None, date_limite=None, journee_min=None, journee_max=None):
     import pandas as pd
@@ -764,9 +766,9 @@ def get_classement_filtres(saison, categorie, id_championnat=None, date_limite=N
     if id_championnat:
         df = df[df["ID_CHAMPIONNAT"].isin(id_championnat)].copy()
 
-    # --- Ajout du STATUT
+    # --- Ajout des STATUT_DEBUT et STATUT_FIN
     query_statut = f"""
-        SELECT ID_EQUIPE, STATUT
+        SELECT ID_EQUIPE, STATUT_DEBUT, STATUT_FIN
         FROM `datafoot-448514.DATAFOOT.DATAFOOT_EQUIPE_STATUT`
         WHERE SAISON = {saison}
     """
@@ -781,7 +783,7 @@ def get_classement_filtres(saison, categorie, id_championnat=None, date_limite=N
     df = df[df["POINTS"].notna()]
     df = df[df["POULE"].notna()].copy()
 
-    # --- Classement par championnat + poule (CORRECTION ICI)
+    # --- Classement par championnat + poule
     df["DIFF"] = df["BP"] - df["BC"]
     df = df.sort_values(by=["ID_CHAMPIONNAT", "POULE", "POINTS", "DIFF", "BP"], ascending=[True, True, False, False, False]).reset_index(drop=True)
     df["CLASSEMENT"] = df.groupby(["ID_CHAMPIONNAT", "POULE"]).cumcount() + 1
@@ -791,5 +793,6 @@ def get_classement_filtres(saison, categorie, id_championnat=None, date_limite=N
     df["MOY"] = (df["POINTS"] / df["MJ"]).round(2)
 
     colonnes = ["ID_EQUIPE", "NOM_CLUB", "NOM_EQUIPE", "NOM_CHAMPIONNAT", "POULE", "CLASSEMENT",
-                "POINTS", "MOY", "MJ", "BP", "BC", "STATUT", "NIVEAU"]
+                "POINTS", "MOY", "MJ", "BP", "BC", "STATUT_DEBUT", "STATUT_FIN", "NIVEAU"]
     return df[colonnes]
+
