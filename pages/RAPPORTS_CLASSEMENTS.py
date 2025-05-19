@@ -100,6 +100,10 @@ if st.button("Afficher le classement"):
         journee_max=journee_max
     )
 
+    # --- 🔐 Mise en cohérence du référentiel avec les équipes réellement classées
+    equipes_presentes = df["ID_EQUIPE"].unique()
+    df_ref = df_ref[df_ref["ID_EQUIPE"].isin(equipes_presentes)]
+
     # --- FILTRES POST-CALCUL
     if selected_ligues:
         equipes_filtrees = df_ref[df_ref["NOM_LIGUE"].isin(selected_ligues)]["ID_EQUIPE"].unique()
@@ -153,4 +157,3 @@ if st.button("Afficher le classement"):
         file_name="classement_performance.csv",
         mime="text/csv"
     )
-
