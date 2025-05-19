@@ -280,6 +280,12 @@ classement_initial = get_classement_dynamique(
     matchs_override=matchs_termine
 )
 
+if date_limite:
+    classement_initial = appliquer_penalites(classement_initial, date_limite)
+else:
+    classement_initial["PENALITES"] = 0
+
+
 # Cas des égalités particulières
 if champ_type_classement == "PARTICULIERE":
     classement_initial, mini_classements_initial = appliquer_diff_particuliere(classement_initial, matchs_termine)
