@@ -1,6 +1,7 @@
 import streamlit as st
 import sys
 import os
+from google.cloud import bigquery
 
 # --- ACCÈS RÉSERVÉ À FREDERIC ---
 if st.session_state.get("user_email") != "mister.fredo@gmail.com":
@@ -71,8 +72,18 @@ else:
 # --- AFFICHAGE DU CLASSEMENT
 if st.button("Afficher le classement"):
 
-    # Récupération de l'ID_CHAMPIONNAT à partir du nom sélectionné
-    id_championnat = df_ref[df_ref["NOM_CHAMPIONNAT"].isin(selected_championnats)]["ID_CHAMPIONNAT"].unique().tolist() if selected_championnats else None
+    # Mapping dynamique NOM_CHAMPIONNAT -> ID_CHAMPIONNAT
+    if selected_championnats:
+        query_champ = f"""
+            SELECT ID_CHAMPIONNAT, NOM_CHAMPIONNAT
+            FROM `datafoot-448514.DATAFOOT.DATAFOOT_CHAMPIONNAT`
+            WHERE NOM_CHAMPIONNAT IN UNNEST({selected_championnats})
+        """
+        client = bigquery.Client()
+        champ_df = client.query(query_champ).to_dataframe()
+        id_championnat = champ_df["ID_CHAMPIONNAT"].unique().tolist()
+    else:
+        id_championnat = None
 
     # Appel à la fonction avec l'ID du championnat
     df = get_classement_filtres(
@@ -92,9 +103,6 @@ if st.button("Afficher le classement"):
     if selected_districts:
         equipes_filtrees = df_ref[df_ref["NOM_DISTRICT"].isin(selected_districts)]["ID_EQUIPE"].unique()
         df = df[df["ID_EQUIPE"].isin(equipes_filtrees)]
-
-    if selected_championnats:
-        df = df[df["NOM_CHAMPIONNAT"].isin(selected_championnats)]
 
     if selected_centre != "Tous":
         equipes_filtrees = df_ref[df_ref["CENTRE"] == selected_centre]["ID_EQUIPE"].unique()
@@ -140,5 +148,3 @@ if st.button("Afficher le classement"):
         file_name="classement_performance.csv",
         mime="text/csv"
     )
-
-
