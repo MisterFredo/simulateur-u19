@@ -455,7 +455,12 @@ if st.session_state.simulation_validee:
 
         # Recalcul du classement
         classement_simule = get_classement_dynamique(champ_id, date_limite, matchs_override=matchs_tous)
-        classement_simule = appliquer_penalites(classement_simule, date_limite)
+
+        # Application conditionnelle des pénalités selon le mode sélectionné
+        if date_limite:
+            classement_simule = appliquer_penalites(classement_simule, date_limite)
+        else:
+            classement_simule["PENALITES"] = 0  # Pour éviter les erreurs dans l'affichage du tableau
 
         # Appliquer égalités particulières
         if champ_type_classement == "PARTICULIERE":
