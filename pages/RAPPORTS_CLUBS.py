@@ -30,7 +30,8 @@ ligues_disponibles = sorted(df["NOM_LIGUE"].dropna().unique())
 districts_disponibles = sorted(df["NOM_DISTRICT"].dropna().unique())
 categories_disponibles = sorted(df["CATEGORIE"].dropna().unique())
 niveaux_disponibles = sorted(df["NIVEAU"].dropna().unique())
-statuts_disponibles = sorted(df["STATUT"].dropna().unique())
+statuts_debut_disponibles = sorted(df["STATUT_DEBUT"].dropna().unique())
+statuts_fin_disponibles = sorted(df["STATUT_FIN"].dropna().unique())
 clubs_disponibles = sorted(df["NOM_CLUB"].dropna().unique())
 championnats_disponibles = sorted(df["NOM_CHAMPIONNAT"].dropna().unique())
 
@@ -50,7 +51,8 @@ with col2:
 with col3:
     selected_categories = st.multiselect("Catégories", categories_disponibles)
     selected_niveaux = st.multiselect("Niveaux", niveaux_disponibles)
-    selected_statuts = st.multiselect("Statuts", statuts_disponibles)
+    selected_statuts_debut = st.multiselect("Statuts de début", statuts_debut_disponibles)
+    selected_statuts_fin = st.multiselect("Statuts de fin", statuts_fin_disponibles)
 
 # --- FILTRAGE MULTI
 if selected_ligues:
@@ -77,8 +79,11 @@ if selected_categories:
 if selected_niveaux:
     df = df[df["NIVEAU"].isin(selected_niveaux)]
 
-if selected_statuts:
-    df = df[df["STATUT"].isin(selected_statuts)]
+if selected_statuts_debut:
+    df = df[df["STATUT_DEBUT"].isin(selected_statuts_debut)]
+
+if selected_statuts_fin:
+    df = df[df["STATUT_FIN"].isin(selected_statuts_fin)]
 
 # --- SUPPRESSION COLONNES TECHNIQUES
 colonnes_a_supprimer = ["ID_CLUB", "ID_EQUIPE", "ID_CHAMPIONNAT", "NOM_LIGUE"]
@@ -104,4 +109,3 @@ else:
 #     file_name="rapport_clubs.csv",
 #     mime="text/csv"
 # )
-
