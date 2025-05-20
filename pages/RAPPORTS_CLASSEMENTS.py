@@ -149,23 +149,25 @@ if st.button("Afficher le classement"):
         st.warning(f"⚠️ Affichage limité à 500 lignes sur {len(df)} résultats.")
         df = df.head(500)
 
-    # --- AFFICHAGE FINAL
+    # --- Colonnes à afficher
     colonnes_affichage = [
         "NOM_CLUB", "NOM_EQUIPE", "NOM_CHAMPIONNAT", "NOM_LIGUE", "NOM_DISTRICT",
-        "CLASSEMENT", "PTS", "G", "N", "P", "BP", "BC", "DIFF", "PENALITES"
+        "CLASSEMENT", "POINTS", "MOY", "MJ", "G", "N", "P", "BP", "BC", "DIFF", "PENALITES"
     ]
+    colonnes_affichage = [col for col in colonnes_affichage if col in df.columns]
 
     if mobile_mode:
-        st.dataframe(df[["NOM_CLUB", "NOM_EQUIPE", "NOM_CHAMPIONNAT", "CLASSEMENT"]], use_container_width=True, hide_index=True)
+        colonnes_mobile = ["NOM_CLUB", "NOM_EQUIPE", "NOM_CHAMPIONNAT", "CLASSEMENT"]
+        colonnes_mobile = [col for col in colonnes_mobile if col in df.columns]
+        st.dataframe(df[colonnes_mobile], use_container_width=True, hide_index=True)
     else:
         st.dataframe(df[colonnes_affichage], use_container_width=True, hide_index=True)
 
     # --- EXPORT CSV
     csv = df[colonnes_affichage].to_csv(index=False).encode("utf-8")
     st.download_button(
-        label="📅 Télécharger le tableau (CSV)",
+        label="📥 Télécharger le tableau (CSV)",
         data=csv,
         file_name="classement_performance.csv",
         mime="text/csv"
     )
-
