@@ -721,7 +721,7 @@ def get_classement_filtres(saison, categorie, id_championnat=None, date_limite=N
     if matchs.empty:
         return pd.DataFrame()
 
-    # --- Création des lignes par équipe
+    # --- Création des lignes par équipe avec résultats
     matchs_equipes = pd.concat([
         matchs.assign(
             ID_EQUIPE=matchs["ID_EQUIPE_DOM"],
@@ -737,14 +737,22 @@ def get_classement_filtres(saison, categorie, id_championnat=None, date_limite=N
         )
     ])
 
+    # --- Ajout des G/N/P
+    matchs_equipes["G"] = matchs_equipes["POINTS"].apply(lambda x: 1 if x == 3 else 0)
+    matchs_equipes["N"] = matchs_equipes["POINTS"].apply(lambda x: 1 if x == 1 else 0)
+    matchs_equipes["P"] = matchs_equipes["POINTS"].apply(lambda x: 1 if x == 0 else 0)
+
     stats = matchs_equipes.groupby("ID_EQUIPE").agg(
         MJ=('ID_EQUIPE', 'count'),
+        G=('G', 'sum'),
+        N=('N', 'sum'),
+        P=('P', 'sum'),
         POINTS=('POINTS', 'sum'),
         BP=('BUTS_POUR', 'sum'),
         BC=('BUTS_CONTRE', 'sum')
     ).reset_index()
 
-    # --- Requête pour récupérer les infos clubs / poules / championnats
+    # --- Infos clubs et championnats
     query_infos = f"""
         SELECT * EXCEPT(row_num) FROM (
             SELECT *,
@@ -785,15 +793,11 @@ def get_classement_filtres(saison, categorie, id_championnat=None, date_limite=N
         ) WHERE row_num = 1
     """
     infos = client.query(query_infos).to_dataframe()
-
-    # --- Fusion
     df = stats.merge(infos, on="ID_EQUIPE", how="left")
 
-    # --- Filtrage sur le championnat s’il est précisé
     if id_championnat:
         df = df[df["ID_CHAMPIONNAT"].isin(id_championnat)].copy()
 
-    # --- Ajout des STATUT_DEBUT et STATUT_FIN
     query_statut = f"""
         SELECT ID_EQUIPE, STATUT_DEBUT, STATUT_FIN
         FROM `datafoot-448514.DATAFOOT.DATAFOOT_EQUIPE_STATUT`
@@ -802,24 +806,27 @@ def get_classement_filtres(saison, categorie, id_championnat=None, date_limite=N
     statut_df = client.query(query_statut).to_dataframe()
     df = df.merge(statut_df, on="ID_EQUIPE", how="left")
 
-    # --- Application des pénalités (si date)
     if date_limite:
         df = appliquer_penalites(df, date_limite)
 
-    # --- Sécurité
     df = df[df["POINTS"].notna()]
     df = df[df["POULE"].notna()].copy()
 
-    # --- Classement par championnat + poule
     df["DIFF"] = df["BP"] - df["BC"]
     df = df.sort_values(by=["ID_CHAMPIONNAT", "POULE", "POINTS", "DIFF", "BP"], ascending=[True, True, False, False, False]).reset_index(drop=True)
     df["CLASSEMENT"] = df.groupby(["ID_CHAMPIONNAT", "POULE"]).cumcount() + 1
     df["CLASSEMENT"] = df["CLASSEMENT"].astype(int)
 
-    # --- Moyenne
     df["MOY"] = (df["POINTS"] / df["MJ"]).round(2)
 
-    colonnes = ["ID_EQUIPE", "NOM_CLUB", "NOM_EQUIPE", "NOM_CHAMPIONNAT", "POULE", "CLASSEMENT",
-                "POINTS", "MOY", "MJ", "BP", "BC", "STATUT_DEBUT", "STATUT_FIN", "NIVEAU"]
-    return df[colonnes]
+    # Forcer la colonne PENALITES si absente
+    if "PENALITES" not in df.columns:
+        df["PENALITES"] = 0
 
+    colonnes = [
+        "ID_EQUIPE", "NOM_CLUB", "NOM_EQUIPE", "NOM_CHAMPIONNAT", "POULE",
+        "CLASSEMENT", "POINTS", "MOY", "MJ", "G", "N", "P", "BP", "BC", "DIFF",
+        "PENALITES", "STATUT_DEBUT", "STATUT_FIN", "NIVEAU"
+    ]
+
+    return df[colonnes]
