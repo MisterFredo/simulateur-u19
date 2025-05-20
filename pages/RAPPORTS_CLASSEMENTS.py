@@ -100,9 +100,16 @@ if st.button("Afficher le classement"):
         journee_max=journee_max
     )
 
-    # --- 🔐 Mise en cohérence du référentiel avec les équipes réellement classées
+    # --- Mise en cohérence du référentiel avec les équipes classées
     equipes_presentes = df["ID_EQUIPE"].unique()
     df_ref = df_ref[df_ref["ID_EQUIPE"].isin(equipes_presentes)]
+
+    # --- Fusion des colonnes complémentaires
+    df = df.merge(
+        df_ref[["ID_EQUIPE", "NOM_LIGUE", "NOM_DISTRICT", "NOM_CLUB"]],
+        on="ID_EQUIPE",
+        how="left"
+    )
 
     # --- FILTRES POST-CALCUL
     if selected_ligues:
@@ -143,17 +150,22 @@ if st.button("Afficher le classement"):
         df = df.head(500)
 
     # --- AFFICHAGE FINAL
+    colonnes_affichage = [
+        "NOM_CLUB", "NOM_EQUIPE", "NOM_CHAMPIONNAT", "NOM_LIGUE", "NOM_DISTRICT",
+        "CLASSEMENT", "PTS", "G", "N", "P", "BP", "BC", "DIFF", "PENALITES"
+    ]
+
     if mobile_mode:
-        colonnes_affichage = ["NOM_CLUB", "NOM_EQUIPE", "NOM_CHAMPIONNAT", "CLASSEMENT"]
-        st.dataframe(df[colonnes_affichage], use_container_width=True, hide_index=True)
+        st.dataframe(df[["NOM_CLUB", "NOM_EQUIPE", "NOM_CHAMPIONNAT", "CLASSEMENT"]], use_container_width=True, hide_index=True)
     else:
-        st.dataframe(df, use_container_width=True, hide_index=True)
+        st.dataframe(df[colonnes_affichage], use_container_width=True, hide_index=True)
 
     # --- EXPORT CSV
-    csv = df.to_csv(index=False).encode("utf-8")
+    csv = df[colonnes_affichage].to_csv(index=False).encode("utf-8")
     st.download_button(
-        label="📥 Télécharger le tableau (CSV)",
+        label="📅 Télécharger le tableau (CSV)",
         data=csv,
         file_name="classement_performance.csv",
         mime="text/csv"
     )
+
