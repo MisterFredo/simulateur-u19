@@ -104,7 +104,12 @@ if st.button("Afficher le classement"):
     equipes_presentes = df["ID_EQUIPE"].unique()
     df_ref = df_ref[df_ref["ID_EQUIPE"].isin(equipes_presentes)]
 
-    # --- Fusion de toutes les colonnes disponibles de df_ref
+    # --- Suppression des colonnes en conflit avant fusion
+    colonnes_ref = df_ref.columns.tolist()
+    colonnes_conflictuelles = [col for col in colonnes_ref if col in df.columns and col != "ID_EQUIPE"]
+    df = df.drop(columns=colonnes_conflictuelles, errors="ignore")
+
+    # --- Fusion avec toutes les colonnes du référentiel
     df = df.merge(df_ref, on="ID_EQUIPE", how="left")
 
     # --- FILTRES POST-CALCUL
@@ -145,7 +150,7 @@ if st.button("Afficher le classement"):
         st.warning(f"⚠️ Affichage limité à 500 lignes sur {len(df)} résultats.")
         df = df.head(500)
 
-    # --- Colonnes à afficher (toutes)
+    # --- Colonnes à afficher (toutes celles disponibles)
     colonnes_affichage = df.columns.tolist()
 
     if mobile_mode:
