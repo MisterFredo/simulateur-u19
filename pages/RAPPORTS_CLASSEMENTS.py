@@ -104,12 +104,8 @@ if st.button("Afficher le classement"):
     equipes_presentes = df["ID_EQUIPE"].unique()
     df_ref = df_ref[df_ref["ID_EQUIPE"].isin(equipes_presentes)]
 
-    # --- Fusion des colonnes complémentaires
-    df = df.merge(
-        df_ref[["ID_EQUIPE", "NOM_LIGUE", "NOM_DISTRICT", "NOM_CLUB"]],
-        on="ID_EQUIPE",
-        how="left"
-    )
+    # --- Fusion de toutes les colonnes disponibles de df_ref
+    df = df.merge(df_ref, on="ID_EQUIPE", how="left")
 
     # --- FILTRES POST-CALCUL
     if selected_ligues:
@@ -149,12 +145,8 @@ if st.button("Afficher le classement"):
         st.warning(f"⚠️ Affichage limité à 500 lignes sur {len(df)} résultats.")
         df = df.head(500)
 
-    # --- Colonnes à afficher
-    colonnes_affichage = [
-        "NOM_CLUB", "NOM_EQUIPE", "NOM_CHAMPIONNAT", "NOM_LIGUE", "NOM_DISTRICT",
-        "CLASSEMENT", "POINTS", "MOY", "MJ", "G", "N", "P", "BP", "BC", "DIFF", "PENALITES"
-    ]
-    colonnes_affichage = [col for col in colonnes_affichage if col in df.columns]
+    # --- Colonnes à afficher (toutes)
+    colonnes_affichage = df.columns.tolist()
 
     if mobile_mode:
         colonnes_mobile = ["NOM_CLUB", "NOM_EQUIPE", "NOM_CHAMPIONNAT", "CLASSEMENT"]
