@@ -106,7 +106,7 @@ if st.button("Afficher le classement"):
 
     # --- Suppression des colonnes en conflit avant fusion
     colonnes_ref = df_ref.columns.tolist()
-    colonnes_conflictuelles = [col for col in colonnes_ref if col in df.columns and col != "ID_EQUIPE"]
+    colonnes_conflictuelles = [col for col in colonnes_ref if col in df.columns and col not in ["ID_EQUIPE", "POULE"]]
     df = df.drop(columns=colonnes_conflictuelles, errors="ignore")
 
     # --- Fusion avec toutes les colonnes du référentiel
