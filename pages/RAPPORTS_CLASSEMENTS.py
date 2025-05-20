@@ -154,9 +154,18 @@ if st.button("Afficher le classement"):
         st.warning(f"⚠️ Affichage limité à 500 lignes sur {len(df)} résultats.")
         df = df.head(500)
 
-    # --- Colonnes à afficher (toutes)
-    colonnes_affichage = df.columns.tolist()
+    # --- Colonnes à afficher (ordre personnalisé + compléments)
+    colonnes_prioritaires = [
+        "NOM_CLUB", "NOM_EQUIPE", "ID_EQUIPE", "SHORT_LIGUE", "NOM_DISTRICT", "NOM_CHAMPIONNAT", "CATEGORIE",
+        "POULE", "CLASSEMENT", "POINTS", "MOY", "MJ", "G", "N", "P", "BP", "BC", "DIFF", "PENALITES",
+        "STATUT_DEBUT", "STATUT_FIN", "NIVEAU", "CENTRE", "TOP_400"
+    ]
 
+    colonnes_affichage = [col for col in colonnes_prioritaires if col in df.columns]
+    colonnes_affichage += [col for col in df.columns if col not in colonnes_affichage]
+
+
+    # --- AFFICHAGE FINAL
     if mobile_mode:
         colonnes_mobile = ["NOM_CLUB", "NOM_EQUIPE", "NOM_CHAMPIONNAT", "CLASSEMENT"]
         colonnes_mobile = [col for col in colonnes_mobile if col in df.columns]
