@@ -110,6 +110,12 @@ if st.button("Afficher le classement"):
     # --- Fusion avec toutes les colonnes du référentiel
     df = df.merge(df_ref, on="ID_EQUIPE", how="left")
 
+    # --- Nettoyage des colonnes _x / _y après fusion
+    colonnes_x = [col for col in df.columns if col.endswith('_x')]
+    colonnes_y = [col for col in df.columns if col.endswith('_y')]
+    df = df.drop(columns=colonnes_x, errors="ignore")
+    df = df.rename(columns={col: col[:-2] for col in colonnes_y})
+
     # --- FILTRES POST-CALCUL
     if selected_ligues:
         equipes_filtrees = df_ref[df_ref["NOM_LIGUE"].isin(selected_ligues)]["ID_EQUIPE"].unique()
@@ -148,7 +154,7 @@ if st.button("Afficher le classement"):
         st.warning(f"⚠️ Affichage limité à 500 lignes sur {len(df)} résultats.")
         df = df.head(500)
 
-    # --- Colonnes à afficher (toutes celles disponibles)
+    # --- Colonnes à afficher (toutes)
     colonnes_affichage = df.columns.tolist()
 
     if mobile_mode:
@@ -166,4 +172,3 @@ if st.button("Afficher le classement"):
         file_name="classement_performance.csv",
         mime="text/csv"
     )
-
