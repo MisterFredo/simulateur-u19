@@ -156,7 +156,7 @@ if st.button("Afficher le classement"):
 
     # --- Colonnes à afficher (ordre personnalisé + compléments)
     colonnes_prioritaires = [
-        "NOM_CLUB", "NOM_EQUIPE", "ID_EQUIPE", "SHORT_LIGUE", "NOM_DISTRICT", "NOM_CHAMPIONNAT", "CATEGORIE",
+        "SAISON" , "NOM_CLUB", "NOM_EQUIPE", "ID_EQUIPE", "SHORT_LIGUE", "NOM_DISTRICT", "NOM_CHAMPIONNAT", "CATEGORIE",
         "POULE", "CLASSEMENT", "POINTS", "MOY", "MJ", "G", "N", "P", "BP", "BC", "DIFF", "PENALITES",
         "STATUT_DEBUT", "STATUT_FIN", "NIVEAU", "CENTRE", "TOP_400"
     ]
