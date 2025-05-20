@@ -104,10 +104,8 @@ if st.button("Afficher le classement"):
     equipes_presentes = df["ID_EQUIPE"].unique()
     df_ref = df_ref[df_ref["ID_EQUIPE"].isin(equipes_presentes)]
 
-    # --- Suppression des colonnes en conflit avant fusion
-    colonnes_ref = df_ref.columns.tolist()
-    colonnes_conflictuelles = [col for col in colonnes_ref if col in df.columns and col not in ["ID_EQUIPE", "POULE"]]
-    df = df.drop(columns=colonnes_conflictuelles, errors="ignore")
+    # --- Supprimer POULE du référentiel avant fusion pour conserver celle du calcul
+    df_ref = df_ref.drop(columns=["POULE"], errors="ignore")
 
     # --- Fusion avec toutes les colonnes du référentiel
     df = df.merge(df_ref, on="ID_EQUIPE", how="left")
@@ -168,3 +166,4 @@ if st.button("Afficher le classement"):
         file_name="classement_performance.csv",
         mime="text/csv"
     )
+
