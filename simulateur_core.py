@@ -771,7 +771,7 @@ def get_classement_filtres(saison, categorie, id_championnat=None, date_limite=N
                 JOIN `datafoot-448514.DATAFOOT.DATAFOOT_EQUIPE` EQ_DOM ON M.ID_EQUIPE_DOM = EQ_DOM.ID_EQUIPE
                 JOIN `datafoot-448514.DATAFOOT.DATAFOOT_CLUB` CL ON EQ_DOM.ID_CLUB = CL.ID_CLUB
                 JOIN `datafoot-448514.DATAFOOT.DATAFOOT_CHAMPIONNAT` CH ON M.ID_CHAMPIONNAT = CH.ID_CHAMPIONNAT
-                WHERE EQ_DOM.CATEGORIE = '{categorie}'
+                categorie_filter = f"AND EQ_DOM.CATEGORIE = '{categorie}'" if categorie else ""
 
                 UNION ALL
 
@@ -788,7 +788,8 @@ def get_classement_filtres(saison, categorie, id_championnat=None, date_limite=N
                 JOIN `datafoot-448514.DATAFOOT.DATAFOOT_EQUIPE` EQ_EXT ON M.ID_EQUIPE_EXT = EQ_EXT.ID_EQUIPE
                 JOIN `datafoot-448514.DATAFOOT.DATAFOOT_CLUB` CL ON EQ_EXT.ID_CLUB = CL.ID_CLUB
                 JOIN `datafoot-448514.DATAFOOT.DATAFOOT_CHAMPIONNAT` CH ON M.ID_CHAMPIONNAT = CH.ID_CHAMPIONNAT
-                WHERE EQ_EXT.CATEGORIE = '{categorie}'
+                categorie_filter = f"AND EQ_EXT.CATEGORIE = '{categorie}'" if categorie else ""
+
             )
         ) WHERE row_num = 1
     """
