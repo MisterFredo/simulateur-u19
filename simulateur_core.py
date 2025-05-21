@@ -693,8 +693,6 @@ def get_rapport_clubs(saison=None):
     
     return client.query(query).to_dataframe()
 
-
-
 def get_classement_filtres(saison, categorie, id_championnat=None, date_limite=None, journee_min=None, journee_max=None):
     import pandas as pd
 
@@ -752,6 +750,10 @@ def get_classement_filtres(saison, categorie, id_championnat=None, date_limite=N
         BC=('BUTS_CONTRE', 'sum')
     ).reset_index()
 
+    # --- Construction des filtres catégorie
+    cat_dom_filter = f"AND EQ_DOM.CATEGORIE = '{categorie}'" if categorie else ""
+    cat_ext_filter = f"AND EQ_EXT.CATEGORIE = '{categorie}'" if categorie else ""
+
     # --- Infos clubs et championnats
     query_infos = f"""
         SELECT * EXCEPT(row_num) FROM (
@@ -771,7 +773,7 @@ def get_classement_filtres(saison, categorie, id_championnat=None, date_limite=N
                 JOIN `datafoot-448514.DATAFOOT.DATAFOOT_EQUIPE` EQ_DOM ON M.ID_EQUIPE_DOM = EQ_DOM.ID_EQUIPE
                 JOIN `datafoot-448514.DATAFOOT.DATAFOOT_CLUB` CL ON EQ_DOM.ID_CLUB = CL.ID_CLUB
                 JOIN `datafoot-448514.DATAFOOT.DATAFOOT_CHAMPIONNAT` CH ON M.ID_CHAMPIONNAT = CH.ID_CHAMPIONNAT
-                categorie_filter = f"AND EQ_DOM.CATEGORIE = '{categorie}'" if categorie else ""
+                WHERE 1=1 {cat_dom_filter}
 
                 UNION ALL
 
@@ -788,11 +790,11 @@ def get_classement_filtres(saison, categorie, id_championnat=None, date_limite=N
                 JOIN `datafoot-448514.DATAFOOT.DATAFOOT_EQUIPE` EQ_EXT ON M.ID_EQUIPE_EXT = EQ_EXT.ID_EQUIPE
                 JOIN `datafoot-448514.DATAFOOT.DATAFOOT_CLUB` CL ON EQ_EXT.ID_CLUB = CL.ID_CLUB
                 JOIN `datafoot-448514.DATAFOOT.DATAFOOT_CHAMPIONNAT` CH ON M.ID_CHAMPIONNAT = CH.ID_CHAMPIONNAT
-                categorie_filter = f"AND EQ_EXT.CATEGORIE = '{categorie}'" if categorie else ""
-
+                WHERE 1=1 {cat_ext_filter}
             )
         ) WHERE row_num = 1
     """
+
     infos = client.query(query_infos).to_dataframe()
     df = stats.merge(infos, on="ID_EQUIPE", how="left")
 
@@ -820,7 +822,6 @@ def get_classement_filtres(saison, categorie, id_championnat=None, date_limite=N
 
     df["MOY"] = (df["POINTS"] / df["MJ"]).round(2)
 
-    # Forcer la colonne PENALITES si absente
     if "PENALITES" not in df.columns:
         df["PENALITES"] = 0
 
