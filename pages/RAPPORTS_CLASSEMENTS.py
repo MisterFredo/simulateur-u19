@@ -72,25 +72,22 @@ else:
 # --- AFFICHAGE DU CLASSEMENT
 if st.button("Afficher le classement"):
 
-    # Mapping dynamique NOM_CHAMPIONNAT -> ID_CHAMPIONNAT
+    # Chargement local de la table des championnats
+    client = bigquery.Client()
+    df_championnats = client.query("""
+        SELECT ID_CHAMPIONNAT, NOM_CHAMPIONNAT
+        FROM `datafoot-448514.DATAFOOT.DATAFOOT_CHAMPIONNAT`
+    """).to_dataframe()
+
+    # Mapping NOM_CHAMPIONNAT → ID_CHAMPIONNAT côté Python
     if selected_championnats:
-        query_champ = """
-            SELECT ID_CHAMPIONNAT
-            FROM `datafoot-448514.DATAFOOT.DATAFOOT_CHAMPIONNAT`
-            WHERE NOM_CHAMPIONNAT IN UNNEST(@selected_championnats)
-        """
-        client = bigquery.Client()
-        job_config = bigquery.QueryJobConfig(
-            query_parameters=[
-                bigquery.ArrayQueryParameter("selected_championnats", "STRING", selected_championnats)
-            ]
-        )
-        champ_df = client.query(query_champ, job_config=job_config).to_dataframe()
-        id_championnat = champ_df["ID_CHAMPIONNAT"].unique().tolist()
+        id_championnat = df_championnats[
+            df_championnats["NOM_CHAMPIONNAT"].isin(selected_championnats)
+        ]["ID_CHAMPIONNAT"].tolist()
     else:
         id_championnat = None
 
-    # Appel à la fonction avec l'ID du championnat
+    # Appel à la fonction avec les filtres
     df = get_classement_filtres(
         saison=selected_saison,
         categorie=selected_categories[0] if selected_categories else "SENIOR",
