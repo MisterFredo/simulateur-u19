@@ -90,7 +90,7 @@ if st.button("Afficher le classement"):
     # Appel à la fonction avec les filtres
     df = get_classement_filtres(
         saison=selected_saison,
-        categorie=selected_categories[0] if selected_categories else "SENIOR",
+        categorie=selected_categories[0] if selected_categories else None,
         id_championnat=id_championnat,
         date_limite=str(date_limite) if date_limite else None,
         journee_min=journee_min,
